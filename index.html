@@ -112,7 +112,7 @@
 
         .work-card {
             position: relative;
-            height: 400px;
+            height: 500px;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -134,7 +134,7 @@
 
         .work-label {
             position: absolute;
-            bottom: 20px;
+            bottom: 0;
             left: 0;
             right: 0;
             text-align: center;
@@ -142,14 +142,18 @@
             font-size: 1.5rem;
             font-weight: 600;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
         }
 
         /* Responsive adjustments */
         @media (max-width: 900px) {
             .works-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .work-card {
+                height: 450px;
             }
 
             .hero-content h1 {
@@ -164,6 +168,10 @@
         @media (max-width: 600px) {
             .works-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .work-card {
+                height: 400px;
             }
 
             .hero-content h1 {
