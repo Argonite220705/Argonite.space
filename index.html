@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARGONITE SPACE - Portfolio</title>
+    <title>ARGONITE SPACE - Visual Portfolio</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
     <style>
+        /* Base Reset */
         * {
             margin: 0;
             padding: 0;
@@ -17,12 +21,14 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #FAFAFA;
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F5; /* Off-white premium */
+            color: #1A1A1A;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
+        /* --- SECTION 1: HERO (AlphaQubit Style) --- */
         .hero {
             height: 100vh;
             position: relative;
@@ -31,6 +37,7 @@
             align-items: center;
             text-align: center;
             overflow: hidden;
+            background-color: #000;
         }
 
         .video-background {
@@ -40,7 +47,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -1;
+            z-index: 1;
+            opacity: 0.8; /* Sedikit gelap biar text menonjol */
         }
 
         .overlay {
@@ -49,171 +57,180 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.3);
-            z-index: 1;
+            background: radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+            z-index: 2;
         }
 
         .hero-content {
             position: relative;
-            z-index: 2;
-            max-width: 800px;
+            z-index: 3;
+            max-width: 900px;
             padding: 20px;
         }
 
         .hero-content h1 {
-            font-size: 4rem;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 8vw, 6rem);
             font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: -2px;
+            color: #FFFFFF;
+            margin-bottom: 0.5rem;
         }
 
         .hero-content p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 3rem;
         }
 
         .cta-button {
             display: inline-block;
-            padding: 12px 30px;
-            background-color: #333;
-            color: white;
+            padding: 15px 40px;
+            background-color: #FFFFFF;
+            color: #000;
             text-decoration: none;
             border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: 2px solid #333;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
         .cta-button:hover {
-            background-color: transparent;
-            color: #333;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            background-color: #f0f0f0;
         }
 
+        /* --- SECTION 2: WORKS (Lumina Waves Style) --- */
         .works-section {
-            padding: 80px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            padding: 100px 0 0 0; /* Tanpa padding bawah biar nempel ke footer nantinya */
+            background-color: #F5F5F5;
         }
 
-        .section-title {
+        .section-header {
             text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
             font-size: 2.5rem;
-            margin-bottom: 50px;
-            color: #333;
+            color: #1A1A1A;
         }
 
         .works-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            gap: 0; /* Nempel rapi kayak referensi */
+            width: 100%;
         }
 
         .work-card {
             position: relative;
-            height: 500px;
-            border-radius: 8px;
+            height: 70vh; /* Tinggi menyesuaikan layar */
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            background-color: #000;
         }
 
         .work-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: all 0.6s ease;
-            filter: grayscale(100%);
+            filter: grayscale(100%) brightness(0.6);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
+        /* Hover State */
         .work-card:hover img {
-            filter: grayscale(0%);
+            filter: grayscale(0%) brightness(1);
             transform: scale(1.1);
         }
 
         .work-label {
             position: absolute;
-            bottom: 0;
+            bottom: 40px;
             left: 0;
             right: 0;
             text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .work-label h3 {
             color: white;
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 900px) {
-            .works-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .work-card {
-                height: 450px;
-            }
-
-            .hero-content h1 {
-                font-size: 3rem;
-            }
-
-            .hero-content p {
-                font-size: 1.2rem;
-            }
+        .work-card:hover .work-label h3 {
+            letter-spacing: 8px; /* Animasi teks melebar dikit pas hover */
         }
 
-        @media (max-width: 600px) {
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
             .works-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr; /* Stack di HP */
             }
-
             .work-card {
-                height: 400px;
-            }
-
-            .hero-content h1 {
-                font-size: 2.2rem;
-            }
-
-            .hero-content p {
-                font-size: 1rem;
+                height: 50vh;
             }
         }
     </style>
 </head>
 <body>
+
     <section class="hero">
-        <video autoplay muted loop class="video-background">
+        <video autoplay muted loop playsinline class="video-background">
             <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-background-with-moving-lines-1761-large.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         <div class="overlay"></div>
+        
         <div class="hero-content">
+            <p>Portfolio 2026</p>
             <h1>ARGONITE SPACE</h1>
-            <p>Visual Director & Motion Designer</p>
-            <a href="#work" class="cta-button">View Work</a>
+            <p style="margin-top: -10px; font-size: 0.9rem;">Motion • Video • Photo</p>
+            <br>
+            <a href="#work" class="cta-button">Explore Works</a>
         </div>
     </section>
 
     <section id="work" class="works-section">
-        <h2 class="section-title">Selected Works</h2>
+        <div class="section-header">
+            <h2>Selected Works</h2>
+        </div>
+
         <div class="works-grid">
             <div class="work-card">
-                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Photography">
-                <div class="work-label">PHOTOGRAPHY</div>
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1170&q=80" alt="Photography">
+                <div class="work-label">
+                    <h3>Photography</h3>
+                </div>
             </div>
+
             <div class="work-card">
-                <img src="https://images.unsplash.com/photo-1574717024456-7d5a9c17e51b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Videography">
-                <div class="work-label">VIDEOGRAPHY</div>
+                <img src="https://images.unsplash.com/photo-1574717024456-7d5a9c17e51b?auto=format&fit=crop&w=1170&q=80" alt="Videography">
+                <div class="work-label">
+                    <h3>Videography</h3>
+                </div>
             </div>
+
             <div class="work-card">
-                <img src="https://images.unsplash.com/photo-1551649001-9bd00fe5bb0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80" alt="Motion Design">
-                <div class="work-label">MOTION DESIGN</div>
+                <img src="https://images.unsplash.com/photo-1551649001-9bd00fe5bb0f?auto=format&fit=crop&w=1074&q=80" alt="Motion Design">
+                <div class="work-label">
+                    <h3>Motion Design</h3>
+                </div>
             </div>
         </div>
     </section>
+
 </body>
 </html>
