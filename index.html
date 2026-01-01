@@ -88,22 +88,25 @@
 
         .cta-button {
             display: inline-block;
-            padding: 15px 40px;
-            background-color: #FFFFFF;
-            color: #000;
+            padding: 15px 20px;
+            background-color: transparent;
+            color: white;
             text-decoration: none;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            border: 2px solid white;
+            border-radius: 50%;
+            font-size: 1.2rem;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            background-color: #f0f0f0;
+            background-color: white;
+            color: #000;
+            transform: translateY(5px);
         }
 
         /* --- SECTION 2: WORKS (Lumina Waves Style) --- */
@@ -199,7 +202,9 @@
             <h1>ARGONITE SPACE</h1>
             <p style="margin-top: -10px; font-size: 0.9rem;">Motion • Video • Photo</p>
             <br>
-            <a href="#work" class="cta-button">Explore Works</a>
+            <a href="#work" class="cta-button">
+                <span class="arrow-down">▼</span>
+            </a>
         </div>
     </section>
 
