@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info - Argonite</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-white: #FFFFFF;
+            --text-dim: rgba(255, 255, 255, 0.2);
+            --font-main: 'Inter', sans-serif;
+            --font-serif: 'Playfair Display', serif;
+            --img-width: 45vw; 
+            --img-right-gap: 0vw; 
+        }
+
+        body.fullscreen-mode {
+            --img-width: 45vw; 
+            --img-right-gap: 0vw;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: var(--font-main);
+            overflow: hidden; 
+            opacity: 0; 
+            transition: opacity 0.2s ease, background-color 0.5s ease;
+        }
+        
+        body.ready { opacity: 1; }
+
+        /* LENIS CSS */
+        html.lenis, html.lenis body { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto !important; }
+        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+        .lenis.lenis-stopped { overflow: hidden; }
+
+        /* UI ELEMENTS */
+        .fixed-ui {
+            position: fixed; top: 0; left: 0; width: 100%; 
+            height: auto; 
+            pointer-events: none; 
+            z-index: 100; 
+            padding: 40px;
+            display: flex; justify-content: flex-end; align-items: flex-start;
+            mix-blend-mode: difference; 
+        }
+
+        .nav-links {
+            pointer-events: auto;
+            display: flex; gap: 30px;
+            overflow: hidden; 
+        }
+        
+        .nav-links a {
+            color: #FFFFFF; 
+            text-decoration: none; text-transform: uppercase;
+            font-size: 0.8rem; letter-spacing: 2px; 
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(100%);
+        }
+        
+        .nav-links a:hover { opacity: 1 !important; }
+        .nav-links a.active { border-bottom: 1px solid #FFFFFF; }
+
+        /* HORIZONTAL CONTAINER */
+        .horizontal-container {
+            display: flex; flex-wrap: nowrap;
+            height: 100dvh; 
+            width: fit-content;
+            will-change: transform;
+        }
+
+        .panel {
+            height: 100dvh; 
+            display: flex; flex-direction: column; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* 1. INTRO PANEL */
+        .panel-intro { 
+            width: 50vw; 
+            padding: 40px 5vw;
+            justify-content: flex-start; 
+        }
+        
+        .big-title {
+            font-family: var(--font-serif); 
+            font-size: clamp(8rem, 14vw, 16rem); 
+            line-height: 1;
+            margin-bottom: 30px; 
+            margin-left: -5px;
+            margin-top: 60px;
+            opacity: 0; 
+            transform: translateY(30px); /* Start agak bawah */
+        }
+        
+        .intro-bio {
+            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;
+            line-height: 1.6; max-width: 325px;
+            margin-top: auto; 
+            padding-bottom: 5vh; 
+        }
+
+        /* 2. MEDIA PANEL */
+        .panel-image {
+            width: auto;
+            padding-right: var(--img-right-gap); 
+            padding-left: 5vw; 
+            display: flex;
+            align-items: center; 
+            justify-content: flex-end; 
+            transition: none; 
+        }
+
+        .image-mask {
+            width: var(--img-width); 
+            height: auto; 
+            aspect-ratio: 3/4; 
+            position: relative;
+            background-color: #000; 
+            overflow: hidden; 
+            transition: none;
+        }
+
+        body.enable-transitions .panel-image { transition: padding 0.5s ease; }
+        body.enable-transitions .image-mask { transition: width 0.5s ease; }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            object-position: center;
+            will-change: transform, opacity, filter;
+            opacity: 0;
+            filter: blur(20px);
+            transform: scale(1.01); 
+        }
+
+        /* 3. TEXT CONTENT */
+        .panel-text { width: 60vw; padding: 0 5vw; gap: 60px; }
+        .text-row { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: baseline; width: 100%; }
+        .label-tag { font-size: 1rem; color: var(--text-dim); font-family: var(--font-main); }
+        .scroll-text { font-size: clamp(1.2rem, 2vw, 1.8rem); line-height: 1.4; color: var(--text-dim); margin: 0; }
+        .word { transition: color 0.1s linear; } 
+        .highlight-serif { font-family: var(--font-serif); font-style: italic; }
+
+        /* 4. OUTRO */
+        .panel-outro { width: 80vw; padding: 0 5vw; justify-content: center; align-items: center; }
+        .quote-huge { font-size: clamp(3rem, 5vw, 5rem); line-height: 1.1; text-align: center; max-width: 1200px; color: var(--text-dim); }
+        
+        @media (max-width: 768px) {
+            .big-title { font-size: 20vw; }
+            .panel-intro { width: 80vw; }
+            .panel-image { width: 100vw; justify-content: center; padding: 0; } 
+            .image-mask { width: 90vw; height: auto; } 
+            .panel-text { width: 90vw; }
+            .text-row { grid-template-columns: 1fr; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fixed-ui">
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#" class="active">Info</a>
+            <a href="index.html#work">Work</a>
+            <a href="index.html#contact">Contact</a>
+        </nav>
+    </div>
+
+    <div class="horizontal-container">
+        <section class="panel panel-intro">
+            <h1 class="big-title">Info</h1>
+            <p class="intro-bio">The name is Grant, a passionate post-production designer based in Indonesia.</p>
+        </section>
+
+        <section class="panel panel-image">
+            <div class="image-mask">
+                <video class="main-image" autoplay muted loop playsinline>
+                    <source src="Resources/Info.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+
+        <section class="panel panel-text">
+            <div class="text-row">
+                <span class="label-tag">(Approach)</span>
+                <p class="scroll-text">
+                    With a visual arts background and a passion for storytelling, I combine <em>creativity</em> and <em>digitalization</em> to bring ideas to life. I focus on clarity, emotion, and engagement so each project <em>connects with its audience</em>.
+                </p>
+            </div> 
+            <div class="text-row">
+                <span class="label-tag">(Focus)</span>
+                <p class="scroll-text">
+                    I mainly work with <em>Adobe Premiere Pro, After Effects, and professional camera</em> systems for post-production, and am currently pursuing a Bachelor’s Degree in <em>Visual Communication Design</em> at Universitas Multimedia Nusantara.
+                </p>
+            </div>
+        </section>
+
+        <section class="panel panel-outro">
+            <h2 class="quote-huge scrub-target-outro">
+                I believe that the path to a genuinely <em>successful project</em> always goes through open communication and a properly <em>organized</em> design process.
+            </h2>
+        </section>
+    </div>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- 0. FORCE SHOW IF STUCK ---
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.overflow = 'auto';
+            }, 3000); 
+
+            // --- 1. FORCE RESET SCROLL ---
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            window.scrollTo(0, 0);
+
+            // --- 2. SETUP LIBRARY ---
+            gsap.registerPlugin(ScrollTrigger);
+
+            const lenis = new Lenis({
+                duration: 1.15,
+                wheelMultiplier: 2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+                smooth: true,
+                orientation: 'vertical'
+            });
+
+            lenis.stop();
+            document.body.style.overflow = 'hidden'; 
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // --- 3. TEXT SPLITTER ---
+            function splitTextIntoSpans(element) {
+                if(!element) return;
+                let html = element.innerHTML;
+                let newHtml = '';
+                let temp = document.createElement('div');
+                temp.innerHTML = html;
+                Array.from(temp.childNodes).forEach(node => {
+                    if(node.nodeType === 3) { 
+                        node.textContent.trim().split(/\s+/).forEach(w => {
+                            if(w) newHtml += `<span class="word">${w} </span>`;
+                        });
+                    } else if (node.tagName === 'EM') { 
+                        node.textContent.trim().split(/\s+/).forEach(w => {
+                            if(w) newHtml += `<span class="word highlight-serif">${w} </span>`;
+                        });
+                    }
+                });
+                element.innerHTML = newHtml;
+            }
+
+            document.querySelectorAll('.scroll-text, .scrub-target-outro, .intro-bio').forEach(el => {
+                splitTextIntoSpans(el);
+            });
+
+            // Tampilkan Body
+            document.body.classList.add('ready');
+            document.body.style.opacity = '1';
+
+            // --- 4. ANIMASI INTRO (LOGIC BARU) ---
+            const bioWords = document.querySelectorAll('.intro-bio .word');
+            gsap.set(bioWords, { y: 20, opacity: 0 });
+
+            setTimeout(() => {
+                const introTl = gsap.timeline({
+                    onComplete: () => {
+                        lenis.start();
+                        document.body.style.overflow = '';
+                        document.body.classList.add('enable-transitions');
+                    }
+                });
+
+                // --- VARIABEL DURASI ---
+                const moveDuration = 3.0;       // Kecepatan Video & Title NAIK (Barengan)
+                const titleFadeDuration = 4.0;  // Kecepatan Title MUNCUL (Bisa lebih lambat/cepat)
+                
+                const sharedEase = "power3.out";
+
+                introTl.addLabel("start")
+                    
+                    // 1. GERAKAN NAIK (Slide Up) -> Title & Video Barengan (Sync)
+                    .to(".big-title", { y: 0, duration: moveDuration, ease: sharedEase }, "start")
+                    .to(".main-image", { filter: "blur(0px)", duration: moveDuration, ease: sharedEase }, "start")
+                    // Video juga sekalian munculin opacity bareng gerakan naik
+                    .to(".main-image", { opacity: 1, duration: moveDuration, ease: sharedEase }, "start")
+
+                    // 2. TITLE FADE IN (Dipisah durasinya, sesuai request)
+                    .to(".big-title", { opacity: 1, duration: titleFadeDuration, ease: sharedEase }, "start")
+                    
+                    // 3. NAV & BIO (Dipercepat munculnya)
+                    // "-=2.5" artinya mulai 2.5 detik SEBELUM animasi di atas selesai.
+                    // Jadi dia nyelip di tengah-tengah, ga nunggu kelar.
+                    .addLabel("content", "-=3") 
+                    
+                    .to(".nav-links a", { opacity: 0.8, y: 0, duration: 1, stagger: 0.1, ease: "power2.out" }, "content") 
+                    .to(bioWords, { y: 0, opacity: 1, stagger: 0.02, duration: 1, ease: "power2.out" }, "content");
+                    
+            }, 200);
+
+            // --- 5. SCROLL ANIMATION ---
+            const container = document.querySelector(".horizontal-container");
+            if(container) {
+                let scrollTween = gsap.to(container, {
+                    x: () => -(container.scrollWidth - window.innerWidth),
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "body",
+                        start: "top top",
+                        end: () => "+=" + container.scrollWidth,
+                        scrub: 1, 
+                        pin: true,
+                        invalidateOnRefresh: true,
+                        anticipatePin: 1
+                    }
+                });
+
+                gsap.fromTo(".main-image", 
+                    { xPercent: -7.5 }, 
+                    { 
+                        xPercent: 7.5, 
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: ".panel-image",
+                            containerAnimation: scrollTween,
+                            start: "left right", 
+                            end: "right left",   
+                            scrub: true
+                        }
+                    }
+                );
+
+                const allWordsInPanel = document.querySelectorAll('.panel-text .word');
+                gsap.to(allWordsInPanel, {
+                    color: "#FFFFFF", stagger: 0.05,
+                    scrollTrigger: {
+                        trigger: ".panel-text", containerAnimation: scrollTween,
+                        start: "left 70%", end: "left 20%", scrub: true
+                    }
+                });
+
+                const outroWords = document.querySelectorAll('.scrub-target-outro .word');
+                if(outroWords.length > 0) {
+                    gsap.to(outroWords, {
+                        color: "#FFFFFF", stagger: 0.1,
+                        scrollTrigger: {
+                            trigger: ".panel-outro", containerAnimation: scrollTween,
+                            start: "left 60%", end: "right 60%", scrub: true
+                        }
+                    });
+                }
+            }
+
+            // --- 6. FULLSCREEN LISTENER ---
+            function checkFullscreen() {
+                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+                if (isFullscreen) document.body.classList.add('fullscreen-mode');
+                else document.body.classList.remove('fullscreen-mode');
+                setTimeout(() => ScrollTrigger.refresh(), 600);
+            }
+            document.addEventListener("fullscreenchange", checkFullscreen);
+            document.addEventListener("webkitfullscreenchange", checkFullscreen);
+
+        });
+    </script>
+</body>
+</html>
