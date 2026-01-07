@@ -3,156 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARGONITE SPACE - Visual Portfolio</title>
+    <meta name="description" content="Argonite - Creative Portfolio showcasing Photography, Videography, and Motion Design works">
+    <meta name="keywords" content="photography, videography, motion design, portfolio, creative">
+    <title>Argonite - Visual Portfolio</title>
     <link rel="icon" type="image/png" href="favicon.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- BASE RESET --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ================================
+           CSS VARIABLES
+           ================================ */
+        :root {
+            --color-black: #000000;
+            --color-white: #FFFFFF;
+            --color-gray-light: #F5F5F5;
+            --color-text-dark: #1A1A1A;
+            
+            --font-primary: 'Inter', sans-serif;
+            --font-display: 'Playfair Display', serif;
+            
+            --transition-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+            --transition-ease: cubic-bezier(0.165, 0.84, 0.44, 1);
+            
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 3rem;
+            --spacing-xl: 5rem;
+            
+            --z-hero: 1;
+            --z-content: 10;
+            --z-navigation: 100;
         }
 
-        html {
-            scroll-behavior: smooth;
+        /* ================================
+           LENIS SMOOTH SCROLL
+           ================================ */
+        html.lenis, 
+        html.lenis body { 
+            height: auto; 
+        }
+        
+        .lenis.lenis-smooth { 
+            scroll-behavior: auto !important; 
+        }
+        
+        .lenis.lenis-smooth [data-lenis-prevent] { 
+            overscroll-behavior: contain; 
+        }
+        
+        .lenis.lenis-stopped { 
+            overflow: hidden; 
+        }
+        
+        .lenis.lenis-scrolling iframe { 
+            pointer-events: none; 
+        }
+
+        /* ================================
+           BASE RESET
+           ================================ */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F5F5F5;
-            color: #1A1A1A;
+            font-family: var(--font-primary);
+            background-color: var(--color-black);
+            color: var(--color-text-dark);
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* --- SECTION 1: HERO --- */
+        /* ================================
+           HERO SECTION
+           ================================ */
         .hero {
             height: 100vh;
-            position: relative;
+            position: relative; 
+            width: 100%;
+            z-index: var(--z-hero);
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
             overflow: hidden;
-            background-color: #000;
+            background-color: var(--color-black);
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; 
+            will-change: transform, opacity, filter;
         }
 
         .video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: 1;
             opacity: 0.7;
         }
 
-        .overlay {
+        .preloader-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
-            z-index: 2;
+            background-color: var(--color-black);
+            z-index: 1; 
+            will-change: opacity;
         }
 
         .hero-content {
             position: relative;
-            z-index: 3;
-            max-width: 900px;
+            z-index: 3; 
+            max-width: 1000px;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            will-change: transform, opacity;
+            pointer-events: none; 
         }
-
-        .hero-content h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(3rem, 10vw, 6.5rem);
-            font-weight: 700;
-            letter-spacing: -2px;
-            color: #FFFFFF;
-            margin-bottom: 0.2rem;
-        }
-
-        .hero-content p.year-label {
+        
+        .hero-content .year-label {
             font-size: 0.9rem;
             font-weight: 300;
             text-transform: uppercase;
-            letter-spacing: 5px;
+            letter-spacing: 6px;
             color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.5rem;
+            margin-bottom: -0.5rem;
+            position: relative;
+            z-index: 10;
         }
 
-        .hero-content p.tagline {
+        .hero-content h1 {
+            font-family: var(--font-display);
+            font-size: clamp(6rem, 15vw, 12rem);
+            font-weight: 700;
+            letter-spacing: -4px;
+            color: var(--color-white);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1;
+            will-change: transform, opacity, filter;
+        }
+
+        .hero-content .tagline {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0;
+        }
+
+        /* ================================
+           NAVIGATION
+           ================================ */
+        .hero-nav {
+            position: fixed;
+            bottom: 50px;
+            right: 60px;
+            z-index: var(--z-navigation);
+            display: flex;
+            gap: 40px;
+            will-change: opacity, transform;
+            pointer-events: auto;
+        }
+
+        .hero-nav a {
+            text-decoration: none;
+            color: var(--color-white);
             font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 4rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+        }
+        
+        .hero-nav a.visible {
+            visibility: visible;
+            opacity: 0.6;
         }
 
-        /* --- THE REFINED CTA BUTTON --- */
-        .cta-button {
+        .hero-nav a:hover,
+        .hero-nav a:focus {
+            opacity: 1 !important;
+            color: var(--color-white);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            outline: none;
+        }
+
+        /* ================================
+           SPACER HITAM (NEW)
+           ================================ */
+        .transition-spacer {
             position: relative;
+            z-index: var(--z-content);
+            width: 100%;
+            height: 20vh; 
+            background-color: var(--color-black);
+            margin-top: 0;
+        }
+
+        .transition-spacer::before {
+            content: "";
+            position: absolute;
+            top: -150px;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
+            pointer-events: none;
+        }
+
+        /* ================================
+           ABOUT SECTION
+           ================================ */
+        .about-section {
+            position: relative;
+            z-index: var(--z-content);
+            background-color: var(--color-black);
+            margin-top: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .about-container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+        }
+
+        .about-image {
+            position: relative;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: none; 
+        }
+
+        .about-content {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: white;
-            transition: transform 0.3s ease;
-        }
-
-        .cta-button span.btn-text {
-            font-size: 0.7rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            font-weight: 500;
-            opacity: 0.8;
-        }
-
-        .circle-btn {
-            width: 55px;
-            height: 55px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            display: flex;
             justify-content: center;
-            align-items: center;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            padding: 80px 100px 80px 80px;
+            color: var(--color-white);
+            background-color: var(--color-black);
         }
 
-        .circle-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: white;
-            stroke-width: 2;
-            transition: transform 0.4s ease;
+        .about-headline {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            line-height: 1.3;
+            margin-bottom: 60px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
         }
 
-        /* Hover Effect: Background jadi putih, panah jadi hitam, panah turun dikit */
-        .cta-button:hover .circle-btn {
-            background-color: white;
-            border-color: white;
-            transform: translateY(5px);
+        .about-headline em {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-weight: 400;
+            color: var(--color-white);
         }
 
-        .cta-button:hover svg {
-            stroke: black;
-            transform: translateY(2px);
+        .about-bio {
+            margin-bottom: 40px;
         }
 
-        /* --- SECTION 2: WORKS --- */
-        .works-section {
-            padding: 0;
+        .about-bio-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .about-bio-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 300;
+        }
+
+        .about-cta {
+            display: inline-block;
+            padding: 14px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--color-white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            transition: all 0.4s var(--transition-ease);
             background-color: transparent;
+            cursor: pointer;
+            align-self: flex-start;
+        }
+
+        .about-cta:hover,
+        .about-cta:focus {
+            background-color: var(--color-white);
+            color: var(--color-black);
+            border-color: var(--color-white);
+            outline: none;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ================================
+           INFO SECTION
+           ================================ */
+        .info-section {
+            height: 100vh;
+            background-color: var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: var(--z-content);
+        }
+
+        .info-content {
+            text-align: center;
+            color: var(--color-white);
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .info-content h2 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .info-content p {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ================================
+           CONTENT SECTIONS
+           ================================ */
+        .works-section {
+            position: relative;
+            z-index: var(--z-content);
+            background-color: var(--color-gray-light);
+            padding-top: 0;
+            box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5);
         }
 
         .works-grid {
@@ -164,10 +384,10 @@
 
         .work-card {
             position: relative;
-            height: 80vh;
+            height: 90vh;
             overflow: hidden;
             cursor: pointer;
-            background-color: #000;
+            background-color: var(--color-black);
         }
 
         .work-card img {
@@ -175,12 +395,12 @@
             height: 100%;
             object-fit: cover;
             filter: grayscale(100%) brightness(0.5);
-            transition: all 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+            transition: all 1.2s var(--transition-smooth);
         }
 
         .work-card:hover img {
             filter: grayscale(0%) brightness(1);
-            transform: scale(1.08);
+            transform: scale(1.05);
         }
 
         .work-label {
@@ -194,7 +414,7 @@
         }
 
         .work-label h3 {
-            color: white;
+            color: var(--color-white);
             font-size: 1.1rem;
             font-weight: 500;
             letter-spacing: 6px;
@@ -207,64 +427,601 @@
             opacity: 1;
         }
 
-        /* Mobile View */
+        .spacer {
+            height: 100vh;
+            background-color: var(--color-black);
+            position: relative;
+            z-index: var(--z-content);
+        }
+
+        /* ================================
+           RESPONSIVE DESIGN
+           ================================ */
         @media (max-width: 1024px) {
-            .works-grid { grid-template-columns: 1fr; }
-            .work-card { height: 60vh; }
+            .about-container {
+                grid-template-columns: 1fr;
+            }
+
+            .about-image {
+                min-height: 50vh;
+                order: 1;
+            }
+
+            .about-content {
+                order: 2;
+                padding: 60px 40px;
+            }
+
+            .about-headline {
+                font-size: 2rem;
+                margin-bottom: 40px;
+            }
+
+            .works-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .work-card { 
+                height: 60vh; 
+            }
+            
+            .hero-nav {
+                bottom: 30px;
+                right: 0;
+                left: 0;
+                justify-content: center;
+            }
+            
+            .hero-content h1 { 
+                letter-spacing: -2px; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-nav {
+                gap: 20px;
+            }
+
+            .hero-nav a {
+                font-size: 0.7rem;
+            }
+
+            .about-content {
+                padding: 40px 30px;
+            }
+
+            .about-headline {
+                font-size: 1.5rem;
+                margin-bottom: 30px;
+            }
+
+            .about-bio-text {
+                font-size: 0.9rem;
+            }
+
+            .info-content h2 {
+                font-size: 2rem;
+            }
+
+            .info-content p {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <section class="hero">
-        <video autoplay muted loop playsinline class="video-background">
-            <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-background-with-moving-lines-1761-large.mp4" type="video/mp4">
-        </video>
-        <div class="overlay"></div>
+    <!-- ================================
+         HERO SECTION
+         ================================ -->
+    <section class="hero" role="banner">
+        <div class="video-container" id="parallaxVideo">
+            <video autoplay muted loop playsinline class="video-background" aria-hidden="true">
+                <source src="Resources/Showreel.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
         
-        <div class="hero-content">
-            <p class="year-label">2026</p>
-            <h1>ARGONITE SPACE</h1>
-            <p class="tagline">Photography • Videography • Motion Design</p>
+        <div class="preloader-overlay" aria-hidden="true"></div>
+        
+        <div class="hero-content" id="parallaxText">
+            <p class="year-label" aria-label="Year">2026</p>
+            <h1 id="mainTitle">Argonite</h1>
+            <p class="tagline" aria-label="Services">Photography • Videography • Motion Design</p>
+        </div>
+    </section>
+
+    <!-- ================================
+         NAVIGATION
+         ================================ -->
+    <nav class="hero-nav" id="stickyNav" role="navigation" aria-label="Main navigation">
+        <a href="#" aria-label="Go to home">Home</a>
+        <a href="info.html" aria-label="Go to info page">Info</a>
+        <a href="#work" aria-label="Go to works section">Works</a>
+        <a href="#contact" aria-label="Go to contact section">Contact</a>
+    </nav>
+
+    <!-- ================================
+         TRANSITION SPACER
+         ================================ -->
+    <div class="transition-spacer"></div>
+
+    <!-- ================================
+         ABOUT SECTION
+         ================================ -->
+    <section id="about" class="about-section">
+        <div class="about-container">
+            <div class="about-image">
+                <img src="Resources/PlaceholderMe.png" alt="Grant - Post Production Designer">
+            </div>
+            <div class="about-content">
+                <h2 class="about-headline">
+                    As a <em>post-production designer</em>, I help brands and companies to unfold their stories, ensuring every scene leaves a <em>lasting mark</em>.
+                </h2>
+                
+                <div class="about-bio">
+                    <h3 class="about-bio-title">The name is Grant</h3>
+                    <p class="about-bio-text">
+                        With a visual arts background and a passion for storytelling, I combine creativity and digitalization to bring ideas to life.
+                    </p>
+                </div>
+                
+                <a href="#contact" class="about-cta">About Me</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================
+         INFO SECTION
+         ================================ -->
+    <section id="info" class="info-section" role="main">
+        <div class="info-content">
+            <h2>Info Section</h2>
+            <p>This is the info section. You can add your personal information, bio, or any other details here.</p>
+        </div>
+    </section>
+
+    <!-- ================================
+         SPACER
+         ================================ -->
+    <div class="spacer" aria-hidden="true"></div>
+
+    <!-- ================================
+         EXTERNAL SCRIPTS
+         ================================ -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        'use strict';
+
+        /* ================================
+           CONFIGURATION CONSTANTS
+           ================================ */
+        const CONFIG = {
+            lenis: {
+                duration: 1.2,
+                wheelMultiplier: 1.3,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smooth: true
+            },
+
+            animation: {
+                titleDuration: 2,
+                pauseDuration: 0.5,
+                overlayDuration: 1.5,
+                yearTaglineDuration: 1.5,
+                navLinksDuration: 1,
+                navLinksStagger: 0.1
+            },
+
+            parallax: {
+                videoSpeed: 0.75,
+                textSpeed: 1,
+                blurMultiplier: 0.25,
+                videoFadeDistance: 400,
+                textFadeDistance: 400
+            },
+
+            navigation: {
+                initialBottom: 50,
+                targetTop: 50,
+                buffer: 20
+            }
+        };
+
+        /* ================================
+           DOM ELEMENT REFERENCES
+           ================================ */
+        const elements = {
+            title: document.getElementById('mainTitle'),
+            year: document.querySelector('.year-label'),
+            tagline: document.querySelector('.tagline'),
+            overlay: document.querySelector('.preloader-overlay'),
+            navLinks: document.querySelectorAll('.hero-nav a'),
+            heroContent: document.querySelector('.hero-content'),
+            videoContainer: document.getElementById('parallaxVideo'),
+            textContainer: document.getElementById('parallaxText'),
+            navContainer: document.getElementById('stickyNav')
+        };
+
+        // Check if all required elements exist
+        const requiredElements = ['title', 'year', 'tagline', 'overlay', 'heroContent', 'videoContainer', 'textContainer', 'navContainer'];
+        const missingElements = requiredElements.filter(key => !elements[key]);
+        if (missingElements.length > 0) {
+            console.warn('Missing required elements:', missingElements);
+        }
+
+        /* ================================
+           SMOOTH SCROLL SETUP (LENIS)
+           ================================ */
+        let lenis;
+        if (typeof Lenis !== 'undefined') {
+            lenis = new Lenis(CONFIG.lenis);
+            lenis.stop();
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+        } else {
+            console.warn('Lenis library not loaded, using native scroll');
+            lenis = {
+                stop: () => {},
+                start: () => {},
+                on: () => {},
+                raf: () => {}
+            };
+        }
+
+        /* ================================
+           PRELOADER ANIMATION (GSAP)
+           ================================ */
+        function initPreloaderAnimation() {
+            const { title, year, tagline, overlay, navLinks, heroContent } = elements;
+            const { animation } = CONFIG;
+
+            if (typeof gsap === 'undefined') {
+                console.warn('GSAP library not loaded, using CSS-only fallback');
+
+                if (title) title.style.opacity = '1';
+                if (year) year.style.opacity = '1';
+                if (tagline) tagline.style.opacity = '1';
+                if (navLinks) {
+                    navLinks.forEach(link => {
+                        link.style.opacity = '0.6';
+                        link.style.visibility = 'visible';
+                    });
+                }
+                if (overlay) overlay.style.opacity = '0';
+                if (lenis && lenis.start) lenis.start();
+                if (heroContent) heroContent.style.pointerEvents = 'auto';
+                return;
+            }
+
+            // Set initial states - SEPARATED for clarity
+            if (title) {
+                gsap.set(title, { 
+                    scale: 2, 
+                    filter: "blur(15px)", 
+                    opacity: 0 
+                });
+            }
             
-            <a href="#work" class="cta-button">
-                <span class="btn-text">Discover</span>
-                <div class="circle-btn">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M7 13l5 5 5-5M12 6v11" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-            </a>
-        </div>
-    </section>
+            if (year) {
+                gsap.set(year, { 
+                    y: -50, 
+                    opacity: 0 
+                });
+            }
+            
+            if (tagline) {
+                gsap.set(tagline, { 
+                    y: 50, 
+                    opacity: 0 
+                });
+            }
+            
+            if (navLinks && navLinks.length > 0) {
+                gsap.set(navLinks, { 
+                    y: 20, 
+                    opacity: 0,
+                    visibility: 'hidden'
+                });
+            }
 
-    <section id="work" class="works-section">
-        <div class="works-grid">
-            <div class="work-card">
-                <img src="Resources/PhotographyHeader.jpg" alt="Photography">
-                <div class="work-label">
-                    <h3>Photography</h3>
-                </div>
-            </div>
+            // Create timeline
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    if (lenis && lenis.start) lenis.start();
+                    if (overlay) overlay.style.pointerEvents = 'none';
+                    if (heroContent) heroContent.style.pointerEvents = 'auto';
+                }
+            });
 
-            <div class="work-card">
-                <img src="Resources/VideographyHeader.png" alt="Videography">
-                <div class="work-label">
-                    <h3>Videography</h3>
-                </div>
-            </div>
+            // Animate sequence
+            if (title) {
+                tl.to(title, {
+                    scale: 1,
+                    filter: "blur(0px)",
+                    opacity: 1,
+                    duration: animation.titleDuration,
+                    ease: "power4.out"
+                }, 0);
+            }
+            
+            tl.to({}, {
+                duration: animation.pauseDuration
+            });
+            
+            if (overlay) {
+                tl.to(overlay, {
+                    opacity: 0,
+                    duration: animation.overlayDuration,
+                    ease: "power2.inOut"
+                }, "drop");
+            }
+            
+            if (year) {
+                tl.to(year, {
+                    y: 0,
+                    opacity: 1,
+                    duration: animation.yearTaglineDuration,
+                    ease: "power3.out"
+                }, "drop+=0.2");
+            }
+            
+            if (tagline) {
+                tl.to(tagline, {
+                    y: 0,
+                    opacity: 1,
+                    duration: animation.yearTaglineDuration,
+                    ease: "power3.out"
+                }, "drop+=0.2");
+            }
+            
+            if (navLinks && navLinks.length > 0) {
+                tl.to(navLinks, {
+                    y: 0,
+                    opacity: 1,
+                    visibility: 'visible',
+                    duration: animation.navLinksDuration,
+                    stagger: animation.navLinksStagger,
+                    ease: "power2.out",
+                    onStart: () => {
+                        console.log('Navigation animation started');
+                    },
+                    onComplete: () => {
+                        console.log('Navigation animation completed');
+                        navLinks.forEach(link => {
+                            if (link) {
+                                link.style.opacity = '0.6';
+                            }
+                        });
+                    }
+                }, "-=1");
+            }
+        }
 
-            <div class="work-card">
-                <img src="Resources/MotionHeader.png" alt="Motion Design">
-                <div class="work-label">
-                    <h3>Motion Design</h3>
-                </div>
-            </div>
-        </div>
-    </section>
+        /* ================================
+           PARALLAX & STICKY NAVIGATION
+           ================================ */
+        function initParallaxAndSticky() {
+            const { videoContainer, textContainer, navContainer } = elements;
+            const { parallax, navigation } = CONFIG;
+
+            if (!videoContainer || !textContainer || !navContainer) {
+                console.warn('Required elements for parallax not found, skipping parallax effects');
+                return;
+            }
+
+            let windowHeight = window.innerHeight;
+            let scrollY = 0;
+            let ticking = false;
+
+            function recalculateStickyPoint() {
+                windowHeight = window.innerHeight;
+                return windowHeight - navigation.initialBottom - navigation.targetTop;
+            }
+
+            let stickyPoint = recalculateStickyPoint();
+
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    stickyPoint = recalculateStickyPoint();
+                }, 50);
+            });
+
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    stickyPoint = recalculateStickyPoint();
+                }, 100);
+            });
+
+            if (typeof lenis === 'undefined' || !lenis.on) {
+                console.warn('Lenis not available, skipping scroll-based animations');
+                return;
+            }
+
+            lenis.on('scroll', (e) => {
+                scrollY = e.scroll;
+                requestTick();
+            });
+
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updatePosition);
+                    ticking = true;
+                }
+            }
+
+            function updatePosition() {
+                // Video parallax
+                const videoMove = scrollY * (1 - parallax.videoSpeed);
+                if (videoContainer) {
+                    videoContainer.style.transform = `translate3d(0, ${videoMove}px, 0)`;
+                }
+
+                const videoBlur = scrollY * parallax.blurMultiplier;
+                const videoOpacity = Math.max(0, 1 - (scrollY / parallax.videoFadeDistance));
+                if (videoContainer) {
+                    videoContainer.style.filter = `blur(${videoBlur}px)`;
+                    videoContainer.style.opacity = videoOpacity;
+                }
+
+                // Text parallax
+                const textMove = scrollY * (1 - parallax.textSpeed);
+                if (textContainer) {
+                    textContainer.style.transform = `translate3d(0, ${textMove}px, 0)`;
+                    textContainer.style.opacity = Math.max(0, 1 - (scrollY / parallax.textFadeDistance));
+                }
+
+                // Navigation sticky
+                const navParallaxMove = scrollY * (1 - parallax.textSpeed);
+                const currentWindowHeight = window.innerHeight;
+                if (Math.abs(currentWindowHeight - windowHeight) > 10) {
+                    stickyPoint = recalculateStickyPoint();
+                }
+
+                if (navContainer) {
+                    navContainer.style.transform = `translate3d(0, -${Math.min(scrollY + navParallaxMove, stickyPoint)}px, 0)`;
+                }
+
+                ticking = false;
+            }
+        }
+
+        /* ================================
+           ABOUT SECTION ANIMATIONS
+           ================================ */
+        function initAboutAnimations() {
+            if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+                console.warn('GSAP or ScrollTrigger library not loaded, skipping scroll animations');
+                return;
+            }
+
+            gsap.registerPlugin(ScrollTrigger);
+
+            gsap.from('.about-headline', {
+                scrollTrigger: {
+                    trigger: '.about-section',
+                    start: 'top 80%',
+                    end: 'top 20%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                y: 50,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.about-bio', {
+                scrollTrigger: {
+                    trigger: '.about-section',
+                    start: 'top 70%',
+                    end: 'top 20%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                y: 30,
+                duration: 1,
+                delay: 0.2,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.about-cta', {
+                scrollTrigger: {
+                    trigger: '.about-section',
+                    start: 'top 60%',
+                    end: 'top 20%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                y: 20,
+                duration: 1,
+                delay: 0.4,
+                ease: 'power3.out'
+            });
+
+            gsap.to('.about-image img', {
+                scrollTrigger: {
+                    trigger: '.about-section',
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: 1
+                },
+                y: '10%',
+                ease: 'none'
+            });
+        }
+
+        /* ================================
+           NAVIGATION HOVER EFFECTS
+           ================================ */
+        function initNavigationHoverEffects() {
+            if (!elements.navLinks || elements.navLinks.length === 0) {
+                console.warn('Navigation links not found, skipping hover effects');
+                return;
+            }
+
+            elements.navLinks.forEach(link => {
+                if (link) {
+                    link.addEventListener('mouseenter', function() {
+                        this.style.textShadow = '0 0 8px rgba(255, 255, 255, 0.8)';
+                        this.style.opacity = '1';
+                    });
+
+                    link.addEventListener('mouseleave', function() {
+                        this.style.textShadow = 'none';
+                        this.style.opacity = '0.6';
+                    });
+
+                    link.addEventListener('focus', function() {
+                        this.style.textShadow = '0 0 8px rgba(255, 255, 255, 0.8)';
+                        this.style.opacity = '1';
+                    });
+
+                    link.addEventListener('blur', function() {
+                        this.style.textShadow = 'none';
+                        this.style.opacity = '0.6';
+                    });
+                }
+            });
+
+            console.log('Navigation hover effects initialized for', elements.navLinks.length, 'links');
+        }
+
+        /* ================================
+           INITIALIZATION
+           ================================ */
+        function init() {
+            console.log('Initializing portfolio...');
+            console.log('Elements found:', {
+                title: !!elements.title,
+                year: !!elements.year,
+                tagline: !!elements.tagline,
+                navLinks: elements.navLinks ? elements.navLinks.length : 0
+            });
+            
+            initPreloaderAnimation();
+            initParallaxAndSticky();
+            initAboutAnimations();
+            initNavigationHoverEffects();
+            
+            console.log('Portfolio initialization complete');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    </script>
 
 </body>
 </html>
-
-
-
