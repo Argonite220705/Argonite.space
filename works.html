@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Works - Argonite Portfolio</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ================================
+           CSS VARIABLES
+           ================================ */
+        :root {
+            --color-black: #000000;
+            --color-white: #FFFFFF;
+            --color-gray: #666666;
+            --color-gray-light: #F5F5F5;
+            
+            --font-primary: 'Inter', sans-serif;
+            --font-display: 'Playfair Display', serif;
+            
+            --transition-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+            --transition-ease: cubic-bezier(0.165, 0.84, 0.44, 1);
+            
+            --z-base: 1;
+            --z-content: 10;
+            --z-navigation: 100;
+            --z-overlay: 1000;
+        }
+
+        /* ================================
+           BASE RESET
+           ================================ */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-black);
+            color: var(--color-white);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ================================
+           MAIN CONTAINER (NO SCROLL)
+           ================================ */
+        .main-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .vertical-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            will-change: transform;
+        }
+
+        /* ================================
+           LAYER 1: LANDING SECTION
+           ================================ */
+        .landing-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--color-black);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .works-title {
+            position: absolute;
+            top: 60px;
+            left: 60px;
+            font-family: var(--font-display);
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--color-white);
+            z-index: var(--z-navigation);
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        /* Layout: [Arrow] [Content] [Arrow] */
+        .landing-content {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Ubah dari space-between ke center */
+            width: 100%;
+            height: 100%;
+            padding: 0; /* Hapus padding: 0 40px; agar full width */
+            padding-top: 100px; 
+            position: relative; /* Pastikan relative agar panah absolute refer ke sini */
+        }
+
+        .nav-arrow {
+           position: absolute; /* Tambahkan ini */
+            top: 50%; /* Posisikan vertikal di tengah */
+            /* Hapus flex-shrink: 0; jika ada */
+            
+            width: 60px;
+            height: 60px;
+            background-color: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: var(--z-navigation);
+            transition: transform 0.3s var(--transition-ease);
+        }
+        
+        /* TAMBAHKAN INI */
+        .nav-arrow-left {
+            left: 40px; /* Jarak dari kiri */
+        }
+
+        .nav-arrow-right {
+            right: 40px; /* Jarak dari kanan */
+        }
+
+        /* Update Responsive untuk layar kecil (Optional tapi disarankan) */
+        @media (max-width: 768px) {
+            .nav-arrow-left { left: 15px; }
+            .nav-arrow-right { right: 15px; }
+        }
+        .nav-arrow:hover:not(.disabled) {
+            transform: scale(1.2);
+        }
+
+        .nav-arrow.disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .nav-arrow svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--color-white);
+        }
+
+        /* Horizontal scroll wrapper for cards */
+        .horizontal-scroll-wrapper {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            /* FIX 1: Ganti Center jadi Flex-Start agar mulai dari kiri */
+            justify-content: flex-start; 
+        }
+
+        .horizontal-inner {
+            display: flex;
+            will-change: transform;
+            height: 100%;
+            align-items: center;
+        }
+
+        .section-frame {
+            display: flex;
+            gap: 40px;
+            /* FIX 2: Ubah width jadi 100vw agar pas dengan logika scroll JS */
+            width: 100vw; 
+            flex-shrink: 0; /* FIX 3: Mencegah frame mengecil/gepeng */
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ================================
+           WORK CARD
+           ================================ */
+        .work-card {
+            position: relative;
+            width: 600px;
+            height: 360px;
+            cursor: pointer;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            flex-shrink: 0;
+            transition: transform 0.4s var(--transition-ease);
+            background-color: rgba(255, 255, 255, 0.1); /* Warna border saat tidak kena mouse */
+             overflow: hidden; /* WAJIB ADA: biar glow ga bocor keluar */
+        }
+
+        .work-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            
+            /* Logika Spotlight: Gradient ngikutin variabel --x dan --y */
+            background: radial-gradient(
+                600px circle at var(--x, 50%) var(--y, 50%), 
+                rgba(255, 255, 255, 0.4), /* Warna glow (putih transparan) */
+                transparent 40%
+            );
+            
+            z-index: 1; /* Di belakang konten */
+            opacity: 0; /* Default mati */
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        /* Nyalain glow pas hover */
+        .work-card:hover::before {
+            opacity: 1;
+        }
+
+        .work-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .work-card-image-wrapper {
+            /* Position relative harus tetap ada */
+            position: relative;
+            
+            /* --- BAGIAN PENTING (INSET) --- */
+            /* Kita kecilkan kontennya 2px supaya layer glow di belakangnya kelihatan kayak border */
+            width: calc(100% - 2px); 
+            height: calc(100% - 2px);
+            margin: 1px; /* Geser ke tengah */
+            border-radius: 11px; /* Radius sedikit lebih kecil dari parent */
+            
+            background: #1a1a1a; /* Warna dasar dalam kartu (penutup glow) */
+            z-index: 2; /* Wajib di atas glow */
+            /* ------------------------------ */
+            
+            overflow: hidden;
+        }
+
+        .work-card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) brightness(0.8);
+            transition: filter 0.6s var(--transition-smooth), transform 0.6s var(--transition-smooth);
+            will-change: transform, filter;
+        }
+
+        .work-card:hover .work-card-image {
+            filter: grayscale(0%) brightness(1);
+            transform: scale(1.05);
+        }
+
+
+        /* Shimmer effect for initial loading state */
+        .work-card.skeleton {
+            background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        .work-card.skeleton .work-card-image {
+            opacity: 0;
+        }
+
+        .work-card.skeleton .work-card-info,
+        .work-card.skeleton .work-card-year,
+        .work-card.skeleton .work-card-title {
+            visibility: hidden;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -100% 0;
+            }
+            100% {
+                background-position: 100% 0;
+            }
+        }
+
+        .work-card-info {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            z-index: 2;
+        }
+
+        .work-card-year {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-bottom: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .work-card-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-white);
+            text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+        }
+
+        /* ================================
+        LAYER 2: VIDEO SECTION
+        ================================ */
+            .video-section {
+                position: relative;
+                width: 100%;
+                height: 100vh;
+                background-color: var(--color-black);
+            }
+
+            .video-section-label {
+                position: absolute;
+                top: 60px;
+                left: 60px;
+                font-family: var(--font-display);
+                font-size: 2rem;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.5);
+                z-index: var(--z-navigation);
+                pointer-events: none;
+            }
+
+            .video-player {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            /* FIX: Smooth Gradient Transition */
+            .gradient-overlay {
+                position: absolute;
+                left: 0;
+                width: 100%;
+                height: 20vh;
+                cursor: pointer;
+                z-index: var(--z-content);
+                /* PENTING: Transition untuk background-image */
+                transition: background-image 0.4s ease;
+            }
+
+            .gradient-overlay.top {
+                top: 0;
+                background-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+            }
+
+            .gradient-overlay.top:hover {
+                background-image: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            }
+
+            .gradient-overlay.bottom {
+                bottom: 0;
+                background-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+            }
+
+            .gradient-overlay.bottom:hover {
+                background-image: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            }
+
+            /* FIX: Smooth Text Glow on Hover */
+            .gradient-label {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                color: var(--color-white);
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                font-weight: 500;
+                
+                /* Transition untuk opacity dan text-shadow */
+                transition: opacity 0.3s ease, text-shadow 0.3s ease;
+                opacity: 0.8; /* Default opacity */
+            }
+
+            /* Text Glow Effect on Parent Hover */
+            .gradient-overlay:hover .gradient-label {
+                opacity: 1;
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+                            0 0 30px rgba(255, 255, 255, 0.4);
+            }
+
+            .gradient-overlay.top .gradient-label { top: 30px; }
+            .gradient-overlay.bottom .gradient-label { bottom: 30px; }
+
+            .gradient-label svg { 
+                width: 24px; 
+                height: 24px; 
+                fill: var(--color-white);
+                transition: filter 0.3s ease;
+            }
+
+            /* SVG Glow on Hover */
+            .gradient-overlay:hover .gradient-label svg {
+                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+            }
+
+        /* ================================
+        LAYER 2: VIDEO SECTION - GRADIENT OVERLAYS
+        ================================ */
+        .gradient-overlay {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 20vh;
+            cursor: pointer;
+            z-index: var(--z-content);
+            /* Hapus background-image transition */
+        }
+
+        /* Base Gradient (Default State) */
+        .gradient-overlay.top {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .gradient-overlay.bottom {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        /* ===== FIX: SMOOTH HOVER GRADIENT ===== */
+        /* Pseudo-element untuk hover state */
+        .gradient-overlay::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* Default hidden */
+            transition: opacity 0.4s ease; /* SMOOTH! */
+            pointer-events: none;
+        }
+
+        /* Hover Gradient di pseudo-element */
+        .gradient-overlay.top::before {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .gradient-overlay.bottom::before {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        /* Fade in pseudo-element on hover */
+        .gradient-overlay:hover::before {
+            opacity: 1; /* Show darker gradient */
+        }
+        /* ====================================== */
+
+        /* Text & SVG Glow (Tetap sama) */
+        .gradient-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-white);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            transition: opacity 0.3s ease, text-shadow 0.3s ease;
+            opacity: 0.8;
+            z-index: 1; /* Di atas pseudo-element */
+        }
+
+        .gradient-overlay:hover .gradient-label {
+            opacity: 1;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+                        0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        .gradient-overlay.top .gradient-label { top: 30px; }
+        .gradient-overlay.bottom .gradient-label { bottom: 30px; }
+
+        .gradient-label svg { 
+            width: 24px; 
+            height: 24px; 
+            fill: var(--color-white);
+            transition: filter 0.3s ease;
+        }
+
+        .gradient-overlay:hover .gradient-label svg {
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
+        /* ================================
+           GLOBAL NAVIGATION (REVISI: TOP RIGHT)
+           ================================ */
+        .hero-nav {
+            position: fixed;
+            top: 60px; /* Aligned with title */
+            right: 60px;
+            bottom: auto; /* Reset bottom */
+            z-index: var(--z-navigation);
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        .hero-nav a {
+            text-decoration: none;
+            color: var(--color-white);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            opacity: 0.5;
+            transition: opacity 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .hero-nav a:hover,
+        .hero-nav a.current-page {
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* ================================
+           DETAILED OVERLAY
+           ================================ */
+        .detailed-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--color-black);
+            z-index: var(--z-overlay);
+            transform: translateY(100%);
+            /* Initially positioned below the viewport */
+        }
+
+        .detailed-overlay.active {
+            transform: translateY(0);
+            /* Move to visible position when active */
+        }
+
+        .overlay-top-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20vh;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+            cursor: pointer;
+            z-index: var(--z-content);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 30px;
+        }
+
+        .overlay-close-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-white);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            transition: opacity 0.3s ease, text-shadow 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .overlay-close-button:hover {
+            opacity: 1;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+                        0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        .overlay-close-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--color-white);
+            transition: filter 0.3s ease;
+        }
+
+        .overlay-close-button:hover svg {
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
+
+        .detailed-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 20vh);
+            /* Account for top gradient height */
+        }
+
+        .detail-gallery-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .gallery-images {
+            position: relative;
+            width: 100%;
+            height: 70%;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .gallery-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .gallery-image.active {
+            opacity: 1;
+        }
+
+        .gallery-dots {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .gallery-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background-color: var(--color-white);
+        }
+
+        .detail-info-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .detail-info-section h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .detail-info-section p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* ================================
+           RESPONSIVE
+           ================================ */
+        @media (max-width: 1440px) {
+            .work-card { width: 500px; height: 300px; }
+            .works-title { font-size: 3.5rem; }
+        }
+
+        @media (max-width: 1024px) {
+            .works-title { font-size: 3rem; top: 40px; left: 40px; }
+            .hero-nav { top: 45px; right: 40px; }
+            .work-card { width: 450px; height: 270px; }
+            .detail-gallery-section { max-width: 90%; aspect-ratio: 16/10; }
+        }
+
+        @media (max-width: 768px) {
+            .works-title { font-size: 2rem; top: 30px; left: 30px; }
+            .hero-nav { top: 35px; right: 30px; gap: 15px; }
+            .hero-nav a { font-size: 0.7rem; }
+            
+            .landing-content { padding: 0 15px; }
+            .nav-arrow { width: 40px; height: 40px; }
+            
+            .work-card { width: 100%; max-width: 400px; height: 240px; }
+            .section-frame { flex-direction: column; gap: 20px; }
+            
+            .detail-info-section h2 { font-size: 1.8rem; }
+            .detail-info-section p { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="vertical-wrapper" id="verticalWrapper">
+            
+            <section class="landing-section">
+                <h1 class="works-title">Works</h1>
+
+                <nav class="hero-nav" role="navigation">
+                    <a href="index.html">Home</a>
+                    <a href="info.html">Info</a>
+                    <a href="works.html" class="current-page">Works</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+
+                <div class="landing-content">
+                    <button class="nav-arrow nav-arrow-left" id="navLeft" aria-label="Previous section">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
+                    </button>
+
+                    <div class="horizontal-scroll-wrapper">
+                        <div class="horizontal-inner" id="horizontalInner">
+                            <div class="section-frame" data-frame="1">
+                                <div class="work-card" data-work="1">
+                                    <div class="work-card-image-wrapper">
+                                        <img src="Resources/PPDKV_thumbnail.png" alt="Gamana Askara" class="work-card-image">
+                                    </div>
+                                    <div class="work-card-info">
+                                        <span class="work-card-year">2025</span>
+                                        <h3 class="work-card-title">"Gamana Askara"</h3>
+                                    </div>
+                                </div>
+                                <div class="work-card" data-work="2">
+                                    <div class="work-card-image-wrapper">
+                                        <img src="Resources/FikomNight_thumbnail.png" alt="Faithful Encounter" class="work-card-image">
+                                    </div>
+                                    <div class="work-card-info">
+                                        <span class="work-card-year">2025</span>
+                                        <h3 class="work-card-title">"Faithful Encounter"</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-frame" data-frame="2">
+                                <div class="work-card" data-work="3">
+                                    <div class="work-card-image-wrapper">
+                                        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800" alt="Urban Stories" class="work-card-image">
+                                    </div>
+                                    <div class="work-card-info">
+                                        <span class="work-card-year">2024</span>
+                                        <h3 class="work-card-title">"Urban Stories"</h3>
+                                    </div>
+                                </div>
+                                <div class="work-card" data-work="4">
+                                    <div class="work-card-image-wrapper">
+                                        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800" alt="Digital Dreams" class="work-card-image">
+                                    </div>
+                                    <div class="work-card-info">
+                                        <span class="work-card-year">2024</span>
+                                        <h3 class="work-card-title">"Digital Dreams"</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="nav-arrow nav-arrow-right" id="navRight" aria-label="Next section">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <section class="video-section">
+                <div class="video-section-label">Video Section</div>
+                
+                <video class="video-player" id="videoPlayer" autoplay muted loop playsinline>
+                    <source src="Resources/Showreel PPDKV.mp4" type="video/mp4">
+                </video>
+
+                <div class="gradient-overlay top" id="videoTopGradient">
+                    <div class="gradient-label">
+                        <svg viewBox="0 0 24 24" style="transform: rotate(180deg);">
+                            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                        </svg>
+                        <span>Back to Works</span>
+                    </div>
+                </div>
+
+                <div class="gradient-overlay bottom" id="videoBottomGradient">
+                    <div class="gradient-label">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                        </svg>
+                        <span>View Details</span>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="detailed-overlay" id="detailedOverlay">
+        <div class="overlay-top-gradient" id="overlayTopGradient">
+            <div class="overlay-close-button">
+                <svg viewBox="0 0 24 24" style="transform: rotate(180deg);">
+                    <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                </svg>
+                <span>Back</span>
+            </div>
+        </div>
+
+        <div class="detailed-content">
+            <div class="detail-gallery-section">
+                <div class="gallery-images" id="galleryImages">
+                    <img src="Resources/Showreel PPDKV/PPDKV_1.png" alt="Gallery 1" class="gallery-image active">
+                    <img src="Resources/Showreel PPDKV/PPDKV_2.png" alt="Gallery 2" class="gallery-image">
+                    <img src="Resources/Showreel PPDKV/PPDKV_3.png  " alt="Gallery 3" class="gallery-image">
+                    <img src="Resources/Showreel PPDKV/PPDKV_4.png  " alt="Gallery 4" class="gallery-image">
+                </div>
+                <div class="gallery-dots" id="galleryDots"></div>
+            </div>
+
+            <div class="detail-info-section">
+                <p id="detailDescription">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum porttitor condimentum. Ut rutrum venenatis urna, in varius nibh interdum at.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        'use strict';
+
+        /* ================================
+           CONFIGURATION
+            ================================ */
+        const CONFIG = {
+            frameWidth: window.innerWidth,
+            totalFrames: 2,
+            currentFrame: 0,
+            isAnimating: false,
+            currentSection: 'landing', 
+            
+            animation: {
+                frameDuration: 0.8,
+                sectionDuration: 0.8,
+                overlayDuration: 0.6,
+                easing: 'power3.inOut'
+            },
+
+            carousel: {
+                interval: 4000,
+                pauseDuration: 6000,
+                currentIndex: 0,
+                intervalId: null
+            }
+        };
+
+        /* ================================
+           WORK DATA
+           ================================ */
+        const workData = {
+            1: { 
+                title: 'Gamana Askara', 
+                description: 'An introductory event aimed at presenting the Visual Communication Design program to prospective students at Universitas Multimedia Nusantara. Contributed as part of the documentation division with a primary focus on videography and post-production, including editing and motion graphic development. Supported the team in ensuring that the visual materials reflected the event’s concept and messaging, while collaborating closely with coordinators to deliver cohesive and polished outcomes.',
+                videoSrc: 'Resources/Showreel PPDKV/Showreel PPDKV.mp4'
+            },
+            2: { 
+                title: 'Faithful Encounter', 
+                description: 'An annual welcoming event for new students of the Faculty of Communication (FIKOM) at Universitas Multimedia Nusantara. Contributed as a documentation team member in the second generation and was later reappointed as the Documentation Coordinator for the third generation. Responsible for managing on-site event coverage, leading post-production editing, and developing motion graphic assets to enhance the final visual narrative.',
+                videoSrc: 'Resources/'
+            },
+            3: { 
+                title: 'Urban Stories', 
+                description: 'Street photography series documenting the raw beauty and complexity of city life.',
+                videoSrc: 'Resources/'
+            },
+            4: { 
+                title: 'Digital Dreams', 
+                description: 'A futuristic exploration of technology and humanity through experimental visual narratives.',
+                videoSrc: 'Resources/'
+            }
+        };
+
+        /* ================================
+           DOM ELEMENTS
+           ================================ */
+        const elements = {
+            verticalWrapper: document.getElementById('verticalWrapper'),
+            horizontalInner: document.getElementById('horizontalInner'),
+            navLeft: document.getElementById('navLeft'),
+            navRight: document.getElementById('navRight'),
+            workCards: document.querySelectorAll('.work-card'),
+            videoPlayer: document.getElementById('videoPlayer'),
+            videoTopGradient: document.getElementById('videoTopGradient'),
+            videoBottomGradient: document.getElementById('videoBottomGradient'),
+            detailedOverlay: document.getElementById('detailedOverlay'),
+            overlayTopGradient: document.getElementById('overlayTopGradient'),
+            detailDescription: document.getElementById('detailDescription'),
+            galleryImages: document.querySelectorAll('.gallery-image'),
+            galleryDots: document.getElementById('galleryDots')
+        };
+
+        /* ================================
+           HORIZONTAL NAVIGATION
+           ================================ */
+        function updateNavigation() {
+            elements.navLeft.classList.toggle('disabled', CONFIG.currentFrame === 0);
+            elements.navRight.classList.toggle('disabled', CONFIG.currentFrame === CONFIG.totalFrames - 1);
+        }
+
+        function navigateToFrame(frameIndex) {
+            if (CONFIG.isAnimating || frameIndex < 0 || frameIndex >= CONFIG.totalFrames) return;
+            
+            CONFIG.isAnimating = true;
+            CONFIG.currentFrame = frameIndex;
+            
+            // Recalculate width just in case
+            CONFIG.frameWidth = window.innerWidth;
+            // Frame logic: Assume width is 100vw, we slide by 80vw or full width depending on CSS.
+            // Since .section-frame is centered, we can slide by 100% of container width
+            const slideAmount = elements.horizontalInner.offsetWidth;
+
+            gsap.to(elements.horizontalInner, {
+                x: -CONFIG.frameWidth * frameIndex,
+                duration: CONFIG.animation.frameDuration,
+                ease: CONFIG.animation.easing,
+                onComplete: () => {
+                    CONFIG.isAnimating = false;
+                    updateNavigation();
+                }
+            });
+
+            updateNavigation();
+        }
+
+        elements.navLeft.addEventListener('click', () => navigateToFrame(CONFIG.currentFrame - 1));
+        elements.navRight.addEventListener('click', () => navigateToFrame(CONFIG.currentFrame + 1));
+
+        /* ================================
+           VERTICAL SECTION NAVIGATION
+           ================================ */
+        function scrollToVideoSection(workId) {
+            if (CONFIG.isAnimating) return;
+            CONFIG.isAnimating = true;
+            CONFIG.currentSection = 'video';
+            CONFIG.currentWorkId = workId; // Store the current work ID
+
+            const work = workData[workId];
+            elements.videoPlayer.src = work.videoSrc;
+            elements.videoPlayer.load();
+            elements.videoPlayer.play();
+
+            elements.detailDescription.textContent = work.description;
+
+            gsap.to(elements.verticalWrapper, {
+                y: -window.innerHeight,
+                duration: CONFIG.animation.sectionDuration,
+                ease: CONFIG.animation.easing,
+                onComplete: () => { CONFIG.isAnimating = false; }
+            });
+        }
+
+        function scrollToLandingSection() {
+            if (CONFIG.isAnimating) return;
+            CONFIG.isAnimating = true;
+            CONFIG.currentSection = 'landing';
+
+            gsap.to(elements.verticalWrapper, {
+                y: 0,
+                duration: CONFIG.animation.sectionDuration,
+                ease: CONFIG.animation.easing,
+                onComplete: () => { CONFIG.isAnimating = false; }
+            });
+        }
+
+        /* ================================
+           DETAILED OVERLAY CONTROL
+           ================================ */
+        function openDetailedOverlay() {
+            if (CONFIG.isAnimating) return;
+            CONFIG.isAnimating = true;
+
+            // Update detailed content based on current work
+            updateDetailedContentBasedOnCurrentWork();
+
+            gsap.to(elements.detailedOverlay, {
+                y: 0,
+                duration: CONFIG.animation.overlayDuration,
+                ease: CONFIG.animation.easing,
+                onStart: () => { elements.detailedOverlay.classList.add('active'); },
+                onComplete: () => {
+                    CONFIG.isAnimating = false;
+                    CONFIG.currentSection = 'overlay'; // Update current section
+
+                    // Start carousel timer when overlay is fully visible
+                    startCarouselTimer();
+                }
+            });
+        }
+
+        function closeDetailedOverlay() {
+            if (CONFIG.isAnimating) return;
+            CONFIG.isAnimating = true;
+
+            // Stop carousel timer when closing overlay
+            stopCarouselTimer();
+
+            gsap.to(elements.detailedOverlay, {
+                y: window.innerHeight,
+                duration: CONFIG.animation.overlayDuration,
+                ease: CONFIG.animation.easing,
+                onComplete: () => {
+                    elements.detailedOverlay.classList.remove('active');
+                    CONFIG.isAnimating = false;
+                    CONFIG.currentSection = 'video'; // Update current section back to video
+                }
+            });
+        }
+
+        /* ================================
+           UPDATE DETAILED CONTENT
+           ================================ */
+        function updateDetailedContentBasedOnCurrentWork() {
+            // This function updates the content of the detailed overlay based on the currently selected work
+            // We need to determine which work is currently associated with the video section
+            // For simplicity, we'll use a global variable to track the current work ID
+            if (!CONFIG.currentWorkId) return;
+
+            const work = workData[CONFIG.currentWorkId];
+            if (!work) return;
+
+            // Update description
+            if (elements.detailDescription) {
+                elements.detailDescription.textContent = work.description;
+            }
+
+            // Update gallery images
+            // For now, we'll use placeholder images, but in a real implementation,
+            // this would use actual gallery images for the specific work
+            const galleryImagesContainer = document.getElementById('galleryImages');
+            if (galleryImagesContainer) {
+                // Clear existing images
+                galleryImagesContainer.innerHTML = '';
+
+                // Add new images based on work data
+                // Since workData doesn't have a gallery property, we'll create placeholder images
+                // In a real implementation, workData should include a gallery property
+                const placeholderImages = [
+                    'Resources/Showreel PPDKV/PPDKV_1.png',
+                    'Resources/Showreel PPDKV/PPDKV_2.png',
+                    'Resources/Showreel PPDKV/PPDKV_3.png',
+                    'Resources/Showreel PPDKV/PPDKV_4.png'
+                ];
+
+                placeholderImages.forEach((src, index) => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = `${work.title} - Image ${index + 1}`;
+                    img.classList.add('gallery-image');
+                    if (index === 0) img.classList.add('active'); // First image is active
+                    galleryImagesContainer.appendChild(img);
+                });
+
+                // Update gallery dots after changing images
+                createGalleryDotsForDetailedView();
+            }
+        }
+
+        function createGalleryDotsForDetailedView() {
+            // Find gallery dots container
+            const galleryDots = document.getElementById('galleryDots');
+            if (!galleryDots) return;
+
+            // Clear existing dots
+            galleryDots.innerHTML = '';
+
+            // Get all gallery images
+            const galleryImages = document.querySelectorAll('#galleryImages .gallery-image');
+
+            // Create dots for each image
+            galleryImages.forEach((img, index) => {
+                const dot = document.createElement('div');
+                dot.classList.add('gallery-dot');
+                dot.dataset.index = index;
+
+                // Add click event to switch image
+                dot.addEventListener('click', () => {
+                    showGalleryImage(index);
+                });
+
+                galleryDots.appendChild(dot);
+            });
+
+            // Initialize carousel index and show first image
+            CONFIG.carousel.currentIndex = 0;
+            showGalleryImage(0);
+        }
+
+        function showGalleryImage(index) {
+            // Get all gallery images and dots
+            const galleryImages = document.querySelectorAll('#galleryImages .gallery-image');
+            const dots = document.querySelectorAll('#galleryDots .gallery-dot');
+
+            // Hide all images and remove active class from dots
+            galleryImages.forEach(img => img.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+
+            // Show selected image and mark corresponding dot as active
+            if (galleryImages[index]) {
+                galleryImages[index].classList.add('active');
+            }
+
+            if (dots[index]) {
+                dots[index].classList.add('active');
+            }
+
+            // Update carousel index
+            CONFIG.carousel.currentIndex = index;
+        }
+
+        function startCarouselTimer() {
+            // Clear any existing interval
+            if (CONFIG.carousel.intervalId) {
+                clearInterval(CONFIG.carousel.intervalId);
+            }
+
+            // Set up new interval
+            CONFIG.carousel.intervalId = setInterval(() => {
+                // Cycle through images
+                const totalImages = document.querySelectorAll('#galleryImages .gallery-image').length;
+                CONFIG.carousel.currentIndex = (CONFIG.carousel.currentIndex + 1) % totalImages;
+                showGalleryImage(CONFIG.carousel.currentIndex);
+            }, CONFIG.carousel.interval);
+        }
+
+        function stopCarouselTimer() {
+            if (CONFIG.carousel.intervalId) {
+                clearInterval(CONFIG.carousel.intervalId);
+                CONFIG.carousel.intervalId = null;
+            }
+        }
+
+        /* ================================
+           EVENT LISTENERS & CAROUSEL
+           ================================ */
+        elements.workCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const workId = card.getAttribute('data-work');
+                scrollToVideoSection(workId);
+            });
+        });
+
+        elements.videoTopGradient.addEventListener('click', scrollToLandingSection);
+        elements.videoBottomGradient.addEventListener('click', openDetailedOverlay);
+
+        // Update overlay top gradient to close the overlay
+        elements.overlayTopGradient.addEventListener('click', closeDetailedOverlay);
+
+        let carouselIndex = 0;
+        let carouselInterval;
+
+        function createGalleryDots() {
+            elements.galleryDots.innerHTML = '';
+            elements.galleryImages.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'gallery-dot';
+                if (index === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    carouselIndex = index;
+                    updateCarousel();
+                    resetCarouselTimer();
+                });
+                elements.galleryDots.appendChild(dot);
+            });
+        }
+
+        function updateCarousel() {
+            elements.galleryImages.forEach((img, index) => {
+                img.classList.toggle('active', index === carouselIndex);
+            });
+            const dots = elements.galleryDots.querySelectorAll('.gallery-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === carouselIndex);
+            });
+        }
+
+        function nextSlide() {
+            carouselIndex = (carouselIndex + 1) % elements.galleryImages.length;
+            updateCarousel();
+        }
+
+        function resetCarouselTimer() {
+            clearInterval(carouselInterval);
+            carouselInterval = setInterval(nextSlide, CONFIG.carousel.interval);
+        }
+
+        function init() {
+            updateNavigation();
+            createGalleryDots();
+            resetCarouselTimer();
+
+            window.addEventListener('resize', () => {
+                CONFIG.frameWidth = window.innerWidth;
+                gsap.set(elements.horizontalInner, {
+                    x: -CONFIG.frameWidth * CONFIG.currentFrame
+                });
+            });
+
+            // Add keyboard event listener for navigation
+            document.addEventListener('keydown', handleKeyDown);
+
+            // Add skeleton class initially to all work cards
+            elements.workCards.forEach(card => {
+                card.classList.add('skeleton');
+
+            // Logika untuk membaca posisi mouse
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Kirim koordinat ke CSS
+                card.style.setProperty('--x', `${x}px`);
+                card.style.setProperty('--y', `${y}px`);
+            });
+
+                // Wait for images to load and remove skeleton class
+                const img = card.querySelector('.work-card-image');
+                if(img.complete) {
+                    // If image is already loaded from cache
+                    card.classList.remove('skeleton');
+                } else {
+                    // If image is still loading
+                    img.addEventListener('load', () => {
+                        card.classList.remove('skeleton');
+                    });
+
+                    img.addEventListener('error', () => {
+                        // Even if image fails to load, remove skeleton to show alt text or broken image icon
+                        card.classList.remove('skeleton');
+                    });
+                }
+            });
+
+            // Make work cards focusable for keyboard navigation
+            elements.workCards.forEach(card => {
+                card.setAttribute('tabindex', '0');
+            });
+        }
+
+        /* ================================
+           KEYBOARD NAVIGATION
+           ================================ */
+        function handleKeyDown(e) {
+            // Prevent default behavior for arrow keys to prevent page scrolling
+            if(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            // Horizontal navigation in landing section
+            if (CONFIG.currentSection === 'landing') {
+                if (e.key === 'ArrowLeft') {
+                    navigateToFrame(CONFIG.currentFrame - 1);
+                } else if (e.key === 'ArrowRight') {
+                    navigateToFrame(CONFIG.currentFrame + 1);
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    // Trigger click on focused work card
+                    const focusedCard = document.activeElement.closest('.work-card');
+                    if (focusedCard) {
+                        const workId = focusedCard.getAttribute('data-work');
+                        scrollToVideoSection(workId);
+                    }
+                }
+            }
+
+            // Vertical navigation between sections
+            else if (CONFIG.currentSection === 'video') {
+                if (e.key === 'ArrowUp') {
+                    scrollToLandingSection();
+                } else if (e.key === 'ArrowDown') {
+                    openDetailedOverlay();
+                } else if (e.key === 'Escape') {
+                    scrollToLandingSection(); // Escape from video section back to landing
+                }
+            }
+
+            // Navigation in detailed overlay
+            else if (CONFIG.currentSection === 'overlay') {
+                if (e.key === 'Escape' || e.key === 'ArrowUp') {
+                    closeDetailedOverlay();
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    </script>
+</body>
+</html>
