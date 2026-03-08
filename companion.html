@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Friend or Fraud? — by PALLET'S</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#3B3CC8;--pink:#FF2D78;--yellow:#FFD600;
+  --dark:#0A0A18;--card:#12122A;--card2:#1A1A35;
+  --light:#E8E8FF;--muted:#6060A0;
+  --font-d:'Bebas Neue',sans-serif;--font-b:'DM Sans',sans-serif;
+}
+html,body{height:100%;background:var(--dark);color:var(--light);font-family:var(--font-b);overflow-x:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;padding:28px 20px 48px;flex-direction:column;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* TYPOGRAPHY */
+.d{font-family:var(--font-d);letter-spacing:.02em;line-height:1}
+.xl{font-size:56px}.lg{font-size:40px}.md{font-size:28px}.sm{font-size:22px}
+.b-lg{font-size:17px;line-height:1.5}.b-md{font-size:15px;line-height:1.5}.b-sm{font-size:13px;line-height:1.4}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.c-blue{color:var(--blue)}.c-pink{color:var(--pink)}.c-yellow{color:var(--yellow)}.c-muted{color:var(--muted)}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:16px 24px;border:none;border-radius:14px;font-family:var(--font-d);font-size:22px;letter-spacing:.05em;cursor:pointer;transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;text-align:center}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--pink);color:#fff;box-shadow:0 4px 24px rgba(255,45,120,.4)}
+.btn-s{background:var(--blue);color:#fff;box-shadow:0 4px 24px rgba(59,60,200,.4)}
+.btn-y{background:var(--yellow);color:var(--dark);box-shadow:0 4px 24px rgba(255,214,0,.35)}
+.btn-o{background:transparent;color:var(--light);border:1.5px solid rgba(255,255,255,.2)}
+.btn-g{background:var(--card2);color:var(--light)}
+.btn-d{background:linear-gradient(135deg,#ff2d78,#ff6b35);color:#fff;box-shadow:0 4px 24px rgba(255,45,120,.4)}
+.btn-sm{padding:10px 16px;font-size:16px;border-radius:10px;width:auto;display:inline-block}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.mt24{margin-top:24px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}.mb24{margin-bottom:24px}
+
+/* CARD */
+.card{background:var(--card);border-radius:20px;padding:20px;border:1px solid rgba(255,255,255,.06)}
+.card2{background:var(--card2);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.08)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:10px}
+.divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:16px 0}
+
+/* METER */
+.meter-wrap{background:rgba(255,255,255,.08);border-radius:99px;height:14px;overflow:hidden}
+.meter-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.m-low{background:linear-gradient(90deg,#FF2D78,#FF6B35)}
+.m-mid{background:linear-gradient(90deg,#FFD600,#FF9500)}
+.m-high{background:linear-gradient(90deg,#3B3CC8,#6B6FFF)}
+.m-full{background:linear-gradient(90deg,#00C896,#3B3CC8)}
+
+/* TAGS */
+.tag{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.tag-flag{background:rgba(255,214,0,.15);color:var(--yellow);border:1px solid rgba(255,214,0,.3)}
+.tag-fraud{background:rgba(255,45,120,.15);color:var(--pink);border:1px solid rgba(255,45,120,.3)}
+.tag-friend{background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.3)}
+.tag-elim{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid rgba(255,255,255,.08)}
+.tag-reward{background:rgba(0,200,150,.15);color:#00C896;border:1px solid rgba(0,200,150,.3)}
+.tag-item{background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.2)}
+.tag-done{background:rgba(0,200,150,.15);color:#00C896;border:1px solid rgba(0,200,150,.3)}
+
+/* CHAR CARD */
+.char-card{background:var(--card);border-radius:16px;padding:14px 8px;border:2px solid transparent;cursor:pointer;transition:all .2s;text-align:center;-webkit-tap-highlight-color:transparent}
+.char-card.sel{border-color:var(--pink);background:rgba(255,45,120,.1)}
+.char-card.dis{opacity:.3;pointer-events:none}
+.char-emoji{font-size:32px;display:block;margin-bottom:4px}
+
+/* ROLE CARD */
+.role-card{background:var(--card);border-radius:24px;padding:40px 24px;text-align:center;border:2px solid rgba(255,255,255,.08);animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+.role-badge{display:inline-block;padding:8px 24px;border-radius:99px;font-family:var(--font-d);font-size:32px;letter-spacing:.05em;margin:16px 0}
+.rb-friend{background:linear-gradient(135deg,var(--blue),#6B6FFF);color:#fff}
+.rb-fraud{background:linear-gradient(135deg,var(--pink),#FF6B35);color:#fff}
+
+/* CHWAZI */
+.chwazi-area{flex:1;min-height:300px;display:flex;align-items:center;justify-content:center;border-radius:24px;background:var(--card);border:2px dashed rgba(255,255,255,.1);position:relative;overflow:hidden;touch-action:none;user-select:none}
+.touch-dot{position:absolute;width:64px;height:64px;border-radius:50%;background:var(--blue);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:22px;border:3px solid rgba(255,255,255,.3);animation:pop .2s ease;transition:all .2s}
+.touch-dot.winner{background:var(--pink);width:80px;height:80px;border-color:var(--yellow);animation:pulse .6s ease infinite;z-index:10}
+
+/* PLAYER INDICATOR */
+.player-ind{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:14px 16px;border-left:4px solid var(--pink)}
+
+/* ACTION BTN */
+.act-btn{background:var(--card2);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;width:100%;text-align:left;color:var(--light);font-family:var(--font-b)}
+.act-btn:active{transform:scale(.98);background:var(--card)}
+.act-btn.passive-ready{border-color:var(--yellow);background:rgba(255,214,0,.05)}
+.act-btn.disabled{opacity:.4;pointer-events:none}
+.act-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+
+/* VOTE OPTION */
+.vote-opt{background:var(--card2);border-radius:14px;padding:16px;cursor:pointer;border:2px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%;text-align:left;color:var(--light);font-family:var(--font-b)}
+.vote-opt:active{transform:scale(.98)}
+.vote-opt.sel-a{border-color:var(--blue);background:rgba(59,60,200,.1)}
+.vote-opt.sel-b{border-color:var(--pink);background:rgba(255,45,120,.1)}
+
+/* TIMER */
+.timer-ring{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;background:conic-gradient(var(--pink) var(--p),rgba(255,255,255,.08) 0%)}
+.timer-inner{width:96px;height:96px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:36px;color:var(--light)}
+
+/* SPLASH */
+.splash-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(59,60,200,.4) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(255,45,120,.3) 0%,transparent 50%),var(--dark)}
+.deco1{position:absolute;top:80px;right:-40px;width:200px;height:200px;border-radius:50%;border:60px solid rgba(59,60,200,.15);z-index:0;pointer-events:none}
+.deco2{position:absolute;top:200px;left:-60px;width:160px;height:160px;border-radius:50%;background:rgba(255,45,120,.08);z-index:0;pointer-events:none}
+
+/* WINNER */
+.winner-banner{border-radius:20px;padding:24px;text-align:center;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+.wb-fraud{background:linear-gradient(135deg,var(--pink),#FF6B35)}
+.wb-friend{background:linear-gradient(135deg,var(--blue),#6B6FFF)}
+
+/* COUNT GRID */
+.count-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.count-btn{padding:16px;border:2px solid rgba(255,255,255,.1);border-radius:14px;background:var(--card);color:var(--light);font-family:var(--font-d);font-size:28px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.count-btn.sel{border-color:var(--pink);background:rgba(255,45,120,.1)}
+.char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* SCROLL */
+.scroll{overflow-y:auto;flex:1}
+.scroll::-webkit-scrollbar{width:3px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:99px}
+
+/* SCAN AREA */
+.scan-area{background:var(--card);border-radius:20px;padding:32px;text-align:center;margin-bottom:20px;border:2px solid rgba(255,255,255,.06);transition:border-color .2s}
+.scan-area.scanning{border-color:var(--yellow)}
+.spinner{width:60px;height:60px;border-radius:50%;border:3px solid transparent;border-top:3px solid #FFD600;animation:spin .8s linear infinite;margin:0 auto 16px}
+
+/* CONFETTI */
+.confetti-dot{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;animation:confettiFall linear forwards;z-index:9999}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SPLASH ══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="s-splash" style="padding:0;position:relative;justify-content:flex-end">
+  <div class="splash-bg"></div>
+  <div class="deco1"></div>
+  <div class="deco2"></div>
+  <div style="position:relative;z-index:1;padding:0 24px 48px">
+    <div class="lbl c-muted mb8">by PALLET'S</div>
+    <div class="d xl" style="line-height:.9;margin-bottom:4px">FRIEND</div>
+    <div class="d xl c-yellow" style="line-height:.9;margin-bottom:4px">OR</div>
+    <div class="d xl c-pink" style="line-height:.9;margin-bottom:32px">FRAUD?</div>
+    <p class="b-md c-muted mb24" style="max-width:280px">Mixed-reality boardgame tentang dinamika circle pertemanan Gen Z.</p>
+    <button class="btn btn-p" onclick="goto('s-setup')">MULAI GAME</button>
+  </div>
+</div>
+
+<!-- ══ SETUP ═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-setup">
+  <div class="d lg mb4">SETUP</div>
+  <p class="b-sm c-muted mb24">Pilih jumlah pemain & karakter</p>
+
+  <div class="lbl c-muted mb8">Jumlah Pemain</div>
+  <div class="count-grid mb16">
+    <button class="count-btn" id="btn4" onclick="selectCount(4)">4 Pemain</button>
+    <button class="count-btn" id="btn6" onclick="selectCount(6)">6 Pemain</button>
+  </div>
+
+  <div id="char-section" style="display:none">
+    <div class="lbl c-muted mb8" id="char-label">Pilih Karakter (0/4)</div>
+    <div class="char-grid mb24" id="char-grid"></div>
+    <button class="btn btn-p" id="btn-setup-next" style="display:none" onclick="setupDone()">LANJUT →</button>
+  </div>
+</div>
+
+<!-- ══ ROLE REVEAL ═════════════════════════════════════════════════════ -->
+<div class="screen" id="s-role" style="justify-content:center">
+  <div class="d md c-muted mb8" style="text-align:center">ROLE REVEAL</div>
+  <div class="lbl c-muted mb24" id="role-counter" style="text-align:center">1 / 4</div>
+  <div id="role-content"></div>
+</div>
+
+<!-- ══ CHWAZI ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-chwazi">
+  <div class="d lg mb4">CHWAZI</div>
+  <p class="b-sm c-muted mb20">Semua pemain taruh jari di layar bersamaan</p>
+  <div class="chwazi-area" id="chwazi-area">
+    <div style="text-align:center;padding:24px" id="chwazi-hint">
+      <div style="font-size:48px;margin-bottom:12px">👆</div>
+      <p class="b-sm c-muted mb16">Taruh semua jari di sini</p>
+      <button class="btn btn-o btn-sm" onclick="simulateChwazi()">Simulasi (Desktop)</button>
+    </div>
+  </div>
+  <div id="chwazi-result" style="display:none;text-align:center" class="card mt16"></div>
+</div>
+
+<!-- ══ CHWAZI ORDER ════════════════════════════════════════════════════ -->
+<div class="screen" id="s-order">
+  <div class="d lg mb4">URUTAN GILIRAN</div>
+  <p class="b-sm c-muted mb16">Tentukan nomor urut giliran setiap pemain</p>
+  <div id="order-first" class="card mb20" style="text-align:center"></div>
+  <div class="lbl c-muted mb8">Assign nomor urut (1 = jalan pertama)</div>
+  <div class="stack mb16" id="order-list"></div>
+  <div id="order-error" class="b-sm" style="color:var(--pink);display:none;margin-bottom:12px">&#9888; Setiap pemain harus punya nomor urut yang berbeda!</div>
+  <button class="btn btn-p" id="btn-order-next" style="display:none" onclick="orderDone()">MULAI GAME &#8594;</button>
+</div>
+
+<!-- ══ MAIN GAME ═══════════════════════════════════════════════════════ -->
+<div class="screen" id="s-main">
+  <div class="row mb16" style="justify-content:space-between">
+    <div>
+      <div class="lbl c-muted">SESSION</div>
+      <div class="d md" id="main-session">1 / 8</div>
+    </div>
+    <div style="text-align:right">
+      <div class="lbl c-muted">PEMAIN AKTIF</div>
+      <div class="d sm" id="main-active">4</div>
+    </div>
+  </div>
+  <div class="mb4 lbl c-muted" style="display:flex;justify-content:space-between;align-items:center">
+    <span>FRIENDSHIP METER</span>
+    <span class="d sm" id="main-meter-val" style="color:var(--yellow)">30</span>
+  </div>
+  <div class="meter-wrap mb16"><div class="meter-fill m-mid" id="main-meter-bar" style="width:30%"></div></div>
+
+  <div class="lbl c-muted mb8">GILIRAN SEKARANG</div>
+  <div class="player-ind mb16">
+    <span style="font-size:32px" id="main-cur-emoji">🎨</span>
+    <div>
+      <div class="b-md" style="font-weight:700" id="main-cur-name">The Artist</div>
+      <div id="main-cur-tags"></div>
+    </div>
+  </div>
+
+  <div class="lbl c-muted mb8">PILIH AKSI</div>
+  <div class="stack mb16">
+    <button class="act-btn" id="act-task" onclick="gotoTakeTask()">
+      <div class="act-icon" style="background:rgba(59,60,200,.2)">📋</div>
+      <div><div class="b-md" style="font-weight:600">Take Limited Task</div><div class="b-sm c-muted" id="act-task-sub">0/3 task aktif</div></div>
+    </button>
+    <button class="act-btn" id="act-item" onclick="goto('s-item')">
+      <div class="act-icon" style="background:rgba(255,214,0,.15)">📦</div>
+      <div><div class="b-md" style="font-weight:600">Input Item</div><div class="b-sm c-muted">Scan barcode kartu item</div></div>
+    </button>
+    <button class="act-btn" id="act-powerup" onclick="goto('s-powerup')">
+      <div class="act-icon" style="background:rgba(255,45,120,.15)">⚡</div>
+      <div><div class="b-md" style="font-weight:600">Use Power-Up</div><div class="b-sm c-muted">Scan barcode kartu power-up</div></div>
+    </button>
+    <button class="act-btn" id="act-draw" onclick="drawCard()">
+      <div class="act-icon" style="background:rgba(0,200,150,.15)">🃏</div>
+      <div><div class="b-md" style="font-weight:600">Draw a Card</div><div class="b-sm c-muted" id="act-draw-sub">Ambil 1 kartu random dari deck</div></div>
+    </button>
+    <button class="act-btn" id="act-passive" onclick="goto('s-passive')">
+      <div class="act-icon" style="background:rgba(255,214,0,.2)">✨</div>
+      <div><div class="b-md" style="font-weight:600" id="act-passive-title">Passive Ability</div><div class="b-sm c-muted" id="act-passive-sub">Tersedia dalam 2 session</div></div>
+    </button>
+  </div>
+
+  <div class="lbl c-muted mb8">STATUS PEMAIN</div>
+  <div class="stack" id="main-players"></div>
+</div>
+
+<!-- ══ TAKE TASK ═══════════════════════════════════════════════════════ -->
+<div class="screen" id="s-task" style="justify-content:center;text-align:center">
+  <div id="task-assign-content"></div>
+</div>
+
+<!-- ══ INPUT ITEM ══════════════════════════════════════════════════════ -->
+<div class="screen" id="s-item">
+  <button class="btn btn-o btn-sm mb16" onclick="back()">← Kembali</button>
+  <div class="d lg mb8">INPUT ITEM</div>
+  <p class="b-sm c-muted mb16">Scan barcode kartu item</p>
+  <div class="scan-area" id="scan-area">
+    <div style="font-size:48px;margin-bottom:12px">📷</div>
+    <p class="b-sm c-muted mb16">Arahkan kamera ke barcode kartu</p>
+    <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="mockScan()">SCAN BARCODE</button>
+  </div>
+  <div id="item-tasks"></div>
+</div>
+
+<!-- ══ DRAW A CARD ══════════════════════════════════════════════════════ -->
+<div class="screen" id="s-draw" style="justify-content:center;text-align:center">
+  <div style="font-size:48px;margin-bottom:16px">🃏</div>
+  <div class="d md mb4">DRAW A CARD</div>
+  <p class="b-sm c-muted mb32">Mengambil 1 kartu random dari deck aktif</p>
+  <div id="draw-result" style="display:none" class="card mb20" style="animation:pop .4s ease"></div>
+  <div id="draw-btn-area">
+    <button class="btn btn-y mb12" onclick="doDrawCard()">DRAW SEKARANG 🎲</button>
+    <button class="btn btn-o" onclick="back()">Kembali</button>
+  </div>
+</div>
+
+<!-- ══ POWER-UP ════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-powerup" style="justify-content:center;text-align:center">
+  <div style="font-size:48px;margin-bottom:16px">⚡</div>
+  <div class="d md mb8">USE POWER-UP</div>
+  <p class="b-sm c-muted mb32">Scan barcode kartu Power-Up kamu</p>
+  <div class="scan-area" id="pu-scan-area" style="margin-bottom:16px">
+    <div style="font-size:48px;margin-bottom:12px">📷</div>
+    <p class="b-sm c-muted mb16">Arahkan kamera ke barcode</p>
+    <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="mockPowerUp()">SCAN BARCODE</button>
+  </div>
+  <button class="btn btn-o mt8" onclick="back()">Kembali</button>
+</div>
+
+<!-- ══ PASSIVE ═════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-passive" style="justify-content:center;text-align:center">
+  <div style="font-size:48px;margin-bottom:16px">✨</div>
+  <div class="d md mb4">PASSIVE ABILITY</div>
+  <div class="d sm c-yellow mb16" id="passive-char-name">The Artist</div>
+  <div class="card mb24"><p class="b-md" id="passive-desc">Replika item terakhir</p></div>
+  <button class="btn btn-y mb12" onclick="usePassive()">AKTIFKAN PASSIVE</button>
+  <button class="btn btn-o" onclick="back()">Kembali</button>
+</div>
+
+<!-- ══ SCENARIO ════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-scenario">
+  <div class="d lg mb4">SCENARIO</div>
+  <p class="b-sm c-muted mb16">Event akhir session</p>
+  <div class="card mb16" id="scenario-card" style="border-left:4px solid var(--yellow);background:rgba(255,214,0,.05)">
+    <div class="lbl c-yellow mb8">⚡ EVENT</div>
+    <p class="b-lg" id="scenario-text" style="font-weight:500"></p>
+  </div>
+  <div class="lbl c-muted mb8">PEMAIN YANG TERLIBAT</div>
+  <div class="row mb20" style="flex-wrap:wrap;gap:10px" id="scenario-involved"></div>
+  <div class="lbl c-muted mb8">VOTE PILIHAN</div>
+  <div class="stack mb20" id="scenario-opts"></div>
+  <button class="btn btn-p" id="btn-scenario-confirm" style="display:none" onclick="scenarioConfirm()">KONFIRMASI PILIHAN</button>
+</div>
+
+<!-- ══ MEETING ═════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-meeting" style="justify-content:center;text-align:center">
+  <div class="d lg mb4">MEETING</div>
+  <p class="b-sm c-muted mb32">Diskusikan siapa yang mencurigakan!</p>
+  <div class="timer-ring" id="timer-ring" style="--p:100%">
+    <div class="timer-inner" id="timer-display">3:00</div>
+  </div>
+  <p class="b-md c-muted mt24 mb40" style="max-width:260px;margin-left:auto;margin-right:auto">
+    Gunakan waktu ini untuk membahas gerak-gerik mencurigakan dari session yang telah berlangsung.
+  </p>
+  <button class="btn btn-p mb12" id="btn-start-meeting" onclick="startMeeting()">MULAI DISKUSI</button>
+  <button class="btn btn-y" id="btn-to-voting" style="display:none" onclick="gotoVoting()">LANJUT KE VOTING →</button>
+</div>
+
+<!-- ══ VOTING ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-voting">
+  <div class="d lg mb4">VOTING</div>
+  <p class="b-sm c-muted mb20">Siapa yang paling dicurigai sebagai <span style="color:var(--pink);font-weight:700">Fraud</span>? Semua vote sekarang.</p>
+  <div class="lbl c-muted mb8">KANDIDAT TERSANGKA</div>
+  <div class="stack mb20" id="voting-list"></div>
+  <div class="lbl c-muted mb8" id="vote-tally-label" style="display:none">HASIL VOTE</div>
+  <div class="stack mb20" id="vote-tally" style="display:none"></div>
+  <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none" onclick="confirmVote()">KONFIRMASI VOTING</button>
+</div>
+
+<!-- ══ ELIMINATION ═════════════════════════════════════════════════════ -->
+<div class="screen" id="s-elim" style="justify-content:center;text-align:center">
+  <div style="font-size:64px;margin-bottom:16px;animation:pop .5s ease" id="elim-icon">😈</div>
+  <div class="d lg mb8">ELIMINATED</div>
+  <div class="d md mb4" id="elim-name">The Artist</div>
+  <div class="role-badge" id="elim-badge">😈 FRAUD</div>
+  <p class="b-md c-muted mt12 mb32" style="max-width:260px;margin-left:auto;margin-right:auto" id="elim-msg"></p>
+  <button class="btn btn-p" onclick="afterElimination()">LANJUTKAN</button>
+</div>
+
+<!-- ══ END GAME ════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-end">
+  <div class="winner-banner mb24" id="winner-banner">
+    <div style="font-size:56px" id="winner-icon">🎉</div>
+    <div class="d lg mt8" id="winner-title">FRIEND MENANG!</div>
+    <p class="b-md mt8" id="winner-desc" style="opacity:.85"></p>
+    <div class="d sm mt12" id="winner-meter">Friendship Meter: 30</div>
+  </div>
+  <div class="lbl c-muted mb8">REVEAL SEMUA IDENTITAS</div>
+  <div class="stack mb24" id="end-players"></div>
+  <button class="btn btn-p" onclick="restartGame()">MAIN LAGI</button>
+</div>
+
+<!-- ══ FM POPUP OVERLAY ═══════════════════════════════════════════════ -->
+<div id="fm-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:24px">
+  <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+    <div style="font-size:48px;margin-bottom:12px" id="fm-popup-icon">😬</div>
+    <div class="d md mb4" id="fm-popup-label">Friendship Meter</div>
+    <div class="d lg mb12" id="fm-popup-delta" style="color:var(--yellow)">+10</div>
+
+    <div style="margin:0 0 8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="lbl" style="color:var(--muted)">SEBELUM</span>
+        <span class="d sm" id="fm-val-before" style="color:rgba(255,255,255,.5)">30</span>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:99px;height:20px;overflow:hidden;position:relative">
+        <div id="fm-bar-ghost" style="position:absolute;left:0;top:0;height:100%;border-radius:99px;background:rgba(255,255,255,.15);transition:none"></div>
+        <div id="fm-bar-fill" style="position:absolute;left:0;top:0;height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.34,1.2,.64,1)"></div>
+        <div id="fm-bar-tick" style="position:absolute;top:0;width:3px;height:100%;background:rgba(255,255,255,.5);border-radius:2px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span class="lbl" style="color:var(--muted)">0</span>
+        <span class="lbl" style="color:var(--muted)">SESUDAH</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="d sm" id="fm-val-after" style="color:var(--yellow)">45</span>
+          <span class="lbl" style="color:var(--muted)">/ 100</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-p mt12" onclick="closeFmPopup()">LANJUT &#x2192;</button>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────
+const CHARS = [
+  {id:'artist',     name:'The Artist',      emoji:'🎨', passive:'Ambil lagi item terakhir yang kamu gunakan dari deck aktif'},
+  {id:'busybee',    name:'The Busy Bee',     emoji:'🐝', passive:'Inisiasi Emergency Meeting di luar jadwal'},
+  {id:'fashion',    name:'The Fashionista',  emoji:'👗', passive:'Trade 1 kartu dengan pemain lain pilihanmu'},
+  {id:'nerd',       name:'The Nerd',         emoji:'🤓', passive:'Ambil Ensiklopedia atau Novel dari deck aktif'},
+  {id:'influencer', name:'The Influencer',   emoji:'📱', passive:'Friendship Meter gain 2× pada session ini'},
+  {id:'phantom',    name:'The Phantom',      emoji:'👻', passive:'Jalankan Phase 2× berturut-turut pada giliranmu'},
+];
+
+const TASKS = [
+  {id:1,  name:'Study Marathon',      items:['Ensiklopedia','Ensiklopedia','Laptop'],                    reward:20, deadline:3},
+  {id:2,  name:'Coffee Run',          items:['Americano','Earl Grey Tea'],                               reward:10, deadline:2},
+  {id:3,  name:'Warteg Geng',         items:['Ayam Bakar','Ayam Bakar','Es Teh Manis','Es Teh Manis'],  reward:20, deadline:3},
+  {id:4,  name:'Book Club',           items:['Novel','Ensiklopedia'],                                    reward:12, deadline:2},
+  {id:5,  name:'Cram Session',        items:['Laptop','Buku Tulis','Americano'],                         reward:18, deadline:3},
+  {id:6,  name:'Perpus Bareng',       items:['Ensiklopedia','Novel','Buku Tulis'],                       reward:15, deadline:2},
+  {id:7,  name:'Lunch Squad',         items:['Ayam Bakar','Es Teh Manis','Americano'],                   reward:15, deadline:2},
+  {id:8,  name:'All-Nighter',         items:['Laptop','Americano','Americano','Buku Tulis'],             reward:25, deadline:4},
+  {id:9,  name:'Diskusi Tugas Besar', items:['Laptop','Ensiklopedia','Ensiklopedia','Novel'],            reward:28, deadline:4},
+  {id:10, name:'Nongkrong Santuy',    items:['Earl Grey Tea','Es Teh Manis'],                            reward:8,  deadline:2},
+];
+
+const ALL_ITEMS = ['Ensiklopedia','Novel','Americano','Earl Grey Tea','Laptop','Buku Tulis','Ayam Bakar','Es Teh Manis'];
+
+const SCENARIOS = [
+  {text:'Teman kamu cerita soal masalahnya, tapi kamu tau dia yang salah duluan. Kamu ngapain?',
+   opts:[
+     {label:'Dengerin dulu, kasih pendapat jujur pelan-pelan', val:12},
+     {label:'Setuju-setuju aja biar dia ngerasa didukung', val:-8},
+     {label:'Langsung bilang dia yang salah', val:-5},
+     {label:'Ubah topik, males ribet', val:-15},
+   ]},
+  {text:'Ada yang nyebarin gossip soal anggota circle. Kamu tau siapa pelakunya, tapi dia temen deket kamu.',
+   opts:[
+     {label:'Tegur dia diam-diam dulu sebelum bilang ke yang lain', val:10},
+     {label:'Pura-pura ga tau, tapi jaga jarak', val:-5},
+     {label:'Langsung sebut nama di grup chat', val:-10},
+     {label:'Ikut nyebarin karena emang seru', val:-20},
+   ]},
+  {text:'Teman kamu minta tolong ngerjain tugas bareng di last minute, padahal kamu lagi burnout.',
+   opts:[
+     {label:'Bantu tapi bilang jujur kamu lagi capek', val:8},
+     {label:'Bohong bilang sibuk', val:-8},
+     {label:'Bantu tanpa bilang apa-apa, kesel dalem hati', val:-5},
+     {label:'Tolak dengan alasan yang jelas', val:5},
+   ]},
+  {text:'Kamu tau salah satu teman circle kamu suka sama gebetan orang lain di circle. Kamu ngapain?',
+   opts:[
+     {label:'Jaga rahasia, bukan urusan kamu', val:5},
+     {label:'Kasih tau yang punya gebetan diam-diam', val:-12},
+     {label:'Tanya langsung ke yang bersangkutan', val:8},
+     {label:'Biarin aja, bodoamat', val:-5},
+   ]},
+  {text:'Seseorang di circle dikeluarkan dari grup kelas tanpa penjelasan. Ternyata ada drama lama yang kamu ga tau.',
+   opts:[
+     {label:'Dengerin dua sisi cerita dulu', val:15},
+     {label:'Otomatis bela yang dikeluarin', val:-8},
+     {label:'Otomatis bela mayoritas', val:-10},
+     {label:'Ga mau ikut campur sama sekali', val:-5},
+   ]},
+  {text:'Teman kamu body shaming orang lain, tapi dibungkus sebagai bercanda. Suasana lagi ketawa-ketawa.',
+   opts:[
+     {label:'Tegur tapi tetap santai biar ga awkward', val:12},
+     {label:'Ikut ketawa, nanti juga selesai sendiri', val:-15},
+     {label:'Diem dan berharap orang lain yang negur', val:-8},
+     {label:'Langsung defend yang di-shaming', val:10},
+   ]},
+  {text:'Kamu dapat info kalau ada teman yang sering nitip absen buat orang lain. Dosennya strict banget.',
+   opts:[
+     {label:'Ingetin dia soal risikonya secara pribadi', val:8},
+     {label:'Laporin ke dosen', val:-5},
+     {label:'Ga peduli, bukan masalah kamu', val:-8},
+     {label:'Tawarin ikut nitip juga sekalian', val:-15},
+   ]},
+  {text:'Teman circle kamu tiba-tiba ngajak orang baru gabung tanpa izin siapapun. Orang baru itu agak awkward.',
+   opts:[
+     {label:'Kasih kesempatan, sambut dengan terbuka', val:10},
+     {label:'Pas aja tapi pasang muka ramah', val:-5},
+     {label:'Protes ke teman yang ngajak secara pribadi', val:5},
+     {label:'Langsung dingin ke orang barunya', val:-12},
+   ]},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let G = {
+  players: [],       // {char, role, flagged, eliminated, tasks:[], passiveCooldown:0}
+  order: [],         // ordered by turn
+  currentIdx: 0,
+  session: 1,
+  totalSessions: 8,
+  meter: 30,
+  scenario: null,
+  scenarioChoice: null,
+  votes: {},         // voterId → targetId
+  eliminatedPlayer: null,
+  playerCount: 4,
+  selectedChars: [],
+  firstPlayer: null,
+  leftPlayer: null,
+  voteIdx: 0,        // which voter's turn
+  selectedVoteTarget: null,
+  prevScreen: null,
+};
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+const shuffle = a => [...a].sort(() => Math.random()-.5);
+const pick    = a => a[Math.floor(Math.random()*a.length)];
+const $       = id => document.getElementById(id);
+const activePlayers = () => G.order.filter(p=>!p.eliminated);
+
+function meterClass(v){
+  if(v<=25) return 'm-low';
+  if(v<=50) return 'm-mid';
+  if(v<=75) return 'm-high';
+  return 'm-full';
+}
+
+function meterColor(v){
+  if(v<=25) return '#FF2D78';
+  if(v<=75) return '#FFD600';
+  return '#6B6FFF';
+}
+
+function updateMeter(){
+  const v = Math.max(0,Math.min(100,G.meter));
+  $('main-meter-val').textContent = v;
+  $('main-meter-val').style.color = meterColor(v);
+  const bar = $('main-meter-bar');
+  bar.style.width = v+'%';
+  bar.className = 'meter-fill '+meterClass(v);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function goto(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(screenId).classList.add('active');
+  window.scrollTo(0,0);
+  // render hooks
+  if(screenId==='s-main')    renderMain();
+  if(screenId==='s-task')    renderTasks();
+  if(screenId==='s-item')    renderItemScreen();
+  if(screenId==='s-passive') renderPassive();
+  if(screenId==='s-meeting') resetMeeting();
+  if(screenId==='s-draw')    renderDrawScreen();
+}
+
+function back(){
+  goto('s-main');
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────
+function selectCount(n){
+  G.playerCount = n;
+  G.selectedChars = [];
+  $('btn4').classList.toggle('sel', n===4);
+  $('btn6').classList.toggle('sel', n===6);
+  $('char-section').style.display = 'block';
+  renderCharGrid();
+}
+
+function renderCharGrid(){
+  const grid = $('char-grid');
+  const n = G.playerCount;
+  grid.innerHTML = CHARS.map(c=>{
+    const sel = G.selectedChars.find(s=>s.id===c.id);
+    const dis = !sel && G.selectedChars.length>=n;
+    return `<div class="char-card ${sel?'sel':''} ${dis?'dis':''}" onclick="toggleChar('${c.id}')">
+      <span class="char-emoji">${c.emoji}</span>
+      <span class="b-sm" style="font-weight:600;font-size:11px">${c.name.replace('The ','')}</span>
+    </div>`;
+  }).join('');
+  $('char-label').textContent = `Pilih Karakter (${G.selectedChars.length}/${n})`;
+  $('btn-setup-next').style.display = G.selectedChars.length===n?'block':'none';
+}
+
+function toggleChar(id){
+  const c = CHARS.find(x=>x.id===id);
+  const idx = G.selectedChars.findIndex(s=>s.id===id);
+  if(idx>=0) G.selectedChars.splice(idx,1);
+  else if(G.selectedChars.length<G.playerCount) G.selectedChars.push(c);
+  renderCharGrid();
+}
+
+function setupDone(){
+  const n = G.playerCount;
+  const fraudCount = n===4?1:2;
+  const roles = shuffle([...Array(fraudCount).fill('fraud'),...Array(n-fraudCount).fill('friend')]);
+  G.players = G.selectedChars.map((c,i)=>({
+    char:c, role:roles[i], flagged:false, eliminated:false,
+    tasks:[], passiveCooldown:0
+  }));
+  G.session=1; G.totalSessions=n===4?8:12; G.meter=30;
+  G.votes={}; G.currentIdx=0;
+  startRoleReveal();
+}
+
+// ── ROLE REVEAL ───────────────────────────────────────────────────────────
+let roleIdx = 0;
+let roleStep = 0; // 0=hand, 1=show, 2=clear
+
+function startRoleReveal(){
+  roleIdx=0; roleStep=0;
+  goto('s-role');
+  renderRoleStep();
+}
+
+function renderRoleStep(){
+  const p = G.players[roleIdx];
+  $('role-counter').textContent = `${roleIdx+1} / ${G.players.length}`;
+  const isLast = roleIdx===G.players.length-1;
+  let html='';
+  if(roleStep===0){
+    html=`<div class="role-card">
+      <div style="font-size:48px">${p.char.emoji}</div>
+      <div class="d md" style="margin:12px 0 4px">${p.char.name}</div>
+      <p class="b-sm c-muted mb24">Pastikan hanya kamu yang melihat layar ini</p>
+      <button class="btn btn-p" onclick="nextRoleStep()">LIHAT ROLE KU</button>
+    </div>`;
+  } else if(roleStep===1){
+    const isFraud = p.role==='fraud';
+    html=`<div class="role-card">
+      <div style="font-size:48px">${p.char.emoji}</div>
+      <div class="d md" style="margin:12px 0">${p.char.name}</div>
+      <div class="role-badge ${isFraud?'rb-fraud':'rb-friend'}">${isFraud?'😈 FRAUD':'✅ FRIEND'}</div>
+      <p class="b-sm mt12 mb24" style="color:rgba(255,255,255,.6)">${isFraud?'Gerus Friendship Meter ke 0. Jangan ketahuan!':'Kerja sama, ungkap Fraud, dan capai Friendship Meter 100!'}</p>
+      <button class="btn btn-g" onclick="nextRoleStep()">SUDAH LIHAT ✓</button>
+    </div>`;
+  } else {
+    const nextName = isLast?'':G.players[roleIdx+1].char.name;
+    html=`<div class="role-card">
+      <div style="font-size:48px">🙈</div>
+      <div class="d md" style="margin:12px 0">Layar Aman</div>
+      <p class="b-sm c-muted mb24">${isLast?'Semua pemain sudah lihat role mereka.':'Serahkan ke '+nextName}</p>
+      <button class="btn btn-p" onclick="nextRoleStep()">${isLast?'LANJUT →':'SERAHKAN KE '+nextName.toUpperCase()}</button>
+    </div>`;
+  }
+  $('role-content').innerHTML=html;
+}
+
+function nextRoleStep(){
+  if(roleStep===0){roleStep=1;}
+  else if(roleStep===1){roleStep=2;}
+  else {
+    if(roleIdx<G.players.length-1){roleIdx++;roleStep=0;}
+    else{goto('s-chwazi');initChwazi();}
+  }
+  renderRoleStep();
+}
+
+// ── CHWAZI ────────────────────────────────────────────────────────────────
+let chwaziTouches={}, chwaziWinner=null, chwaziTimer=null, chwaziCounting=false;
+
+function initChwazi(){
+  chwaziTouches={}; chwaziWinner=null; chwaziCounting=false;
+  $('chwazi-hint').style.display='flex';
+  $('chwazi-hint').style.flexDirection='column';
+  $('chwazi-hint').style.alignItems='center';
+  $('chwazi-result').style.display='none';
+  renderChwaziDots();
+  const area=$('chwazi-area');
+  area.addEventListener('touchstart',onChwaziTouch,{passive:false});
+  area.addEventListener('touchend',onChwaziEnd,{passive:false});
+}
+
+function onChwaziTouch(e){
+  e.preventDefault();
+  const rect=e.currentTarget.getBoundingClientRect();
+  Array.from(e.changedTouches).forEach(t=>{
+    const pIdx=Object.keys(chwaziTouches).length;
+    if(pIdx<G.players.length){
+      chwaziTouches[t.identifier]={x:t.clientX-rect.left,y:t.clientY-rect.top,player:G.players[pIdx]};
+    }
+  });
+  renderChwaziDots();
+  if(Object.keys(chwaziTouches).length===G.players.length && !chwaziCounting){
+    startChwaziCount();
+  }
+}
+
+function onChwaziEnd(e){
+  e.preventDefault();
+  if(chwaziWinner) return;
+  Array.from(e.changedTouches).forEach(t=>delete chwaziTouches[t.identifier]);
+  chwaziCounting=false;
+  if(chwaziTimer) clearInterval(chwaziTimer);
+  renderChwaziDots();
+}
+
+function renderChwaziDots(){
+  const area=$('chwazi-area');
+  area.querySelectorAll('.touch-dot').forEach(d=>d.remove());
+  const hint=$('chwazi-hint');
+  if(Object.keys(chwaziTouches).length>0) hint.style.display='none';
+  else hint.style.display='flex';
+  Object.entries(chwaziTouches).forEach(([id,t])=>{
+    const dot=document.createElement('div');
+    dot.className='touch-dot'+(chwaziWinner&&chwaziWinner.player.char.id===t.player.char.id?' winner':'');
+    dot.style.left=t.x+'px'; dot.style.top=t.y+'px';
+    dot.textContent=t.player.char.emoji;
+    area.appendChild(dot);
+  });
+}
+
+let chwaziCount=3;
+function startChwaziCount(){
+  chwaziCounting=true; chwaziCount=3;
+  const area=$('chwazi-area');
+  let countEl=area.querySelector('.chwazi-count');
+  if(!countEl){countEl=document.createElement('div');countEl.className='chwazi-count';
+    countEl.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-d);font-size:80px;color:#fff;text-shadow:0 0 40px rgba(255,45,120,.8);pointer-events:none';
+    area.appendChild(countEl);}
+  countEl.textContent=chwaziCount;
+  chwaziTimer=setInterval(()=>{
+    chwaziCount--;
+    countEl.textContent=chwaziCount>0?chwaziCount:'';
+    if(chwaziCount<=0){
+      clearInterval(chwaziTimer);
+      countEl.remove();
+      const vals=Object.values(chwaziTouches);
+      chwaziWinner=pick(vals);
+      renderChwaziDots();
+      showChwaziResult();
+    }
+  },800);
+}
+
+function showChwaziResult(){
+  const res=$('chwazi-result');
+  res.style.display='block';
+  res.innerHTML=`<div style="text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">${chwaziWinner.player.char.emoji}</div>
+    <div class="d md">${chwaziWinner.player.char.name}</div>
+    <p class="b-sm c-muted mt4 mb16">JALAN DULUAN!</p>
+    <button class="btn btn-p" onclick="chwaziDone()">LANJUT →</button>
+  </div>`;
+}
+
+function simulateChwazi(){
+  chwaziTouches={};
+  const area=$('chwazi-area');
+  const rect=area.getBoundingClientRect();
+  const cx=rect.width/2, cy=rect.height/2, r=100;
+  G.players.forEach((p,i)=>{
+    const angle=(i/G.players.length)*Math.PI*2;
+    chwaziTouches[i]={x:cx+r*Math.cos(angle),y:cy+r*Math.sin(angle),player:p};
+  });
+  renderChwaziDots();
+  setTimeout(startChwaziCount,300);
+}
+
+function chwaziDone(){
+  G.firstPlayer=chwaziWinner.player;
+  goto('s-order');
+  renderOrderScreen();
+}
+
+// ── ORDER ─────────────────────────────────────────────────────────────────
+// G.orderAssign = { charId: number } — nomor urut tiap pemain
+function renderOrderScreen(){
+  const fp=G.firstPlayer;
+  G.orderAssign={};
+  // First player always gets number 1
+  G.orderAssign[fp.char.id]=1;
+  $('order-first').innerHTML=`<div style="font-size:40px">${fp.char.emoji}</div>
+    <div class="d sm mt8">${fp.char.name}</div>
+    <span class="tag tag-flag mt8" style="display:inline-block"># 1 — Jalan Pertama</span>`;
+  renderOrderList();
+}
+
+function renderOrderList(){
+  const n=G.players.length;
+  const others=G.players.filter(p=>p.char.id!==G.firstPlayer.char.id);
+  $('order-list').innerHTML=others.map(p=>{
+    const assigned=G.orderAssign[p.char.id]||'';
+    return `<div class="card2" style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+      <span style="font-size:24px">${p.char.emoji}</span>
+      <span class="b-md" style="font-weight:600;flex:1">${p.char.name}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="assignOrder('${p.char.id}',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:var(--card);color:var(--light);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+        <div style="width:36px;text-align:center;font-family:var(--font-d);font-size:24px;color:${assigned?'var(--yellow)':'var(--muted)'}">${assigned||'?'}</div>
+        <button onclick="assignOrder('${p.char.id}',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:var(--card);color:var(--light);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  // Check if all assigned + no duplicates
+  const allAssigned=others.every(p=>G.orderAssign[p.char.id]);
+  const vals=Object.values(G.orderAssign);
+  const noDups=new Set(vals).size===vals.length;
+  $('order-error').style.display=allAssigned&&!noDups?'block':'none';
+  $('btn-order-next').style.display=allAssigned&&noDups?'block':'none';
+}
+
+function assignOrder(id, delta){
+  const n=G.players.length;
+  const cur=G.orderAssign[id]||1;
+  let next=cur+delta;
+  if(next<2) next=n; // min is 2, player 1 is fixed
+  if(next>n) next=2;
+  G.orderAssign[id]=next;
+  renderOrderList();
+}
+
+function orderDone(){
+  // Build ordered array by assigned number
+  const sorted=[...G.players].sort((a,b)=>{
+    const na=G.orderAssign[a.char.id]||99;
+    const nb=G.orderAssign[b.char.id]||99;
+    return na-nb;
+  });
+  G.order=sorted;
+  G.currentIdx=0;
+  goto('s-main');
+}
+
+// ── MAIN GAME ─────────────────────────────────────────────────────────────
+function renderMain(){
+  const cur=G.order[G.currentIdx];
+  if(!cur) return;
+  const active=activePlayers();
+  $('main-session').textContent=`${G.session} / ${G.totalSessions}`;
+  $('main-active').textContent=active.length;
+  updateMeter();
+  $('main-cur-emoji').textContent=cur.char.emoji;
+  $('main-cur-name').textContent=cur.char.name;
+  const tags=$('main-cur-tags');
+  tags.innerHTML='';
+  if(cur.flagged){tags.innerHTML='<span class="tag tag-flag mt4" style="display:inline-block">⚑ Flagged</span>';}
+  $('act-task-sub').textContent=`${cur.tasks.length}/3 task aktif`;
+  // passive
+  const passiveReady=cur.passiveCooldown>=2;
+  const passBtn=$('act-passive');
+  if(passiveReady){
+    passBtn.className='act-btn passive-ready';
+    $('act-passive-title').style.color='var(--yellow)';
+    $('act-passive-sub').textContent=cur.char.passive;
+  } else {
+    passBtn.className='act-btn disabled';
+    $('act-passive-title').style.color='';
+    $('act-passive-sub').textContent=`Tersedia dalam ${2-cur.passiveCooldown} session lagi`;
+  }
+  // players list
+  $('main-players').innerHTML=G.order.map((p,i)=>`
+    <div class="card2" style="opacity:${p.eliminated?0.4:1};border-left:3px solid ${i===G.currentIdx?'var(--pink)':'transparent'}">
+      <div class="row">
+        <span style="font-size:20px">${p.char.emoji}</span>
+        <span class="b-md" style="font-weight:600">${p.char.name}</span>
+        ${p.flagged&&!p.eliminated?'<span class="tag tag-flag">⚑</span>':''}
+        ${p.eliminated?'<span class="tag tag-elim">Eliminated</span>':''}
+      </div>
+      ${p.tasks.length>0?`<div class="b-sm c-muted mt4">${p.tasks.length} limited task aktif</div>`:''}
+    </div>`).join('');
+}
+
+function endPhase(){
+  const cur=G.order[G.currentIdx];
+  // increment passive cooldown for current player
+  cur.passiveCooldown=(cur.passiveCooldown||0)+1;
+  // expire tasks
+  cur.tasks=cur.tasks.filter(t=>{
+    if(t.completed) return false;
+    if((G.session-t.sessionTaken)>=2){
+      G.meter=Math.max(0,G.meter-8);
+      return false;
+    }
+    return true;
+  });
+  // find next active player
+  const active=activePlayers();
+  const curActiveIdx=active.findIndex(p=>p.char.id===cur.char.id);
+  const nextActive=active[(curActiveIdx+1)%active.length];
+  if(nextActive.char.id===active[0].char.id && curActiveIdx===active.length-1){
+    // session end
+    sessionEnd();
+  } else {
+    G.currentIdx=G.order.indexOf(nextActive);
+    if(checkWinLose()) return;
+    // 50% chance mid-phase scenario
+    if(Math.random()<0.5){
+      G.scenario=pick(SCENARIOS);
+      G.scenarioChoice=null;
+      G.scenarioFromMidPhase=true;
+      renderScenario();
+      goto('s-scenario');
+    } else {
+      goto('s-main');
+    }
+  }
+}
+
+function sessionEnd(){
+  initGroupTasks();
+  // Expire group tasks past deadline
+  G.groupTasks=G.groupTasks.filter(gt=>{
+    if(gt.completed) return false;
+    if((G.session-gt.sessionStart)>=gt.deadline){
+      G.meter=Math.max(0,G.meter-8);
+      return false;
+    }
+    return true;
+  });
+  if(checkWinLose()) return;
+  G.scenario=pick(SCENARIOS);
+  G.scenarioChoice=null;
+  renderScenario();
+  goto('s-scenario');
+}
+
+function checkWinLose(){
+  const v=G.meter;
+  const fraudAlive=G.order.filter(p=>p.role==='fraud'&&!p.eliminated);
+  const friendAlive=G.order.filter(p=>p.role==='friend'&&!p.eliminated);
+  let winner=null;
+  if(v<=0) winner='fraud';
+  else if(v>=100){winner=fraudAlive.length>0?'fraud':'friend';}
+  else if(fraudAlive.length===0) winner='friend';
+  else if(friendAlive.length<=fraudAlive.length) winner='fraud';
+  if(winner){showEndGame(winner);return true;}
+  return false;
+}
+
+// ── TASKS ─────────────────────────────────────────────────────────────────
+// Active group tasks live on G.groupTasks = [{taskDef, participants:[charIds], collected:{charId:[items]}, deadline, sessionStart}]
+function initGroupTasks(){ if(!G.groupTasks) G.groupTasks=[]; }
+
+function gotoTakeTask(){
+  initGroupTasks();
+  assignRandomTask();
+  goto('s-task');
+}
+
+function assignRandomTask(){
+  initGroupTasks();
+  const active=activePlayers();
+  if(active.length<2){ renderTaskResult(null,'Butuh minimal 2 pemain untuk task!'); return; }
+
+  // Pick random task (avoid active ones)
+  const activeTIds=G.groupTasks.map(t=>t.taskDef.id);
+  const pool=TASKS.filter(t=>!activeTIds.includes(t.id));
+  if(pool.length===0){ renderTaskResult(null,'Semua task sedang aktif!'); return; }
+  const taskDef=pick(pool);
+
+  // Random participants: 2–min(4, active.length)
+  const maxP=Math.min(4,active.length);
+  const minP=Math.min(2,active.length);
+  const numP=minP+Math.floor(Math.random()*(maxP-minP+1));
+  const participants=shuffle(active).slice(0,numP);
+
+  // Deadline based on task weight
+  const deadline=taskDef.deadline;
+
+  const groupTask={
+    taskDef,
+    participants: participants.map(p=>p.char.id),
+    collected: {},  // charId → [items submitted]
+    sessionStart: G.session,
+    deadline,
+    completed: false,
+  };
+  participants.forEach(p=>{ groupTask.collected[p.char.id]=[]; });
+  G.groupTasks.push(groupTask);
+
+  renderTaskResult(groupTask, null);
+}
+
+function renderTaskResult(gt, errMsg){
+  const el=$('task-assign-content');
+  if(errMsg){
+    el.innerHTML=`<div style="font-size:48px;margin-bottom:16px">⚠️</div>
+      <div class="d md mb8">Gagal</div>
+      <p class="b-sm c-muted mb24">${errMsg}</p>
+      <button class="btn btn-o" onclick="back()">Kembali</button>`;
+    return;
+  }
+  const participantNames=gt.participants.map(id=>{
+    const p=G.order.find(x=>x.char.id===id);
+    return p?`${p.char.emoji} ${p.char.name}`:'?';
+  });
+  el.innerHTML=`
+    <div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">📋</div>
+    <div class="d md mb4">${gt.taskDef.name}</div>
+    <span class="tag tag-reward mb16" style="display:inline-block">+${gt.taskDef.reward} FM</span>
+    <div class="card mb16" style="text-align:left">
+      <div class="lbl c-muted mb8">ITEM YANG DIBUTUHKAN</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+        ${gt.taskDef.items.map(item=>`<span class="tag tag-item">${item}</span>`).join('')}
+      </div>
+      <div class="lbl c-muted mb8">PESERTA</div>
+      <div class="stack">
+        ${participantNames.map(n=>`<div class="card2 b-sm" style="font-weight:600">${n}</div>`).join('')}
+      </div>
+      <hr class="divider">
+      <div class="row" style="justify-content:space-between">
+        <span class="lbl c-muted">DEADLINE</span>
+        <span class="b-md" style="font-weight:700;color:var(--yellow)">${gt.deadline} session</span>
+      </div>
+    </div>
+    <button class="btn btn-p mb12" onclick="confirmTask()">KONFIRMASI TASK ✓</button>
+    <button class="btn btn-o" onclick="cancelTask()">Batalkan</button>`;
+}
+
+function confirmTask(){ endPhase(); }
+
+function cancelTask(){
+  // Remove last added task
+  if(G.groupTasks&&G.groupTasks.length>0) G.groupTasks.pop();
+  back();
+}
+
+// ── ITEM ──────────────────────────────────────────────────────────────────
+function renderItemScreen(){
+  const cur=G.order[G.currentIdx];
+  initGroupTasks();
+  const scanArea=$('scan-area');
+  scanArea.className='scan-area';
+  scanArea.innerHTML=`<div style="font-size:48px;margin-bottom:12px">📷</div>
+    <p class="b-sm c-muted mb16">Arahkan kamera ke barcode kartu</p>
+    <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="mockScan()">SCAN BARCODE</button>`;
+  // Show group tasks that include this player
+  const myTasks=G.groupTasks.filter(gt=>!gt.completed&&gt.participants.includes(cur.char.id));
+  if(myTasks.length>0){
+    $('item-tasks').innerHTML=`<div class="lbl c-muted mb8 mt16">GROUP TASK KAMU</div>`+
+      myTasks.map(gt=>{
+        const allNeeded=gt.taskDef.items;
+        // flatten all collected across all participants
+        const allCollected=Object.values(gt.collected).flat();
+        // count remaining
+        const needed=[...allNeeded];
+        const got=[];
+        allCollected.forEach(it=>{const i=needed.indexOf(it);if(i>=0){needed.splice(i,1);got.push(it);}});
+        const sessLeft=gt.deadline-(G.session-gt.sessionStart);
+        return `<div class="card2 mb8">
+          <div class="row mb4" style="justify-content:space-between">
+            <div class="b-md" style="font-weight:600">${gt.taskDef.name}</div>
+            <span class="tag" style="background:rgba(255,214,0,.15);color:var(--yellow);border:1px solid rgba(255,214,0,.3)">${sessLeft}s lagi</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            ${got.map(it=>`<span class="tag tag-done">✓ ${it}</span>`).join('')}
+            ${needed.map(it=>`<span class="tag tag-item">${it}</span>`).join('')}
+          </div>
+        </div>`;
+      }).join('');
+  } else {
+    $('item-tasks').innerHTML='<p class="b-sm c-muted mt8">Kamu tidak punya group task aktif.</p>';
+  }
+}
+
+function mockScan(){
+  const scanArea=$('scan-area');
+  scanArea.className='scan-area scanning';
+  scanArea.innerHTML=`<div class="spinner"></div><p class="b-sm c-muted">Memindai...</p>`;
+  setTimeout(()=>{
+    const item=pick(ALL_ITEMS);
+    scanArea.className='scan-area';
+    scanArea.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">📦</div>
+      <div class="d md mb8">${item}</div>
+      <p class="b-sm c-muted mb20">Item berhasil dipindai!</p>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="inputItem('${item}')">INPUT ITEM INI</button>`;
+  },1500);
+}
+
+function inputItem(item){
+  const cur=G.order[G.currentIdx];
+  const isFraud=cur.role==='fraud';
+  let meterDelta=0;
+  initGroupTasks();
+  // Find group tasks this player is in that need this item
+  G.groupTasks.filter(gt=>!gt.completed&&gt.participants.includes(cur.char.id)).forEach(gt=>{
+    const allNeeded=gt.taskDef.items;
+    const allCollected=Object.values(gt.collected).flat();
+    // Check if item is still needed
+    const stillNeeded=[...allNeeded];
+    allCollected.forEach(it=>{const i=stillNeeded.indexOf(it);if(i>=0)stillNeeded.splice(i,1);});
+    if(!stillNeeded.includes(item)) return; // not needed
+    if(isFraud){ meterDelta-=5; return; } // false item
+    if(!gt.collected[cur.char.id]) gt.collected[cur.char.id]=[];
+    gt.collected[cur.char.id].push(item);
+    // Check task completion
+    const totalCollected=Object.values(gt.collected).flat();
+    const checkNeeded=[...allNeeded];
+    let done=true;
+    totalCollected.forEach(it=>{const i=checkNeeded.indexOf(it);if(i>=0)checkNeeded.splice(i,1);});
+    if(checkNeeded.length===0){
+      gt.completed=true;
+      meterDelta+=gt.taskDef.reward;
+    }
+  });
+  G.meter=Math.max(0,Math.min(100,G.meter+meterDelta));
+  endPhase();
+}
+
+// ── POWER-UP ──────────────────────────────────────────────────────────────
+function mockPowerUp(){
+  const area=$('pu-scan-area');
+  area.className='scan-area scanning';
+  area.innerHTML=`<div class="spinner"></div><p class="b-sm c-muted">Memindai...</p>`;
+  setTimeout(()=>{
+    const effects=[
+      {name:'Traktir Seblak',desc:'Pulihkan 10 poin Friendship Meter',delta:10},
+      {name:'Group Chat Bocor',desc:'Lihat kartu event berikutnya',delta:0},
+      {name:'BEM Turun Tangan',desc:'Hapus status Flagged dari 1 pemain',delta:5},
+    ];
+    const ef=pick(effects);
+    G.meter=Math.max(0,Math.min(100,G.meter+ef.delta));
+    area.className='scan-area';
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">⚡</div>
+      <div class="d sm mb4">${ef.name}</div>
+      <p class="b-sm c-muted mb20">${ef.desc}</p>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN</button>`;
+  },1500);
+}
+
+// ── PASSIVE ───────────────────────────────────────────────────────────────
+function renderPassive(){
+  const cur=G.order[G.currentIdx];
+  $('passive-char-name').textContent=cur.char.name;
+  $('passive-desc').textContent=cur.char.passive;
+}
+
+function usePassive(){
+  const cur=G.order[G.currentIdx];
+  cur.passiveCooldown=0;
+  // apply effect
+  if(cur.char.id==='influencer') G.meter=Math.min(100,G.meter+5);
+  if(cur.char.id==='nerd'){
+    if(cur.tasks.length<3) cur.tasks.push({...TASKS[0],collected:[],sessionTaken:G.session,completed:false});
+  }
+  endPhase();
+}
+
+// ── DRAW A CARD ───────────────────────────────────────────────────────────
+const POWER_UP_CARDS = [
+  {name:'Traktir Seblak',      emoji:'🍲', type:'Power-Up', desc:'Pulihkan 10 poin Friendship Meter',          effect:'meter', val:10},
+  {name:'Group Chat Bocor',    emoji:'💬', type:'Power-Up', desc:'Lihat Scenario berikutnya lebih awal',        effect:'info',  val:0},
+  {name:'BEM Turun Tangan',    emoji:'🏫', type:'Power-Up', desc:'Hapus status Flagged dari 1 pemain',          effect:'flag',  val:0},
+  {name:'Nebeng Bestie',       emoji:'🚗', type:'Power-Up', desc:'Teleport ke posisi pemain lain pilihanmu',    effect:'none',  val:0},
+  {name:'Titip Absen',         emoji:'📝', type:'Power-Up', desc:'Tukar posisi dengan pemain lain secara instan',effect:'none', val:0},
+  {name:'Dosen Killer',        emoji:'👨‍🏫', type:'Power-Up', desc:'Kunci 1 pemain selama 1 ronde, tidak bisa aksi',effect:'none',val:0},
+  {name:'Awas Ada Razia',      emoji:'🚨', type:'Power-Up', desc:'Blok 1 pemain dari mengambil kartu selama 1 ronde',effect:'none',val:0},
+];
+
+const ITEM_CARDS = [
+  {name:'Ensiklopedia',  emoji:'📚', type:'Item', desc:'Item untuk Limited Task akademik'},
+  {name:'Novel',         emoji:'📖', type:'Item', desc:'Item untuk Book Club & Study Session'},
+  {name:'Americano',     emoji:'☕', type:'Item', desc:'Item untuk Coffee Run & Cram Session'},
+  {name:'Earl Grey Tea', emoji:'🍵', type:'Item', desc:'Item untuk Coffee Run'},
+  {name:'Laptop',        emoji:'💻', type:'Item', desc:'Item untuk Study Session & Cram Session'},
+  {name:'Buku Tulis',    emoji:'📓', type:'Item', desc:'Item untuk Study Session & Cram Session'},
+  {name:'Ayam Bakar',    emoji:'🍗', type:'Item', desc:'Item untuk Lunch Break'},
+  {name:'Es Teh Manis',  emoji:'🧋', type:'Item', desc:'Item untuk Lunch Break'},
+];
+
+function drawCard(){
+  renderDrawScreen();
+  goto('s-draw');
+}
+
+function renderDrawScreen(){
+  $('draw-result').style.display='none';
+  $('draw-btn-area').innerHTML=`
+    <button class="btn btn-y mb12" onclick="doDrawCard()">DRAW SEKARANG 🎲</button>
+    <button class="btn btn-o" onclick="back()">Kembali</button>`;
+}
+
+function doDrawCard(){
+  const cur = G.order[G.currentIdx];
+  // 50/50 chance Item vs Power-Up
+  const isItem = Math.random() < 0.5;
+  const pool = isItem ? ITEM_CARDS : POWER_UP_CARDS;
+  const drawn = pick(pool);
+
+  // Add to player's hand
+  if(!cur.hand) cur.hand = [];
+  cur.hand.push(drawn);
+
+  // Apply instant effects for Power-Up
+  let effectMsg = '';
+  if(!isItem && drawn.effect === 'meter' && drawn.val > 0){
+    G.meter = Math.min(100, G.meter + drawn.val);
+    effectMsg = `<div class="tag tag-reward mt8" style="display:inline-block">+${drawn.val} FM langsung diterapkan!</div>`;
+  }
+  if(!isItem && drawn.effect === 'flag'){
+    const flagged = G.order.find(p=>p.flagged&&!p.eliminated);
+    if(flagged){ flagged.flagged=false; effectMsg=`<div class="tag tag-friend mt8" style="display:inline-block">Status Flagged dihapus dari ${flagged.char.name}</div>`; }
+    else { effectMsg=`<div class="tag tag-elim mt8" style="display:inline-block">Tidak ada pemain yang Flagged</div>`; }
+  }
+
+  // Show result
+  const result = $('draw-result');
+  result.style.display = 'block';
+  result.style.animation = 'pop .4s ease';
+  result.innerHTML = `
+    <div style="font-size:48px;margin-bottom:12px">${drawn.emoji}</div>
+    <div class="lbl mb4" style="color:${isItem?'#8B8FFF':'#FF2D78'}">${drawn.type}</div>
+    <div class="d sm mb4">${drawn.name}</div>
+    <p class="b-sm c-muted mb8">${drawn.desc}</p>
+    ${effectMsg}`;
+
+  // Update button area
+  $('draw-btn-area').innerHTML=`
+    <button class="btn btn-p" onclick="confirmDraw()">SIMPAN KE TANGAN ✓</button>`;
+}
+
+function confirmDraw(){
+  endPhase();
+}
+
+
+// ── FM POPUP ──────────────────────────────────────────────────────────────
+let fmPopupCallback=null;
+function showFmPopup(delta, newVal, callback){
+  fmPopupCallback=callback;
+  const isPos=delta>0;
+  const oldVal=newVal-delta; // derive old value
+  const clampOld=Math.max(0,Math.min(100,oldVal));
+  const clampNew=Math.max(0,Math.min(100,newVal));
+
+  // Icon + label + delta text
+  $('fm-popup-icon').textContent=delta===0?'😐':isPos?'🎉':'💔';
+  $('fm-popup-label').textContent=isPos?'Friendship Meter naik!':'Friendship Meter turun...';
+  $('fm-popup-delta').textContent=(isPos?'+':'')+delta+' FM';
+  $('fm-popup-delta').style.color=isPos?'#00C896':'#FF2D78';
+
+  // Meter bar color based on new value
+  const barColor=clampNew<=25?'linear-gradient(90deg,#FF2D78,#FF6B35)':
+                 clampNew<=50?'linear-gradient(90deg,#FFD600,#FF9500)':
+                 clampNew<=75?'linear-gradient(90deg,#3B3CC8,#6B6FFF)':
+                              'linear-gradient(90deg,#00C896,#3B3CC8)';
+
+  // Set values
+  $('fm-val-before').textContent=clampOld;
+  $('fm-val-after').textContent=clampNew;
+
+  // Ghost bar = old value (instant)
+  $('fm-bar-ghost').style.width=clampOld+'%';
+  $('fm-bar-ghost').style.background=isPos?'rgba(255,255,255,.15)':'rgba(255,45,120,.2)';
+
+  // Tick mark at old value
+  $('fm-bar-tick').style.left='calc('+clampOld+'% - 1px)';
+  $('fm-bar-tick').style.display=clampOld>0&&clampOld<100?'block':'none';
+
+  // Fill bar starts at old value (no transition), then animate to new
+  const fill=$('fm-bar-fill');
+  fill.style.transition='none';
+  fill.style.background=barColor;
+  fill.style.width=clampOld+'%';
+
+  // Show popup first
+  $('fm-popup').style.display='flex';
+
+  // Then trigger animation after tiny delay so browser paints first
+  setTimeout(()=>{
+    fill.style.transition='width 1.2s cubic-bezier(.34,1.2,.64,1)';
+    fill.style.width=clampNew+'%';
+  }, 80);
+}
+function closeFmPopup(){
+  $('fm-popup').style.display='none';
+  if(fmPopupCallback){fmPopupCallback();fmPopupCallback=null;}
+}
+
+function renderScenario(){
+  const sc=G.scenario;
+  $('scenario-text').textContent=sc.text;
+  $('btn-scenario-confirm').style.display='none';
+  G.scenarioChoice=null;
+  // 4 options — no FM value shown, all grey
+  $('scenario-opts').innerHTML=sc.opts.map((opt,i)=>`
+    <button class="vote-opt" id="sc-opt-${i}" onclick="scenarioVote(${i})">
+      <div class="row" style="gap:12px">
+        <div style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-d);font-size:16px;color:var(--muted)">${i+1}</div>
+        <span class="b-md" style="font-weight:500;color:rgba(255,255,255,.75)">${opt.label}</span>
+      </div>
+    </button>`).join('');
+  // involved
+  const involved=shuffle(activePlayers()).slice(0,Math.min(3,activePlayers().length));
+  $('scenario-involved').innerHTML=involved.map(p=>`
+    <div class="card2 row" style="padding:8px 12px;gap:8px">
+      <span style="font-size:20px">${p.char.emoji}</span>
+      <span class="b-sm" style="font-weight:600">${p.char.name}</span>
+    </div>`).join('');
+}
+
+function scenarioVote(idx){
+  G.scenarioChoice=idx;
+  document.querySelectorAll('#scenario-opts .vote-opt').forEach((b,i)=>{
+    b.className='vote-opt'+(i===idx?' sel-a':'');
+    // highlight number circle
+    const circle=b.querySelector('div');
+    if(circle) circle.style.borderColor=i===idx?'var(--blue)':'rgba(255,255,255,.2)';
+    const label=b.querySelector('span');
+    if(label) label.style.color=i===idx?'var(--light)':'rgba(255,255,255,.75)';
+  });
+  $('btn-scenario-confirm').style.display='block';
+}
+
+function scenarioConfirm(){
+  const sc=G.scenario;
+  const delta=sc.opts[G.scenarioChoice].val;
+  const prevMeter=G.meter;
+  G.meter=Math.max(0,Math.min(100,G.meter+delta));
+  showFmPopup(delta, G.meter, function(){
+    if(checkWinLose()) return;
+    if(G.scenarioFromMidPhase){
+      G.scenarioFromMidPhase=false;
+      goto('s-main');
+    } else {
+      goto('s-meeting');
+    }
+  });
+}
+
+// ── MEETING ───────────────────────────────────────────────────────────────
+let meetingTimer=null, meetingTime=180, meetingStarted=false;
+
+function resetMeeting(){
+  meetingTime=180; meetingStarted=false;
+  if(meetingTimer) clearInterval(meetingTimer);
+  $('timer-display').textContent='3:00';
+  $('timer-ring').style.setProperty('--p','100%');
+  $('btn-start-meeting').style.display='block';
+  $('btn-to-voting').style.display='none';
+  $('btn-to-voting').textContent='LANJUT KE VOTING →';
+}
+
+function startMeeting(){
+  meetingStarted=true;
+  $('btn-start-meeting').style.display='none';
+  $('btn-to-voting').style.display='block';
+  meetingTimer=setInterval(()=>{
+    meetingTime--;
+    const m=Math.floor(meetingTime/60), s=meetingTime%60;
+    $('timer-display').textContent=`${m}:${String(s).padStart(2,'0')}`;
+    const pct=(meetingTime/180)*100;
+    $('timer-ring').style.setProperty('--p',pct+'%');
+    if(meetingTime<=0){
+      clearInterval(meetingTimer);
+      $('btn-to-voting').textContent='WAKTU HABIS → VOTING';
+    }
+  },1000);
+}
+
+function gotoVoting(){
+  goto('s-voting');
+  renderVoting();
+}
+
+// ── VOTING ────────────────────────────────────────────────────────────────
+// All players vote simultaneously — each player selects 1 candidate on shared screen
+// G.votes = { voterId: targetId }
+function renderVoting(){
+  G.votes={};
+  G.selectedVoteTarget=null;
+  $('vote-tally-label').style.display='none';
+  $('vote-tally').style.display='none';
+  $('btn-confirm-vote').style.display='none';
+  const active=activePlayers();
+  // Show all candidates — tap to accumulate votes
+  $('voting-list').innerHTML=active.map(p=>`
+    <button class="vote-opt" id="vopt-${p.char.id}" onclick="toggleVote('${p.char.id}')">
+      <div class="row" style="justify-content:space-between">
+        <div class="row">
+          <span style="font-size:24px;margin-right:10px">${p.char.emoji}</span>
+          <span class="b-md" style="font-weight:600">${p.char.name}</span>
+          ${p.flagged?'<span class="tag tag-flag">⚑</span>':''}
+        </div>
+        <div class="d sm" id="vcount-${p.char.id}" style="color:var(--muted);min-width:24px;text-align:right">0</div>
+      </div>
+    </button>`).join('');
+  // Show instruction
+  const totalVoters=active.length;
+  $('voting-list').insertAdjacentHTML('beforebegin',
+    `<p class="b-sm c-muted mb12">Tiap pemain tap nama tersangka mereka. Total <b style="color:var(--light)">${totalVoters} vote</b> harus diisi.</p>
+     <div class="lbl c-muted mb8">TOTAL VOTE: <span id="vote-total-count" style="color:var(--yellow)">0</span> / ${totalVoters}</div>`
+  );
+}
+
+function toggleVote(targetId){
+  const active=activePlayers();
+  const totalVoters=active.length;
+  // Count current votes
+  const currentTotal=Object.keys(G.votes).length;
+  if(currentTotal>=totalVoters) return; // all votes cast already
+  // Add one vote for this target (anonymous, accumulate)
+  const voteKey='v'+currentTotal;
+  G.votes[voteKey]=targetId;
+  // Update count display
+  const tally={};
+  Object.values(G.votes).forEach(id=>{tally[id]=(tally[id]||0)+1;});
+  active.forEach(p=>{
+    const el=$('vcount-'+p.char.id);
+    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'var(--pink)':'var(--muted)';}
+  });
+  // Update total
+  const newTotal=Object.keys(G.votes).length;
+  $('vote-total-count').textContent=newTotal;
+  // Highlight voted
+  if(tally[targetId]>0){
+    const btn=$('vopt-'+targetId);
+    if(btn) btn.style.borderColor='rgba(255,45,120,0.4)';
+  }
+  // Enable confirm when all votes cast
+  if(newTotal>=totalVoters){
+    $('btn-confirm-vote').style.display='block';
+  }
+}
+
+function confirmVote(){
+  // Tally
+  const tally={};
+  Object.values(G.votes).forEach(id=>{if(id)tally[id]=(tally[id]||0)+1;});
+  const active=activePlayers();
+  // Show tally result
+  const sorted=active.map(p=>({p,count:tally[p.char.id]||0})).sort((a,b)=>b.count-a.count);
+  $('vote-tally-label').style.display='block';
+  $('vote-tally').style.display='flex';
+  $('vote-tally').innerHTML=sorted.map(({p,count})=>`
+    <div class="card2" style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">${p.char.emoji}</span>
+      <span class="b-md" style="font-weight:600;flex:1">${p.char.name}</span>
+      ${p.flagged?'<span class="tag tag-flag">⚑</span>':''}
+      <div class="d sm" style="color:${count>0?'var(--pink)':'var(--muted)'}">${count} vote</div>
+    </div>`).join('');
+  $('btn-confirm-vote').textContent='EKSEKUSI HASIL →';
+  $('btn-confirm-vote').onclick=executeTally;
+}
+
+function executeTally(){
+  tallyVotes();
+}
+
+function tallyVotes(){
+  const tally={};
+  Object.values(G.votes).forEach(id=>{if(id) tally[id]=(tally[id]||0)+1;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length===0){nextSession();return;}
+  const topId=sorted[0][0];
+  const target=G.order.find(p=>p.char.id===topId);
+  if(!target){nextSession();return;}
+
+  if(target.flagged){
+    // eliminate
+    target.eliminated=true;
+    target.flagged=false;
+    G.eliminatedPlayer=target;
+    showElimination(target);
+  } else {
+    // check if someone else is flagged
+    const currentlyFlagged=G.order.find(p=>p.flagged&&!p.eliminated);
+    if(currentlyFlagged) currentlyFlagged.flagged=false;
+    target.flagged=true;
+    nextSession();
+  }
+}
+
+function showElimination(p){
+  $('elim-icon').textContent=p.role==='fraud'?'😈':'😢';
+  $('elim-name').textContent=p.char.name;
+  $('elim-badge').textContent=p.role==='fraud'?'😈 FRAUD':'✅ FRIEND';
+  $('elim-badge').className='role-badge '+(p.role==='fraud'?'rb-fraud':'rb-friend');
+  $('elim-msg').textContent=p.role==='fraud'?'Fraud berhasil diungkap! Circle pertemanan makin aman.':'Bukan Fraud... Circle kehilangan seorang teman sejati.';
+  goto('s-elim');
+}
+
+function afterElimination(){
+  G.eliminatedPlayer=null;
+  if(checkWinLose()) return;
+  nextSession();
+}
+
+function nextSession(){
+  G.session++;
+  const active=activePlayers();
+  if(active.length===0){checkWinLose();return;}
+  // Find next starting player — skip to first active in order
+  const firstActive=G.order.find(p=>!p.eliminated);
+  G.currentIdx=G.order.indexOf(firstActive);
+  if(checkWinLose()) return;
+  goto('s-main');
+}
+
+// ── END GAME ──────────────────────────────────────────────────────────────
+function showEndGame(winner){
+  const banner=$('winner-banner');
+  banner.className='winner-banner '+(winner==='friend'?'wb-friend':'wb-fraud');
+  $('winner-icon').textContent=winner==='friend'?'🎉':'😈';
+  $('winner-title').textContent=winner==='friend'?'FRIEND MENANG!':'FRAUD MENANG!';
+  $('winner-desc').textContent=winner==='friend'?'Semua Fraud berhasil diungkap. Circle aman!':
+    G.meter<=0?'Friendship Meter menyentuh 0. Circle hancur.':'Fraud bertahan hingga akhir permainan.';
+  $('winner-meter').textContent=`Friendship Meter: ${G.meter}`;
+  $('end-players').innerHTML=G.order.map(p=>`
+    <div class="card2">
+      <div class="row">
+        <span style="font-size:20px">${p.char.emoji}</span>
+        <span class="b-md" style="font-weight:600">${p.char.name}</span>
+        <span class="tag ${p.role==='fraud'?'tag-fraud':'tag-friend'}">${p.role==='fraud'?'😈 Fraud':'✅ Friend'}</span>
+        ${p.eliminated?'<span class="tag tag-elim">Eliminated</span>':''}
+      </div>
+    </div>`).join('');
+  goto('s-end');
+  spawnConfetti();
+}
+
+function spawnConfetti(){
+  if(G.meter<=0) return;
+  const colors=['#FF2D78','#3B3CC8','#FFD600','#00C896','#FF6B35'];
+  for(let i=0;i<40;i++){
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='confetti-dot';
+      d.style.cssText=`left:${Math.random()*100}%;background:${pick(colors)};
+        animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.5}s`;
+      document.body.appendChild(d);
+      setTimeout(()=>d.remove(),4000);
+    },i*50);
+  }
+}
+
+function restartGame(){
+  G={players:[],order:[],currentIdx:0,session:1,totalSessions:8,meter:30,
+    scenario:null,scenarioChoice:null,votes:{},eliminatedPlayer:null,
+    playerCount:4,selectedChars:[],firstPlayer:null,leftPlayer:null,
+    voteIdx:0,selectedVoteTarget:null,prevScreen:null,groupTasks:[],scenarioFromMidPhase:false};
+  // Reset UI state
+  $('btn4').classList.remove('sel');
+  $('btn6').classList.remove('sel');
+  $('char-section').style.display='none';
+  $('btn-setup-next').style.display='none';
+  // Reset chwazi
+  chwaziTouches={}; chwaziWinner=null; chwaziCounting=false;
+  if(chwaziTimer) clearInterval(chwaziTimer);
+  // Reset meeting
+  if(meetingTimer) clearInterval(meetingTimer);
+  meetingTime=180; meetingStarted=false;
+  goto('s-splash');
+}
+</script>
+</body>
+</html>
