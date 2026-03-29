@@ -56,7 +56,7 @@
   --success-glow: rgba(0,200,150,0.25);    /* Green glow */
 
   /* ── NEUTRAL COLORS (Backgrounds & Text) ──────────────────────────────── */
-  --bg-dark: #080812;           /* Darkest background */
+  --bg-dark: #242449;           /* Darkest background */
   --bg-surface: #0F0F22;        /* Surface/section bg */
   --bg-card: #15152E;           /* Card backgrounds */
   --bg-card2: #1C1C3A;          /* Secondary card bg */
@@ -209,13 +209,51 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
 .timer-ring{width:132px;height:132px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;background:conic-gradient(var(--primary) var(--p),rgba(255,255,255,.07) 0%)}
 .timer-inner{width:106px;height:106px;border-radius:50%;background:var(--bg-dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:38px;color:var(--text-primary)}
 
+/* ── CARD VIEWER ── */
+#s-card-viewer .scroll{max-height:calc(100vh - 280px)}
+#card-viewer-grid{padding-bottom:20px}
+#card-viewer-filters .tag:hover{opacity:.8}
+#card-viewer-loc-filters .tag:hover{opacity:.8}
+
+/* ── CARD LIST ── */
+#s-card-list .scroll{max-height:calc(100vh - 340px)}
+#card-list-grid{padding-bottom:20px}
+.card-list-item{
+  background:var(--bg-card);
+  border-radius:12px;
+  padding:14px 12px;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .15s,border-color .15s;
+  border:1.5px solid rgba(255,255,255,.06);
+}
+.card-list-item:active{transform:scale(.96)}
+.card-list-item.parse-error{
+  border-color:var(--primary);
+  background:rgba(255,45,120,.08);
+}
+.card-list-item .parse-error-badge{
+  background:var(--primary);
+  color:#fff;
+  font-size:9px;
+  padding:3px 8px;
+  border-radius:4px;
+  display:inline-block;
+  margin-top:6px;
+}
+
 /* ── SPLASH ── */
 .splash-bg{
   position:absolute;inset:0;
   background-color:#4754D6;
   background-image:repeating-conic-gradient(#3D48C4 0% 25%,transparent 0% 50%);
   background-size:44px 44px;
+  animation:checkerboardDiagonal 5s linear infinite;
   z-index:0;
+}
+@keyframes checkerboardDiagonal{
+  0%{background-position:0 0}
+  100%{background-position:44px 44px}
 }
 .splash-vignette{
   position:absolute;inset:0;
@@ -384,6 +422,19 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <div class="char-grid mb24" id="char-grid"></div>
     <button class="btn btn-p" id="btn-setup-next" style="display:none" onclick="setupDone()">LANJUT →</button>
   </div>
+
+  <!-- Card List Button -->
+  <div class="mt24 mb16">
+    <div class="lbl mb8">DATABASE</div>
+    <button class="btn btn-o" onclick="gotoCardList()" style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:24px">📋</span>
+      <div style="text-align:left">
+        <div class="b-md" style="font-weight:600">Card List</div>
+        <div class="b-sm c-muted">Lihat semua kartu dalam database</div>
+      </div>
+      <span style="margin-left:auto;font-size:18px">›</span>
+    </button>
+  </div>
 </div>
 
 <!-- ══ ROLE REVEAL ═════════════════════════════════════════════════════ -->
@@ -501,11 +552,111 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <!-- player list -->
   <div class="sec-lbl mb10"><span class="lbl">STATUS PEMAIN</span></div>
   <div class="stack" id="main-players"></div>
+
+  <!-- card viewer button -->
+  <div class="sec-lbl mb10 mt20"><span class="lbl">KOLEKSI KARTU</span></div>
+  <button class="act-btn" onclick="gotoCardViewer()">
+    <div class="act-icon" style="background:rgba(255,255,255,.08)">📖</div>
+    <div style="flex:1"><div class="b-md" style="font-weight:600">Card Viewer</div><div class="b-sm c-muted" id="card-viewer-count">0 kartu terdeteksi</div></div>
+    <div style="color:var(--muted);font-size:18px">›</div>
+  </button>
 </div>
 
 <!-- ══ TAKE TASK ═══════════════════════════════════════════════════════ -->
 <div class="screen" id="s-task" style="justify-content:center;text-align:center">
   <div id="task-assign-content"></div>
+</div>
+
+<!-- ══ CARD VIEWER ═══════════════════════════════════════════════════════ -->
+<div class="screen" id="s-card-viewer">
+  <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+    <div>
+      <div class="screen-title">CARD VIEWER</div>
+      <div class="screen-sub">Koleksi kartu yang sudah terdeteksi</div>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
+  </div>
+
+  <!-- filters -->
+  <div class="row mb16" style="flex-wrap:wrap;gap:8px" id="card-viewer-filters">
+    <button class="tag tag-friend" onclick="setCardFilter('all')" id="filter-all" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SEMUA</button>
+    <button class="tag tag-item" onclick="setCardFilter('item')" id="filter-item" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ITEM</button>
+    <button class="tag tag-flag" onclick="setCardFilter('action')" id="filter-action" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ACTION</button>
+    <button class="tag tag-fraud" onclick="setCardFilter('special')" id="filter-special" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SPECIAL</button>
+    <button class="tag tag-elim" onclick="setCardFilter('power-up')" id="filter-powerup" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">POWER-UP</button>
+  </div>
+
+  <!-- location filters -->
+  <div class="row mb16" style="flex-wrap:wrap;gap:8px" id="card-viewer-loc-filters">
+    <button class="tag" onclick="setCardLocFilter('all')" id="locfilter-all" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-primary);padding:8px 14px;font-size:11px;border-radius:6px">SEMUA LOKASI</button>
+    <button class="tag" onclick="setCardLocFilter('perpustakaan')" id="locfilter-perpustakaan" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">📚 PERPUSTAKAAN</button>
+    <button class="tag" onclick="setCardLocFilter('cafe')" id="locfilter-cafe" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">☕ CAFE</button>
+    <button class="tag" onclick="setCardLocFilter('kelas')" id="locfilter-kelas" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🏫 KELAS</button>
+    <button class="tag" onclick="setCardLocFilter('kantin')" id="locfilter-kantin" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🍗 KANTIN</button>
+  </div>
+
+  <!-- cards grid -->
+  <div class="scroll" style="flex:1;overflow-y:auto">
+    <div class="char-grid" id="card-viewer-grid" style="grid-template-columns:1fr 1fr;gap:10px"></div>
+    <div id="card-viewer-empty" style="text-align:center;padding:40px 20px;display:none">
+      <div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <p class="b-md c-muted">Belum ada kartu yang terdeteksi</p>
+      <p class="b-sm c-muted" style="margin-top:8px">Scan QR code kartu untuk menambahkannya ke koleksi</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CARD LIST (DATABASE) ═══════════════════════════════════════════ -->
+<div class="screen" id="s-card-list">
+  <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+    <div>
+      <div class="screen-title">CARD LIST</div>
+      <div class="screen-sub">Database semua kartu</div>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="goto('s-setup')" style="flex-shrink:0">← Kembali</button>
+  </div>
+
+  <!-- stats bar -->
+  <div class="card2 mb16" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+    <div class="b-sm">
+      <span class="c-primary" id="card-list-count" style="font-weight:700">0</span>
+      <span class="c-muted"> kartu ditampilkan</span>
+    </div>
+    <div class="b-sm c-muted">
+      Total: <span id="card-list-total" style="color:var(--text-primary)">0</span> kartu
+    </div>
+  </div>
+
+  <!-- filter bar -->
+  <div class="lbl mb8">FILTER</div>
+  <div class="row mb12" style="flex-wrap:wrap;gap:8px" id="card-list-type-filters">
+    <button class="tag tag-friend" onclick="setCardListTypeFilter('all')" id="clf-all" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SEMUA</button>
+    <button class="tag tag-item" onclick="setCardListTypeFilter('item')" id="clf-item" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ITEM</button>
+    <button class="tag tag-flag" onclick="setCardListTypeFilter('action')" id="clf-action" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ACTION</button>
+    <button class="tag tag-fraud" onclick="setCardListTypeFilter('special')" id="clf-special" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SPECIAL</button>
+    <button class="tag tag-elim" onclick="setCardListTypeFilter('instant')" id="clf-instant" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">INSTANT</button>
+    <button class="tag" onclick="setCardListTypeFilter('archetype')" id="clf-archetype" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">ARCHETYPE</button>
+    <button class="tag" onclick="setCardListTypeFilter('power-up')" id="clf-powerup" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">POWER-UP</button>
+  </div>
+
+  <!-- location filter -->
+  <div class="lbl mb8">LOKASI</div>
+  <div class="row mb16" style="flex-wrap:wrap;gap:8px" id="card-list-loc-filters">
+    <button class="tag" onclick="setCardListLocFilter('all')" id="cll-all" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-primary);padding:8px 14px;font-size:11px;border-radius:6px">SEMUA</button>
+    <button class="tag" onclick="setCardListLocFilter('perpustakaan')" id="cll-perpustakaan" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">📚 PERP</button>
+    <button class="tag" onclick="setCardListLocFilter('cafe')" id="cll-cafe" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">☕ CAFE</button>
+    <button class="tag" onclick="setCardListLocFilter('kelas')" id="cll-kelas" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🏫 KELAS</button>
+    <button class="tag" onclick="setCardListLocFilter('kantin')" id="cll-kantin" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🍗 KANTIN</button>
+  </div>
+
+  <!-- cards grid -->
+  <div class="scroll" style="flex:1;overflow-y:auto">
+    <div class="char-grid" id="card-list-grid" style="grid-template-columns:1fr 1fr;gap:10px"></div>
+    <div id="card-list-empty" style="text-align:center;padding:40px 20px;display:none">
+      <div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <p class="b-md c-muted">Tidak ada kartu yang cocok dengan filter</p>
+    </div>
+  </div>
 </div>
 
 <!-- ══ INPUT ITEM ══════════════════════════════════════════════════════ -->
@@ -779,6 +930,8 @@ let G = {
   voteIdx: 0,        // which voter's turn
   selectedVoteTarget: null,
   prevScreen: null,
+  groupTasks: [],    // Active group tasks
+  detectedCards: {}, // Cards scanned during gameplay (for Card Viewer)
 };
 
 // ── UTILS ─────────────────────────────────────────────────────────────────
@@ -1210,6 +1363,13 @@ function renderMain(){
       ${p.tasks.length>0&&!p.eliminated?`<div class="b-sm c-muted mt4">${p.tasks.length} task aktif</div>`:''}
     </div>`;
   }).join('');
+
+  // Update card viewer count
+  const countEl = $('card-viewer-count');
+  if(countEl) {
+    const count = G.detectedCards ? Object.keys(G.detectedCards).length : 0;
+    countEl.textContent = `${count} kartu terdeteksi`;
+  }
 }
 
 function endPhase(){
@@ -1410,41 +1570,238 @@ function renderItemScreen(){
   }
 }
 
-// ══ SCANNER ENGINE ════════════════════════════════════════════════════════
-const SCAN_CARDS = {
-  // ── PERPUSTAKAAN ITEMS ────────────────────────────────────────────────
-  'perp_item_001': {name:'Ensiklopedia', emoji:'📚', type:'item', loc:'perpustakaan', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'perp_item_002': {name:'Ensiklopedia', emoji:'📚', type:'item', loc:'perpustakaan', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  'perp_item_003': {name:'Novel',        emoji:'📖', type:'item', loc:'perpustakaan', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'perp_item_004': {name:'Novel',        emoji:'📖', type:'item', loc:'perpustakaan', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  // ── CAFE ITEMS ────────────────────────────────────────────────────────
-  'cafe_item_001': {name:'Americano',    emoji:'☕', type:'item', loc:'cafe', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'cafe_item_002': {name:'Americano',    emoji:'☕', type:'item', loc:'cafe', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  'cafe_item_003': {name:'Earl Grey Tea',emoji:'🍵', type:'item', loc:'cafe', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'cafe_item_004': {name:'Earl Grey Tea',emoji:'🍵', type:'item', loc:'cafe', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  // ── KELAS ITEMS ───────────────────────────────────────────────────────
-  'kelas_item_001': {name:'Laptop',      emoji:'💻', type:'item', loc:'kelas', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'kelas_item_002': {name:'Laptop',      emoji:'💻', type:'item', loc:'kelas', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  'kelas_item_003': {name:'Buku Tulis',  emoji:'📓', type:'item', loc:'kelas', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'kelas_item_004': {name:'Buku Tulis',  emoji:'📓', type:'item', loc:'kelas', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  // ── KANTIN ITEMS ──────────────────────────────────────────────────────
-  'kantin_item_001': {name:'Ayam Bakar', emoji:'🍗', type:'item', loc:'kantin', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'kantin_item_002': {name:'Ayam Bakar', emoji:'🍗', type:'item', loc:'kantin', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  'kantin_item_003': {name:'Es Teh Manis',emoji:'🧋', type:'item', loc:'kantin', desc:'Dapat digunakan untuk menyelesaikan Task'},
-  'kantin_item_004': {name:'Es Teh Manis',emoji:'🧋', type:'item', loc:'kantin', desc:'Dapat digunakan untuk menyelesaikan Task', corrupt:true},
-  // ── KELAS ACTIONS ─────────────────────────────────────────────────────
-  'kelas_action_001': {name:'Titip Absen', emoji:'📝', type:'action', loc:'kelas', desc:'Nasib FM ditentukan koin — bisa beruntung, bisa tidak.', effect:'flip_coin', val:15, cost:2},
-  // ── CAFE SPECIALS ─────────────────────────────────────────────────────
-  'cafe_special_001': {name:'Ghibah', emoji:'👀', type:'special', loc:'cafe', desc:'Radar sosial aktif. Sesuatu terungkap...', effect:'ghibah', val:0},
-  // ── POWER-UPS ─────────────────────────────────────────────────────────
-  'powerup_001': {name:'Traktir Seblak',   emoji:'🍲', type:'power-up', desc:'Pulihkan 10 poin Friendship Meter',                effect:'meter', val:10},
-  'powerup_002': {name:'Group Chat Bocor', emoji:'💬', type:'power-up', desc:'Lihat Scenario berikutnya lebih awal',              effect:'info',  val:0},
-  'powerup_003': {name:'BEM Turun Tangan', emoji:'🏫', type:'power-up', desc:'Hapus status Flagged dari 1 pemain',                effect:'flag',  val:0},
-  'powerup_004': {name:'Nebeng Bestie',    emoji:'🚗', type:'power-up', desc:'Teleport ke posisi pemain lain pilihanmu',          effect:'none',  val:0},
-  'powerup_005': {name:'Titip Absen',      emoji:'📝', type:'power-up', desc:'Tukar posisi dengan pemain lain secara instan',     effect:'none',  val:0},
-  'powerup_006': {name:'Dosen Killer',     emoji:'👨‍🏫', type:'power-up', desc:'Kunci 1 pemain selama 1 ronde, tidak bisa aksi',  effect:'none',  val:0},
-  'powerup_007': {name:'Awas Ada Razia',   emoji:'🚨', type:'power-up', desc:'Blok 1 pemain dari mengambil kartu selama 1 ronde', effect:'none',  val:0},
+// ═══════════════════════════════════════════════════════════════════════════
+// CARD DATABASE — From "FRIEND OR FRAUD_ — CARD DATABASE - Sheet1.csv"
+// ═══════════════════════════════════════════════════════════════════════════
+const CARDS = {
+  // ── ARCHETYPE CARDS ─────────────────────────────────────────────────────
+  'artist_archetype': {
+    name:'The Artist', type:'archetype', emoji:'🖌️',
+    desc:'"My feelings are valid. My deadlines are not."',
+    effect:'Atelier: Bebas ambil 1 kartu item langsung dari paling atas deck.'
+  },
+  'influencer_archetype': {
+    name:'The Influencer', type:'archetype', emoji:'📱',
+    desc:'"Smash that like button or I\'ll unfollow you IRL."',
+    effect:'Going Viral: Nilai Friendship Meter yang diperoleh pada session ini dikalikan 2.'
+  },
+  'nerd_archetype': {
+    name:'The Nerd', type:'archetype', emoji:'📚',
+    desc:'"Technically, you\'re wrong. Literally, always."',
+    effect:'Ahead of Syllabus: Pemain ini dapat langsung menyelesaikan 1 side task'
+  },
+  'fashionista_archetype': {
+    name:'The Fashionista', type:'archetype', emoji:'💄',
+    desc:'"Overdressed? No. You\'re just underprepared."',
+    effect:'Main Character Energy: Social Battery tidak akan berkurang saat digunakan pada session ini.'
+  },
+  'busybee_archetype': {
+    name:'The Busy Bee', type:'archetype', emoji:'☕',
+    desc:'"Sorry, can we reschedule? I\'m booked until 2030."',
+    effect:'SOS Meeting: Dapat menginisiasi Emergency Meeting secara langsung.'
+  },
+  'phantom_archetype': {
+    name:'The Phantom', type:'archetype', emoji:'👻',
+    desc:'"I was there. You just didn\'t see me leave."',
+    effect:'Now You See Me: Pemain ini dapat menjalankan Phase sebanyak 2 kali berturut-turut.'
+  },
+
+  // ── MAP CARDS ───────────────────────────────────────────────────────────
+  'perp_map': { name:'Perpustakaan', type:'map', emoji:'📚', loc:'perpustakaan' },
+  'cafe_map': { name:'Cafe', type:'map', emoji:'☕', loc:'cafe' },
+  'kelas_map': { name:'Kelas', type:'map', emoji:'🏫', loc:'kelas' },
+  'kantin_map': { name:'Kantin', type:'map', emoji:'🍗', loc:'kantin' },
+
+  // ── PERPUSTAKAAN ITEMS ──────────────────────────────────────────────────
+  'perp_item_001': {
+    name:'Ensiklopedia', type:'item', emoji:'📚', loc:'perpustakaan',
+    desc:'"Bukan flexing, tapi gue tau segalanya."',
+    effect:'Mendapatkan Ensiklopedia! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
+  },
+  'perp_item_002': {
+    name:'Ensiklopedia', type:'item', emoji:'📚', loc:'perpustakaan', corrupt:true,
+    desc:'"Bukan flexing, tapi gue tau segalanya."',
+    effect:'Mendapatkan Ensiklopedia! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
+  },
+  'perp_item_003': {
+    name:'Novel', type:'item', emoji:'📖', loc:'perpustakaan',
+    desc:'"Hidup udah drama, bacaannya juga drama."',
+    effect:'Mendapatkan Novel! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
+  },
+  'perp_item_004': {
+    name:'Novel', type:'item', emoji:'📖', loc:'perpustakaan', corrupt:true,
+    desc:'"Hidup udah drama, bacaannya juga drama."',
+    effect:'Mendapatkan Novel! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
+  },
+
+  // ── PERPUSTAKAAN SPECIAL/ACTION/INSTANT ─────────────────────────────────
+  'perp_special_001': {
+    name:'Meeting Sekarang!', type:'special', emoji:'⏰', loc:'perpustakaan',
+    effect:'Perpanjang deadline side task aktif milik pemain sebanyak 2 session.'
+  },
+  'perp_action_001': {
+    name:'Nugas Bareng', type:'action', emoji:'📝', loc:'perpustakaan',
+    effect:'Pulihkan 15 poin Friendship Meter dan tambahkan 1 Social Battery untuk setiap pemain',
+    fm:15, sb:2
+  },
+  'perp_action_002': {
+    name:'Besok Ujian', type:'action', emoji:'📚', loc:'perpustakaan',
+    effect:'Pulihkan 15/20 poin berdasarkan Friendship Meter 40%/60%',
+    fm:'15/20', sb:4
+  },
+  'perp_action_003': {
+    name:'Fokus Belajar', type:'action', emoji:'🎯', loc:'perpustakaan',
+    effect:'Pulihkan 3 Social Battery untuk pemain, ambil 1 kartu [Ensiklopedia/Novel] teratas dari deck.',
+    sb:1
+  },
+  'perp_instant_001': {
+    name:'Bisa diem gak?', type:'instant', emoji:'🤫', loc:'perpustakaan',
+    effect:'Turunkan 10 poin dari Friendship Meter dan hilangkan 1 Social Battery untuk pemain',
+    fm:-10
+  },
+
+  // ── CAFE ITEMS ──────────────────────────────────────────────────────────
+  'cafe_item_001': {
+    name:'Americano', type:'item', emoji:'☕', loc:'cafe',
+    effect:'Mendapatkan Americano! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
+  },
+  'cafe_item_002': {
+    name:'Americano', type:'item', emoji:'☕', loc:'cafe', corrupt:true,
+    effect:'Mendapatkan Americano! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
+  },
+  'cafe_item_003': {
+    name:'Earl Grey Tea', type:'item', emoji:'🍵', loc:'cafe',
+    effect:'Mendapatkan Earl Grey Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
+  },
+  'cafe_item_004': {
+    name:'Earl Grey Tea', type:'item', emoji:'🍵', loc:'cafe', corrupt:true,
+    effect:'Mendapatkan Earl Grey Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
+  },
+
+  // ── CAFE SPECIAL/ACTION/INSTANT ─────────────────────────────────────────
+  'cafe_special_001': {
+    name:'Ghibah', type:'special', emoji:'👀', loc:'cafe',
+    effect:'Status pemain Fraud akan sedikit terdeteksi berdasarkan Social Battery nya'
+  },
+  'cafe_action_001': {
+    name:'Sesi Curhat', type:'action', emoji:'💬', loc:'cafe',
+    desc:'"Jadi kamu sama dia bagaimana kabarnya..."',
+    effect:'Pulihkan 15 poin Friendship Meter dan tambahkan 1 Social Battery untuk setiap pemain',
+    fm:15, sb:2
+  },
+  'cafe_action_002': {
+    name:'WFC Bareng', type:'action', emoji:'🍽️', loc:'cafe',
+    effect:'Langsung initiate sebuah Scenario'
+  },
+  'cafe_action_003': {
+    name:'Nongki Ges', type:'action', emoji:'🎉', loc:'cafe',
+    effect:'Pulihkan 20 poin Friendship Meter dan tambahkan 3 Social Battery untuk setiap pemain',
+    fm:20, sb:3
+  },
+  'cafe_instant_001': {
+    name:'Awas Tumpah!', type:'instant', emoji:'⚠️', loc:'cafe',
+    effect:'Ambil 1 kartu [Americano/Earl Grey Tea] teratas dari deck kemudian buang ke discard pile.'
+  },
+
+  // ── KELAS ITEMS ─────────────────────────────────────────────────────────
+  'kelas_item_001': {
+    name:'Laptop', type:'item', emoji:'💻', loc:'kelas',
+    effect:'Mendapatkan Laptop! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
+  },
+  'kelas_item_002': {
+    name:'Laptop', type:'item', emoji:'💻', loc:'kelas', corrupt:true,
+    effect:'Mendapatkan Laptop! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
+  },
+  'kelas_item_003': {
+    name:'Buku Tulis', type:'item', emoji:'📓', loc:'kelas',
+    effect:'Mendapatkan Buku Tulis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
+  },
+  'kelas_item_004': {
+    name:'Buku Tulis', type:'item', emoji:'📓', loc:'kelas', corrupt:true,
+    effect:'Mendapatkan Buku Tulis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
+  },
+
+  // ── KELAS SPECIAL/ACTION/INSTANT ────────────────────────────────────────
+  'kelas_special_001': {
+    name:'Presentasi Kelompok', type:'special', emoji:'📊', loc:'kelas',
+    effect:'Semua pemain -2 Social Battery untuk tampil bersama. Jika berhasil, FM +15.'
+  },
+  'kelas_action_001': {
+    name:'Titip Absen', type:'action', emoji:'📝', loc:'kelas',
+    effect:'Pulihkan/Turunkan 15 poin dari Friendship Meter (flip coin)',
+    fm:15, sb:2, flipCoin:true
+  },
+  'kelas_action_002': {
+    name:'Ceramah Dosen', type:'action', emoji:'👨‍🏫', loc:'kelas',
+    effect:'Langsung initiate sebuah Scenario',
+    sb:2
+  },
+  'kelas_instant_001': {
+    name:'Ketiduran di Kelas', type:'instant', emoji:'😴', loc:'kelas',
+    effect:'Turunkan 10 poin dari Friendship Meter dan tambahkan 1 Social Battery untuk pemain',
+    fm:-10
+  },
+  'kelas_instant_002': {
+    name:'Dosen Killer Masuk!', type:'instant', emoji:'👨‍🏫', loc:'kelas',
+    effect:'Deck lokasi ini terkunci hingga session berikutnya'
+  },
+
+  // ── KANTIN ITEMS ────────────────────────────────────────────────────────
+  'kantin_item_001': {
+    name:'Ayam Bakar', type:'item', emoji:'🍗', loc:'kantin',
+    effect:'Mendapatkan Ayam Bakar! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
+  },
+  'kantin_item_002': {
+    name:'Ayam Bakar', type:'item', emoji:'🍗', loc:'kantin', corrupt:true,
+    effect:'Mendapatkan Ayam Bakar! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
+  },
+  'kantin_item_003': {
+    name:'Es Teh Manis', type:'item', emoji:'🧋', loc:'kantin',
+    effect:'Mendapatkan Es Teh Manis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
+  },
+  'kantin_item_004': {
+    name:'Es Teh Manis', type:'item', emoji:'🧋', loc:'kantin', corrupt:true,
+    effect:'Mendapatkan Es Teh Manis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
+  },
+
+  // ── KANTIN SPECIAL/ACTION/INSTANT ───────────────────────────────────────
+  'kantin_special_001': {
+    name:'Surprise, HABEDE!!', type:'special', emoji:'🎂', loc:'kantin',
+    effect:'Pulihkan 25 poin Friendship Meter dan pemain dapat mengambil 1 kartu bebas.',
+    fm:25
+  },
+  'kantin_action_001': {
+    name:'Sharing is Caring', type:'action', emoji:'🤝', loc:'kantin',
+    effect:'Ambil 1 kartu [Ayam Bakar/Es Teh Manis] teratas dari deck.',
+    sb:2
+  },
+  'kantin_action_002': {
+    name:'Traktir Seblak', type:'action', emoji:'🍲', loc:'kantin',
+    effect:'Pulihkan 10 poin Friendship Meter dan tambahkan 1 Social Battery untuk setiap pemain',
+    fm:10, sb:2
+  },
+  'kantin_instant_001': {
+    name:'Awas Ada Razia!', type:'instant', emoji:'🚨', loc:'kantin',
+    effect:'Deck lokasi ini terkunci hingga session berikutnya'
+  },
+  'kantin_instant_002': {
+    name:'Awas Jatoh!', type:'instant', emoji:'⚠️', loc:'kantin',
+    effect:'Turunkan 10 poin dari Friendship Meter dan hilangkan 1 Social Battery untuk pemain',
+    fm:-10
+  },
+
+  // ── POWER-UP CARDS (Legacy support) ─────────────────────────────────────
+  'powerup_001': { name:'Traktir Seblak', type:'power-up', emoji:'🍲', effect:'Pulihkan 10 poin Friendship Meter', fm:10 },
+  'powerup_002': { name:'Group Chat Bocor', type:'power-up', emoji:'💬', effect:'Lihat Scenario berikutnya lebih awal' },
+  'powerup_003': { name:'BEM Turun Tangan', type:'power-up', emoji:'🏫', effect:'Hapus status Flagged dari 1 pemain' },
+  'powerup_004': { name:'Nebeng Bestie', type:'power-up', emoji:'🚗', effect:'Teleport ke posisi pemain lain pilihanmu' },
+  'powerup_005': { name:'Titip Absen', type:'power-up', emoji:'📝', effect:'Tukar posisi dengan pemain lain secara instan' },
+  'powerup_006': { name:'Dosen Killer', type:'power-up', emoji:'👨‍🏫', effect:'Kunci 1 pemain selama 1 ronde, tidak bisa aksi' },
+  'powerup_007': { name:'Awas Ada Razia', type:'power-up', emoji:'🚨', effect:'Blok 1 pemain dari mengambil kartu selama 1 ronde' },
 };
+
+// Legacy alias for backward compatibility
+const SCAN_CARDS = CARDS;
 
 let scannerInstance=null, scannerMode=null, scannerActive=false, scannerStarting=false, scanFacingMode='environment';
 
@@ -1510,11 +1867,309 @@ function onScanSuccess(decodedText){
 }
 
 function dispatchScanResult(card){
+  trackDetectedCard(card);
   if(scannerMode==='item')    onItemScanned(card);
   if(scannerMode==='powerup') onPowerUpScanned(card);
   if(scannerMode==='draw')    onDrawScanned(card);
   if(scannerMode==='action')  onActionScanned(card);
   if(scannerMode==='special') onSpecialScanned(card);
+  if(scannerMode==='instant') onInstantScanned(card);
+}
+
+// ── CARD VIEWER FUNCTIONS ─────────────────────────────────────────────────
+let cardViewerFilter = 'all';
+let cardViewerLocFilter = 'all';
+
+function trackDetectedCard(card){
+  if(!G.detectedCards) G.detectedCards = {};
+  // Add card to detected cards (track scan count and first detection time)
+  if(!G.detectedCards[card.name]){
+    G.detectedCards[card.name] = {
+      ...card,
+      detectedAt: Date.now(),
+      scanCount: 1
+    };
+  } else {
+    G.detectedCards[card.name].scanCount++;
+  }
+  // Update card viewer count if on main screen
+  const countEl = $('card-viewer-count');
+  if(countEl) {
+    const count = Object.keys(G.detectedCards).length;
+    countEl.textContent = `${count} kartu terdeteksi`;
+  }
+}
+
+function gotoCardViewer(){
+  goto('s-card-viewer');
+  renderCardViewer();
+}
+
+function setCardFilter(type){
+  cardViewerFilter = type;
+  // Update filter buttons
+  ['all','item','action','special','power-up'].forEach(f=>{
+    const btn = $(`filter-${f}`);
+    if(btn){
+      if(f === type){
+        btn.style.background = 'var(--primary)';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = '';
+        btn.style.color = '';
+      }
+    }
+  });
+  renderCardViewer();
+}
+
+function setCardLocFilter(loc){
+  cardViewerLocFilter = loc;
+  // Update location filter buttons
+  ['all','perpustakaan','cafe','kelas','kantin'].forEach(l=>{
+    const btn = $(`locfilter-${l}`);
+    if(btn){
+      if(l === loc){
+        btn.style.background = 'var(--secondary)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--secondary)';
+      } else {
+        btn.style.background = 'rgba(255,255,255,.05)';
+        btn.style.color = l === 'all' ? 'var(--text-primary)' : 'var(--text-muted)';
+        btn.style.borderColor = 'rgba(255,255,255,.2)';
+      }
+    }
+  });
+  renderCardViewer();
+}
+
+function renderCardViewer(){
+  const grid = $('card-viewer-grid');
+  const empty = $('card-viewer-empty');
+  const cards = Object.values(G.detectedCards || {});
+  
+  // Filter cards
+  const filtered = cards.filter(card => {
+    const typeMatch = cardViewerFilter === 'all' || card.type === cardViewerFilter;
+    const locMatch = cardViewerLocFilter === 'all' || card.loc === cardViewerLocFilter;
+    return typeMatch && locMatch;
+  });
+  
+  if(filtered.length === 0){
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  
+  grid.innerHTML = filtered.map(card => `
+    <div class="card2" style="text-align:center;padding:16px 12px;cursor:pointer;transition:transform .15s" onclick="showCardDetail('${card.name.replace(/'/g, "\\'")}')">
+      <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
+      <div class="b-md" style="font-weight:600;margin-bottom:4px;line-height:1.2">${card.name}</div>
+      <span class="tag" style="display:inline-block;font-size:9px">${card.type || 'UNKNOWN'}</span>
+      ${card.loc ? `<span class="tag" style="display:inline-block;font-size:9px;margin-left:4px;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+      ${card.corrupt ? `<span class="tag" style="display:inline-block;font-size:9px;margin-left:4px;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+      <div class="b-sm c-muted" style="margin-top:8px;font-size:10px">Scanned ${card.scanCount || 1}x</div>
+    </div>
+  `).join('');
+}
+
+function showCardDetail(cardName){
+  const card = Object.values(G.detectedCards || {}).find(c => c.name === cardName);
+  if(!card) return;
+  
+  // Create popup container
+  const popupContainer = document.createElement('div');
+  popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
+  popupContainer.onclick = (e) => {
+    if(e.target === popupContainer) popupContainer.remove();
+  };
+  
+  // Create popup content
+  const popupContent = document.createElement('div');
+  popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
+  popupContent.className = 'card';
+  popupContent.innerHTML = `
+    <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
+    <div class="d md mb4">${card.name}</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
+      <span class="tag" style="display:inline-block">${card.type || 'UNKNOWN'}</span>
+      ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+      ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+    </div>
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    <div class="card2 mb20" style="text-align:left;padding:14px">
+      <div class="lbl mb6">EFEK</div>
+      <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
+      ${card.fm ? `<div class="row mt8" style="justify-content:space-between"><span class="b-sm c-muted">FM Change</span><span class="d sm" style="color:${card.fm > 0 ? 'var(--success)' : 'var(--primary)'}">${card.fm > 0 ? '+' : ''}${card.fm}</span></div>` : ''}
+      ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
+    </div>
+    <div class="b-sm c-muted mb16">Scanned ${card.scanCount || 1}x</div>
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">TUTUP</button>
+  `;
+  
+  popupContainer.appendChild(popupContent);
+  document.body.appendChild(popupContainer);
+}
+
+// ── CARD LIST (DATABASE) FUNCTIONS ──────────────────────────────────────
+let cardListTypeFilter = 'all';
+let cardListLocFilter = 'all';
+
+function gotoCardList(){
+  goto('s-card-list');
+  renderCardList();
+}
+
+function setCardListTypeFilter(type){
+  cardListTypeFilter = type;
+  // Update filter buttons
+  ['all','item','action','special','instant','archetype','power-up'].forEach(f=>{
+    const btn = $(`clf-${f}`);
+    if(btn){
+      if(f === type){
+        if(f === 'all'){
+          btn.style.background = 'var(--primary)';
+          btn.style.color = '#fff';
+        } else if(f === 'item'){
+          btn.style.background = 'var(--accent)';
+          btn.style.color = 'var(--bg-dark)';
+        } else if(f === 'action'){
+          btn.style.background = 'var(--secondary)';
+          btn.style.color = '#fff';
+        } else if(f === 'special'){
+          btn.style.background = 'var(--primary)';
+          btn.style.color = '#fff';
+        } else if(f === 'instant'){
+          btn.style.background = '#FF6B35';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.background = 'rgba(255,255,255,.1)';
+          btn.style.color = 'var(--text-primary)';
+        }
+      } else {
+        if(['archetype','power-up'].includes(f)){
+          btn.style.background = 'rgba(255,255,255,.05)';
+          btn.style.color = 'var(--text-muted)';
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+        }
+      }
+    }
+  });
+  renderCardList();
+}
+
+function setCardListLocFilter(loc){
+  cardListLocFilter = loc;
+  // Update location filter buttons
+  ['all','perpustakaan','cafe','kelas','kantin'].forEach(l=>{
+    const btn = $(`cll-${l}`);
+    if(btn){
+      if(l === loc){
+        btn.style.background = 'var(--secondary)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--secondary)';
+      } else {
+        btn.style.background = 'rgba(255,255,255,.05)';
+        btn.style.color = l === 'all' ? 'var(--text-primary)' : 'var(--text-muted)';
+        btn.style.borderColor = 'rgba(255,255,255,.2)';
+      }
+    }
+  });
+  renderCardList();
+}
+
+function renderCardList(){
+  const grid = $('card-list-grid');
+  const empty = $('card-list-empty');
+  const allCards = Object.values(CARDS || {});
+  
+  // Filter cards
+  const filtered = allCards.filter(card => {
+    const typeMatch = cardListTypeFilter === 'all' || card.type === cardListTypeFilter;
+    const locMatch = cardListLocFilter === 'all' || !card.loc || card.loc === cardListLocFilter;
+    return typeMatch && locMatch;
+  });
+  
+  // Update stats
+  $('card-list-count').textContent = filtered.length;
+  $('card-list-total').textContent = allCards.length;
+  
+  if(filtered.length === 0){
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  
+  grid.innerHTML = filtered.map(card => `
+    <div class="card-list-item" data-card-name="${card.name.replace(/"/g, "&quot;")}">
+      <div style="font-size:36px;margin-bottom:6px">${card.emoji || '🃏'}</div>
+      <div class="b-sm" style="font-weight:600;margin-bottom:4px;line-height:1.2">${card.name}</div>
+      <div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap">
+        <span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px">${card.type || 'UNKNOWN'}</span>
+        ${card.loc ? `<span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+        ${card.corrupt ? `<span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Event delegation for card list clicks (fixes bug: click handler not working)
+if(!$('s-card-list').dataset.hasClickHandler){
+  $('s-card-list').addEventListener('click', (e) => {
+    const item = e.target.closest('.card-list-item');
+    if(item){
+      e.stopPropagation();
+      const cardName = item.getAttribute('data-card-name');
+      showCardListDetail(cardName);
+    }
+  });
+  $('s-card-list').dataset.hasClickHandler = 'true';
+}
+
+function showCardListDetail(cardName){
+  if(typeof CARDS === 'undefined') return;
+  const card = Object.values(CARDS).find(c => c.name === cardName);
+  if(!card) return;
+  
+  // Create popup container
+  const popupContainer = document.createElement('div');
+  popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
+  popupContainer.onclick = (e) => {
+    if(e.target === popupContainer) popupContainer.remove();
+  };
+  
+  // Create popup content (no cursor pointer so it doesn't close when clicking content)
+  const popupContent = document.createElement('div');
+  popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
+  popupContent.className = 'card';
+  popupContent.innerHTML = `
+    <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
+    <div class="d md mb4">${card.name}</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
+      <span class="tag" style="display:inline-block">${card.type || 'UNKNOWN'}</span>
+      ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+      ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+    </div>
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    <div class="card2 mb20" style="text-align:left;padding:14px">
+      <div class="lbl mb6">EFEK</div>
+      <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
+      ${card.fm ? `<div class="row mt8" style="justify-content:space-between"><span class="b-sm c-muted">FM Change</span><span class="d sm" style="color:${card.fm > 0 ? 'var(--success)' : 'var(--primary)'}">${card.fm > 0 ? '+' : ''}${card.fm}</span></div>` : ''}
+      ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
+    </div>
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">TUTUP</button>
+  `;
+  
+  popupContainer.appendChild(popupContent);
+  document.body.appendChild(popupContainer);
 }
 
 function closeScanner(){
@@ -1558,7 +2213,8 @@ function onItemScanned(card){
   area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
     <div class="d sm mb4">${card.name}</div>
     <span class="tag" style="background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.3);display:inline-block;margin-bottom:8px">ITEM</span>
-    <p class="b-sm c-muted mb16">${card.desc}</p>
+    ${card.desc?`<p class="b-sm c-muted mb8" style="font-style:italic">${card.desc}</p>`:''}
+    <p class="b-sm c-muted mb16">${card.effect}</p>
     <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="inputItem('${card.name}', ${isCorrupt})">INPUT ITEM INI ✓</button>
     <div class="mt8"><button class="btn btn-o btn-sm" style="width:auto" onclick="openScannerForItem()">📷 Scan Ulang</button></div>`;
 }
@@ -1606,21 +2262,343 @@ function onPowerUpScanned(card){
     return;
   }
   let effectMsg='';
-  if(card.effect==='meter'&&card.val>0){
-    G.meter=Math.min(100,G.meter+card.val);
-    effectMsg=`<div class="tag tag-reward mt8 mb12" style="display:inline-block">+${card.val} FM diterapkan!</div>`;
+  // Handle FM gain
+  if(card.fm && card.fm > 0){
+    G.meter=Math.min(100,G.meter+card.fm);
+    effectMsg=`<div class="tag tag-reward mt8 mb12" style="display:inline-block">+${card.fm} FM diterapkan!</div>`;
   }
-  if(card.effect==='flag'){
+  // Handle flag removal
+  if(card.effect && card.effect.includes('flag')){
     const flagged=G.order.find(p=>p.flagged&&!p.eliminated);
     if(flagged){flagged.flagged=false;effectMsg=`<div class="tag tag-friend mt8 mb12" style="display:inline-block">Flagged dihapus dari ${flagged.char.name}</div>`;}
     else{effectMsg=`<div class="tag tag-elim mt8 mb12" style="display:inline-block">Tidak ada pemain yang Flagged</div>`;}
   }
   area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
     <div class="d sm mb4">${card.name}</div>
-    <span class="tag" style="background:rgba(255,45,120,.15);color:var(--pink);border:1px solid rgba(255,45,120,.3);display:inline-block;margin-bottom:8px">POWER-UP</span>
-    <p class="b-sm c-muted mb12">${card.desc}</p>
+    <span class="tag" style="background:var(--primary-light);color:var(--primary);border:1px solid rgba(255,45,120,.3);display:inline-block;margin-bottom:8px">POWER-UP</span>
+    <p class="b-sm c-muted mb12">${card.effect}</p>
     ${effectMsg}
     <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+}
+
+// ── CARD EFFECT ENGINE ────────────────────────────────────────────────────
+// Satu fungsi untuk eksekusi semua efek kartu — dipake oleh draw, action, special, instant
+function executeCardEffect(card, area, onDone){
+  if(!onDone) onDone = () => endPhase();
+  const cur = G.order[G.currentIdx];
+
+  // ── FLIP COIN (Titip Absen) ──────────────────────────────────────────────
+  if(card.flipCoin){
+    area.innerHTML=`<div style="font-size:64px;margin-bottom:12px;animation:coinSpin 0.6s ease">🪙</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted">Melempar koin...</p>`;
+    if(!document.getElementById('coin-style')){
+      const s=document.createElement('style');
+      s.id='coin-style';
+      s.textContent='@keyframes coinSpin{0%{transform:rotateY(0deg)}50%{transform:rotateY(90deg) scale(1.2)}100%{transform:rotateY(0deg)}}';
+      document.head.appendChild(s);
+    }
+    setTimeout(()=>{
+      const heads=Math.random()<0.5;
+      const delta=heads?(card.fm||15):-(card.fm||15);
+      const prev=G.meter;
+      G.meter=Math.max(0,Math.min(100,G.meter+delta));
+      area.innerHTML=`
+        <div style="font-size:64px;margin-bottom:12px;animation:pop .4s ease">${heads?'😄':'😬'}</div>
+        <div class="d sm mb4">${card.name}</div>
+        <div class="card2 mb16" style="text-align:center;padding:16px">
+          <div style="font-size:32px;margin-bottom:8px">${heads?'👑 HEADS':'💀 TAILS'}</div>
+          <div class="d md" style="color:${heads?'var(--success)':'var(--primary)'}">${heads?'+':''}${delta} FM</div>
+          <p class="b-sm c-muted mt4">${heads?'Keberuntungan berpihak padamu!':'Nasib berkata lain...'}</p>
+        </div>
+        <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="(${onDone.toString()})()">LANJUTKAN →</button>`;
+      showFmPopup(delta, G.meter, onDone);
+    },800);
+    return;
+  }
+
+  // ── INITIATE SCENARIO (Ceramah Dosen, WFC Bareng) ────────────────────────
+  if(card.name==='Ceramah Dosen' || card.name==='WFC Bareng'){
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb16">${card.effect}</p>
+      <div class="tag tag-flag" style="display:inline-block;margin-bottom:16px">⚡ Scenario akan dimulai!</div><br>
+      <button class="btn btn-p mt12" style="width:auto;padding:12px 32px" onclick="triggerScenarioFromCard()">MULAI SCENARIO →</button>`;
+    return;
+  }
+
+  // ── GHIBAH (Cafe Special) ────────────────────────────────────────────────
+  if(card.name==='Ghibah'){
+    const fraudPlayers=G.order.filter(p=>p.role==='fraud'&&!p.eliminated);
+    if(fraudPlayers.length===0){
+      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">🤷</div>
+        <p class="b-sm c-muted mb16">Tidak ada informasi yang bisa didapat.</p>
+        <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="(${onDone.toString()})()">LANJUTKAN →</button>`;
+      return;
+    }
+    const hints=fraudPlayers.map(fraud=>{
+      const sb=fraud.sb??10;
+      const sbLabel=sb>=5?'BANYAK':'DIKIT';
+      const sbColor=sb>=5?'var(--success)':'var(--primary)';
+      return `<div class="card2 mb8" style="text-align:left">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <span class="b-sm c-muted">Ada seseorang di circle ini...</span>
+          <span class="d sm" style="color:${sbColor}">SB ${sbLabel}</span>
+        </div>
+      </div>`;
+    });
+    area.innerHTML=`
+      <div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">👀</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb12">"Radar sosial aktif. Sesuatu terungkap..."</p>
+      ${hints.join('')}
+      <p class="b-sm mt8 mb16" style="color:rgba(255,255,255,.3);font-size:10px">Petunjuk ini bersifat samar — bukan konfirmasi identitas.</p>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── MEETING SEKARANG! (Perp Special) ────────────────────────────────────
+  if(card.name==='Meeting Sekarang!'){
+    // Extend deadline of active tasks for current player by 2 sessions
+    let extended=0;
+    if(G.groupTasks){
+      G.groupTasks.filter(gt=>!gt.completed&&gt.participants&&gt.participants.includes(cur.char.id)).forEach(gt=>{
+        gt.deadline=(gt.deadline||2)+2;
+        extended++;
+      });
+    }
+    const msg=extended>0?`${extended} task diperpanjang 2 session!`:'Tidak ada task aktif yang bisa diperpanjang.';
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="tag tag-reward" style="display:inline-block;margin:8px 0 16px">${msg}</div>
+      <p class="b-sm c-muted mb16">${card.effect}</p>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── PRESENTASI KELOMPOK (Kelas Special) ─────────────────────────────────
+  if(card.name==='Presentasi Kelompok'){
+    // All active players -2 SB, but FM +15 if everyone survives
+    const active=activePlayers();
+    active.forEach(p=>{ p.sb=Math.max(0,( p.sb??10)-2); if(p.sb===0) p.burnout=true; });
+    const prevMeter=G.meter;
+    G.meter=Math.min(100,G.meter+15);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb12">Semua pemain -2 Social Battery untuk tampil bersama!</p>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--success)">+15 FM</div>
+        <p class="b-sm c-muted mt4">Presentasi berjalan sukses.</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(15, G.meter, onDone);
+    return;
+  }
+
+  // ── SURPRISE HABEDE!! (Kantin Special) ──────────────────────────────────
+  if(card.name==='Surprise, HABEDE!!'){
+    const prev=G.meter;
+    G.meter=Math.min(100,G.meter+(card.fm||25));
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb12">${card.effect}</p>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--success)">+${card.fm||25} FM</div>
+        <p class="b-sm c-muted mt4">Ambil 1 kartu bebas dari deck manapun!</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(card.fm||25, G.meter, onDone);
+    return;
+  }
+
+  // ── BESOK UJIAN (Perp Action) ────────────────────────────────────────────
+  if(card.name==='Besok Ujian'){
+    const sbCost=card.sb||4;
+    if((cur.sb??10)<sbCost){
+      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
+        <div class="d sm mb4">${card.name}</div>
+        <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
+        <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
+      return;
+    }
+    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+    const fmGain=G.meter>=60?20:15;
+    const prev=G.meter;
+    G.meter=Math.min(100,G.meter+fmGain);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--success)">+${fmGain} FM</div>
+        <p class="b-sm c-muted mt4">${G.meter>=60?'FM tinggi — belajar makin efektif!':'FM standar — cukup untuk lanjut.'}</p>
+        <p class="b-sm c-muted mt4">-${sbCost} SB dipakai</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(fmGain, G.meter, onDone);
+    return;
+  }
+
+  // ── FOKUS BELAJAR (Perp Action) ──────────────────────────────────────────
+  if(card.name==='Fokus Belajar'){
+    const sbCost=card.sb||1;
+    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+    const sbRecover=3;
+    cur.sb=Math.min(10,(cur.sb??10)+sbRecover);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:left;padding:14px">
+        <div class="b-sm mb4"><span class="c-green">+${sbRecover} SB</span> dipulihkan</div>
+        <div class="b-sm c-muted">Ambil 1 kartu Ensiklopedia atau Novel dari deck Perpustakaan secara fisik.</div>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── SHARING IS CARING (Kantin Action) ───────────────────────────────────
+  if(card.name==='Sharing is Caring'){
+    const sbCost=card.sb||2;
+    if((cur.sb??10)<sbCost){
+      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
+        <div class="d sm mb4">${card.name}</div>
+        <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
+        <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
+      return;
+    }
+    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:left;padding:14px">
+        <div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Es Teh Manis teratas dari deck Kantin secara fisik.</div>
+        <div class="b-sm mt8"><span style="color:var(--primary)">-${sbCost} SB</span> dipakai</div>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── AWAS TUMPAH! (Cafe Instant) ──────────────────────────────────────────
+  if(card.name==='Awas Tumpah!'){
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb12">${card.effect}</p>
+      <div class="card2 mb16" style="text-align:left;padding:14px">
+        <div class="b-sm c-muted">Ambil 1 kartu Americano atau Earl Grey Tea teratas dari deck Cafe — lalu buang ke discard pile.</div>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── DECK LOCK (Dosen Killer Masuk!, Awas Ada Razia!) ────────────────────
+  if(card.name==='Dosen Killer Masuk!' || card.name==='Awas Ada Razia!'){
+    const locLabel=card.loc?card.loc.charAt(0).toUpperCase()+card.loc.slice(1):'Ini';
+    if(!G.lockedDecks) G.lockedDecks={};
+    if(card.loc) G.lockedDecks[card.loc]=(G.session||1)+1;
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px;border-left:3px solid var(--primary)">
+        <div class="b-md" style="color:var(--primary)">🔒 Deck ${locLabel} dikunci!</div>
+        <p class="b-sm c-muted mt4">Tidak bisa draw dari lokasi ini sampai session berikutnya.</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
+  }
+
+  // ── KETIDURAN DI KELAS (Kelas Instant) ──────────────────────────────────
+  if(card.name==='Ketiduran di Kelas'){
+    const fmDelta=card.fm||-10;
+    G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
+    cur.sb=Math.min(10,(cur.sb??10)+1);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
+        <p class="b-sm c-muted mt4">Tapi kamu dapat +1 SB karena istirahat.</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(fmDelta, G.meter, onDone);
+    return;
+  }
+
+  // ── AWAS JATOH! (Kantin Instant) ────────────────────────────────────────
+  if(card.name==='Awas Jatoh!'){
+    const fmDelta=card.fm||-10;
+    G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
+    cur.sb=Math.max(0,(cur.sb??10)-1);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
+        <p class="b-sm c-muted mt4">-1 SB karena insiden.</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(fmDelta, G.meter, onDone);
+    return;
+  }
+
+  // ── BISA DIEM GAK? (Perp Instant) ───────────────────────────────────────
+  if(card.name==='Bisa diem gak?'){
+    const fmDelta=card.fm||-10;
+    G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
+    cur.sb=Math.max(0,(cur.sb??10)-1);
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
+        <p class="b-sm c-muted mt4">-1 SB untuk pemain aktif.</p>
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(fmDelta, G.meter, onDone);
+    return;
+  }
+
+  // ── GENERIC FM + SB HANDLER ──────────────────────────────────────────────
+  // Handles: Nugas Bareng, Sesi Curhat, Nongki Ges, Traktir Seblak, Traktir Seblak power-up, dll
+  const sbCost=card.sb||0;
+  const fmDelta=typeof card.fm==='number'?card.fm:0;
+
+  if(sbCost>0 && (cur.sb??10)<sbCost){
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
+      <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
+    return;
+  }
+
+  if(sbCost>0) cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+
+  if(fmDelta!==0){
+    const prev=G.meter;
+    G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
+    // All-player SB bonus (Nugas Bareng, Sesi Curhat, Nongki Ges, Traktir Seblak)
+    const sbBonus=typeof card.sbBonus==='number'?card.sbBonus:
+                  (card.name==='Nongki Ges'?3:
+                   card.name==='Nugas Bareng'||card.name==='Sesi Curhat'||card.name==='Traktir Seblak'?1:0);
+    if(sbBonus>0) activePlayers().forEach(p=>{ p.sb=Math.min(10,(p.sb??10)+sbBonus); });
+
+    const bonusMsg=sbBonus>0?`<div class="b-sm mt4 c-green">+${sbBonus} SB untuk semua pemain</div>`:'';
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <div class="card2 mb16" style="text-align:center;padding:14px">
+        <div class="d md" style="color:${fmDelta>0?'var(--success)':'var(--primary)'}">${fmDelta>0?'+':''}${fmDelta} FM</div>
+        ${bonusMsg}
+        ${sbCost>0?`<div class="b-sm mt4" style="color:var(--primary)">-${sbCost} SB dipakai</div>`:''}
+      </div>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    showFmPopup(fmDelta, G.meter, onDone);
+    return;
+  }
+
+  // Fallback — kartu tanpa efek otomatis, tampil deskripsi saja
+  area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+    <div class="d sm mb4">${card.name}</div>
+    <p class="b-sm c-muted mb16">${card.effect||'Tidak ada efek otomatis.'}</p>
+    <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+}
+
+function triggerScenarioFromCard(){
+  G.scenario=pick(SCENARIOS);
+  G.scenarioChoice=null;
+  G.scenarioFromMidPhase=true;
+  goto('s-scenario');
+  renderScenario();
 }
 
 // ── ACTION SCAN RESULT ────────────────────────────────────────────────────
@@ -1637,38 +2615,24 @@ function onActionScanned(card){
       <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForAction()">📷 Scan Lagi</button>`;
     return;
   }
-  if(card.effect==='flip_coin') doFlipCoin(card, area);
+  executeCardEffect(card, area);
 }
 
-function doFlipCoin(card, area){
-  // Animasi koin dulu
-  area.innerHTML=`<div style="font-size:64px;margin-bottom:12px;animation:spin 0.6s ease" id="coin-emoji">🪙</div>
-    <div class="d sm mb4">${card.name}</div>
-    <p class="b-sm c-muted">Melempar koin...</p>`;
+// ── INSTANT SCAN RESULT ────────────────────────────────────────────────────
+function openScannerForInstant(){
+  openScanner('instant','SCAN INSTANT CARD','Arahkan ke QR code kartu Instant');
+}
 
-  // Tambahkan spin animation kalau belum ada
-  if(!document.getElementById('coin-style')){
-    const s=document.createElement('style');
-    s.id='coin-style';
-    s.textContent='@keyframes spin{0%{transform:rotateY(0deg)}50%{transform:rotateY(90deg) scale(1.2)}100%{transform:rotateY(0deg)}}';
-    document.head.appendChild(s);
+function onInstantScanned(card){
+  const area=$('draw-scan-area');
+  if(!area) return;
+  if(card.type!=='instant'){
+    area.innerHTML=`<div style="font-size:40px;margin-bottom:12px">⚠️</div>
+      <p class="b-sm" style="color:var(--pink);margin-bottom:8px">Bukan kartu Instant!</p>
+      <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForDraw()">📷 Scan Lagi</button>`;
+    return;
   }
-
-  setTimeout(()=>{
-    const heads = Math.random() < 0.5;
-    const delta = heads ? card.val : -card.val;
-    G.meter = Math.max(0, Math.min(100, G.meter + delta));
-
-    area.innerHTML=`
-      <div style="font-size:64px;margin-bottom:12px;animation:pop .4s ease">${heads?'😄':'😬'}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:16px">
-        <div style="font-size:32px;margin-bottom:8px">${heads?'👑 HEADS':'💀 TAILS'}</div>
-        <div class="d md" style="color:${heads?'#00C896':'#FF2D78'}">${heads?'+':''}${delta} FM</div>
-        <p class="b-sm c-muted mt4">${heads?'Keberuntungan berpihak padamu!':'Nasib berkata lain...'}</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-  }, 800);
+  executeCardEffect(card, area);
 }
 
 // ── SPECIAL SCAN RESULT ───────────────────────────────────────────────────
@@ -1677,49 +2641,15 @@ function openScannerForSpecial(){
 }
 
 function onSpecialScanned(card){
-  const area=$('special-scan-area');
+  const area=$('special-scan-area')||$('draw-scan-area');
   if(!area) return;
   if(card.type!=='special'){
     area.innerHTML=`<div style="font-size:40px;margin-bottom:12px">⚠️</div>
       <p class="b-sm" style="color:var(--pink);margin-bottom:8px">Bukan kartu Special!</p>
-      <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForSpecial()">📷 Scan Lagi</button>`;
+      <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForDraw()">📷 Scan Lagi</button>`;
     return;
   }
-  if(card.effect==='ghibah') doGhibah(card, area);
-}
-
-function doGhibah(card, area){
-  // Cari semua Fraud yang masih aktif
-  const fraudPlayers = G.order.filter(p=>p.role==='fraud'&&!p.eliminated);
-  if(fraudPlayers.length===0){
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">🤷</div>
-      <p class="b-sm c-muted mb16">Tidak ada informasi yang bisa didapat.</p>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    return;
-  }
-
-  // Untuk setiap Fraud, generate hint berdasarkan SB
-  // Tapi hint-nya harus ambiguous — ga boleh reveal identitas langsung
-  // Hint: "Ada seseorang di circle ini yang SB-nya [BANYAK/DIKIT]"
-  const hints = fraudPlayers.map(fraud=>{
-    const sb = fraud.sb ?? 10;
-    const sbLabel = sb >= 5 ? 'BANYAK' : 'DIKIT';
-    const sbColor = sb >= 5 ? '#00C896' : '#FF2D78';
-    return `<div class="card2 mb8" style="text-align:left">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <span class="b-sm c-muted">Ada seseorang di circle ini...</span>
-        <span class="d sm" style="color:${sbColor}">SB ${sbLabel}</span>
-      </div>
-    </div>`;
-  });
-
-  area.innerHTML=`
-    <div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">👀</div>
-    <div class="d sm mb4">${card.name}</div>
-    <p class="b-sm c-muted mb12">"Radar sosial aktif. Sesuatu terungkap..."</p>
-    ${hints.join('')}
-    <p class="b-sm mt8 mb16" style="color:rgba(255,255,255,.3);font-size:10px">Petunjuk ini bersifat samar — bukan konfirmasi identitas.</p>
-    <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+  executeCardEffect(card, area);
 }
 
 // ── DRAW SCAN RESULT ──────────────────────────────────────────────────────
@@ -1731,28 +2661,56 @@ function openScannerForDraw(){
 
 function onDrawScanned(card){
   const area=$('draw-scan-area');
-  const typeColor = card.type==='item'?'#8B8FFF':card.type==='power-up'?'var(--pink)':'var(--yellow)';
-  const typeLabel = card.type==='item'?'ITEM':card.type==='power-up'?'POWER-UP':'SPECIAL';
 
-  let effectMsg='';
+  // Item cards — route ke item input flow
+  if(card.type==='item'){
+    const cur=G.order[G.currentIdx];
+    const isFraud=cur.role==='fraud';
+    const isCorrupt=card.corrupt&&isFraud;
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <span class="tag" style="background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.3);display:inline-block;margin-bottom:8px">ITEM</span>
+      ${card.desc?`<p class="b-sm c-muted mb8" style="font-style:italic">${card.desc}</p>`:''}
+      <p class="b-sm c-muted mb16">${card.effect}</p>
+      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="inputItem('${card.name}',${isCorrupt})">INPUT ITEM INI ✓</button>
+      <div class="mt8"><button class="btn btn-o btn-sm" style="width:auto" onclick="openScannerForDraw()">📷 Scan Ulang</button></div>`;
+    return;
+  }
+
+  // Power-up — tampil info + apply FM/flag effects
   if(card.type==='power-up'){
-    if(card.effect==='meter'&&card.val>0){
-      G.meter=Math.min(100,G.meter+card.val);
-      effectMsg=`<div class="tag tag-reward mt8 mb4" style="display:inline-block">+${card.val} FM langsung diterapkan!</div>`;
+    let effectMsg='';
+    if(card.fm&&card.fm>0){
+      G.meter=Math.min(100,G.meter+card.fm);
+      effectMsg=`<div class="tag tag-reward mt8 mb4" style="display:inline-block">+${card.fm} FM langsung diterapkan!</div>`;
     }
-    if(card.effect==='flag'){
+    if(card.effect&&card.effect.includes('flag')){
       const flagged=G.order.find(p=>p.flagged&&!p.eliminated);
       if(flagged){flagged.flagged=false;effectMsg=`<div class="tag tag-friend mt8 mb4" style="display:inline-block">Flagged dihapus dari ${flagged.char.name}</div>`;}
     }
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <span class="tag" style="background:var(--primary-light);color:var(--primary);border:1px solid rgba(255,45,120,.3);display:inline-block;margin-bottom:8px">POWER-UP</span>
+      <p class="b-sm c-muted mb8">${card.effect}</p>
+      ${effectMsg}
+      <button class="btn btn-p mt12" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    return;
   }
 
+  // Action / Instant / Special — eksekusi efek via engine
+  const typeColors={action:'var(--accent)',instant:'#FF6B35',special:'var(--primary)'};
+  const typeColor=typeColors[card.type]||'var(--text-muted)';
+  const typeLabel=(card.type||'CARD').toUpperCase();
+
+  // Show card identity dulu, lalu execute
   area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
     <div class="d sm mb4">${card.name}</div>
-    <span class="tag" style="background:rgba(255,255,255,.08);color:${typeColor};border:1px solid rgba(255,255,255,.12);display:inline-block;margin-bottom:8px">${typeLabel}</span>
-    <p class="b-sm c-muted mb8">${card.desc}</p>
-    ${effectMsg}
-    <button class="btn btn-p mt12" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>
-    <div class="mt8"><button class="btn btn-o btn-sm" style="width:auto" onclick="openScannerForDraw()">📷 Scan Ulang</button></div>`;
+    <span class="tag" style="background:rgba(255,255,255,.08);color:${typeColor};display:inline-block;margin-bottom:12px">${typeLabel}</span>
+    ${card.desc?`<p class="b-sm c-muted mb8" style="font-style:italic">${card.desc}</p>`:''}
+    <div class="spinner" style="margin:16px auto"></div>
+    <p class="b-sm c-muted">Memproses efek...</p>`;
+
+  setTimeout(()=>{ executeCardEffect(card, area); }, 600);
 }
 
 
@@ -2118,10 +3076,28 @@ document.addEventListener('DOMContentLoaded',initSplashStars);
 setTimeout(initSplashStars,100);
 
 function restartGame(){
-  G={players:[],order:[],currentIdx:0,session:1,totalSessions:8,meter:30,
-    scenario:null,scenarioChoice:null,votes:{},eliminatedPlayer:null,
-    playerCount:4,selectedChars:[],firstPlayer:null,leftPlayer:null,
-    voteIdx:0,selectedVoteTarget:null,prevScreen:null,groupTasks:[],scenarioFromMidPhase:false};
+  G={
+    players:[],
+    order:[],
+    currentIdx:0,
+    session:1,
+    totalSessions:8,
+    meter:30,
+    scenario:null,
+    scenarioChoice:null,
+    votes:{},
+    eliminatedPlayer:null,
+    playerCount:4,
+    selectedChars:[],
+    firstPlayer:null,
+    leftPlayer:null,
+    voteIdx:0,
+    selectedVoteTarget:null,
+    prevScreen:null,
+    groupTasks:[],
+    scenarioFromMidPhase:false,
+    detectedCards:{}  // Reset scanned cards
+  };
   // Reset UI state
   $('btn4').classList.remove('sel');
   $('btn6').classList.remove('sel');
