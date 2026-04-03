@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -542,6 +543,11 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
       <div style="flex:1"><div class="b-md" style="font-weight:600">Draw a Card</div><div class="b-sm c-muted" id="act-draw-sub">Ambil 1 kartu dari deck</div></div>
       <div style="color:var(--muted);font-size:18px">›</div>
     </button>
+    <button class="act-btn" id="act-inventory" onclick="gotoInventory()">
+      <div class="act-icon" style="background:rgba(255,214,0,.12)">🎒</div>
+      <div style="flex:1"><div class="b-md" style="font-weight:600">My Cards</div><div class="b-sm c-muted" id="act-inventory-sub">0 kartu tersedia</div></div>
+      <div style="color:var(--muted);font-size:18px">›</div>
+    </button>
     <button class="act-btn" id="act-passive" onclick="goto('s-passive')">
       <div class="act-icon" style="background:rgba(255,214,0,.12)">✨</div>
       <div style="flex:1"><div class="b-md" style="font-weight:600" id="act-passive-title">Passive Ability</div><div class="b-sm c-muted" id="act-passive-sub">Tersedia dalam 2 session</div></div>
@@ -575,6 +581,16 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
       <div class="screen-sub">Koleksi kartu yang sudah terdeteksi</div>
     </div>
     <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
+  </div>
+
+  <!-- search bar -->
+  <div class="card2 mb16" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🔍</span>
+    <input type="text" id="card-viewer-search" placeholder="Cari kartu..." 
+      style="flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-b);font-size:14px"
+      oninput="renderCardViewer()"/>
+    <button class="btn btn-o btn-sm" onclick="document.getElementById('card-viewer-search').value='';renderCardViewer()" 
+      style="width:auto;padding:6px 12px;font-size:11px" id="card-viewer-clear" disabled>✕</button>
   </div>
 
   <!-- filters -->
@@ -616,6 +632,16 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <button class="btn btn-o btn-sm" onclick="goto('s-setup')" style="flex-shrink:0">← Kembali</button>
   </div>
 
+  <!-- search bar -->
+  <div class="card2 mb16" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🔍</span>
+    <input type="text" id="card-list-search" placeholder="Cari kartu..." 
+      style="flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-b);font-size:14px"
+      oninput="renderCardList()"/>
+    <button class="btn btn-o btn-sm" onclick="document.getElementById('card-list-search').value='';renderCardList()" 
+      style="width:auto;padding:6px 12px;font-size:11px" id="card-list-clear" disabled>✕</button>
+  </div>
+
   <!-- stats bar -->
   <div class="card2 mb16" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
     <div class="b-sm">
@@ -625,6 +651,14 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <div class="b-sm c-muted">
       Total: <span id="card-list-total" style="color:var(--text-primary)">0</span> kartu
     </div>
+  </div>
+
+  <!-- search bar -->
+  <div style="position:relative;margin-bottom:12px">
+    <input type="text" id="card-list-search" placeholder="Cari nama kartu, tipe, efek..."
+      oninput="renderCardList()"
+      style="width:100%;padding:10px 14px 10px 36px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--text-primary);font-family:inherit;font-size:14px;outline:none;box-sizing:border-box"/>
+    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none">🔍</span>
   </div>
 
   <!-- filter bar -->
@@ -694,7 +728,100 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu yang diambil</p>
     <button class="btn btn-y" style="width:auto;padding:12px 28px" onclick="openScannerForDraw()">📷 SCAN KARTU</button>
   </div>
+  
+  <div class="lbl mb8" style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em">— ATAU —</div>
+  
+  <button class="btn btn-o mb16" onclick="gotoDrawCardList()" style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:24px">📋</span>
+    <div style="text-align:left;flex:1">
+      <div class="b-md" style="font-weight:600">Pilih dari Database</div>
+      <div class="b-sm c-muted">Tambah kartu manual tanpa scan</div>
+    </div>
+    <span style="font-size:18px">›</span>
+  </button>
+  
   <button class="btn btn-o" onclick="back()">Kembali</button>
+</div>
+
+<!-- ══ DRAW CARD LIST (MANUAL ADD) ═════════════════════════════════════ -->
+<div class="screen" id="s-draw-list">
+  <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+    <div>
+      <div class="screen-title">PILIH KARTU</div>
+      <div class="screen-sub">Klik kartu untuk menambahkannya ke inventory</div>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="goto('s-draw')" style="flex-shrink:0">← Kembali</button>
+  </div>
+
+  <!-- search bar -->
+  <div class="card2 mb16" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🔍</span>
+    <input type="text" id="draw-list-search" placeholder="Cari kartu..." 
+      style="flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-b);font-size:14px"
+      oninput="renderDrawCardList()"/>
+    <button class="btn btn-o btn-sm" onclick="document.getElementById('draw-list-search').value='';renderDrawCardList()" 
+      style="width:auto;padding:6px 12px;font-size:11px" id="draw-list-clear" disabled>✕</button>
+  </div>
+
+  <!-- filter bar -->
+  <div class="lbl mb8">TIPE KARTU</div>
+  <div class="row mb12" style="flex-wrap:wrap;gap:8px" id="draw-list-type-filters">
+    <button class="tag" onclick="setDrawListTypeFilter('all')" id="dlf-all" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:var(--primary);color:#fff;padding:8px 14px;font-size:11px;border-radius:6px">SEMUA</button>
+    <button class="tag tag-item" onclick="setDrawListTypeFilter('item')" id="dlf-item" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ITEM</button>
+    <button class="tag tag-flag" onclick="setDrawListTypeFilter('action')" id="dlf-action" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ACTION</button>
+    <button class="tag tag-fraud" onclick="setDrawListTypeFilter('special')" id="dlf-special" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SPECIAL</button>
+    <button class="tag tag-elim" onclick="setDrawListTypeFilter('instant')" id="dlf-instant" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">INSTANT</button>
+  </div>
+
+  <!-- location filter -->
+  <div class="lbl mb8">LOKASI</div>
+  <div class="row mb16" style="flex-wrap:wrap;gap:8px" id="draw-list-loc-filters">
+    <button class="tag" onclick="setDrawListLocFilter('all')" id="dll-all" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:var(--secondary);color:#fff;padding:8px 14px;font-size:11px;border-radius:6px">SEMUA</button>
+    <button class="tag" onclick="setDrawListLocFilter('perpustakaan')" id="dll-perpustakaan" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">📚 PERP</button>
+    <button class="tag" onclick="setDrawListLocFilter('cafe')" id="dll-cafe" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">☕ CAFE</button>
+    <button class="tag" onclick="setDrawListLocFilter('kelas')" id="dll-kelas" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🏫 KELAS</button>
+    <button class="tag" onclick="setDrawListLocFilter('kantin')" id="dll-kantin" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">🍗 KANTIN</button>
+  </div>
+
+  <!-- cards grid -->
+  <div class="scroll" style="flex:1;overflow-y:auto">
+    <div class="char-grid" id="draw-list-grid" style="grid-template-columns:1fr 1fr;gap:10px"></div>
+    <div id="draw-list-empty" style="text-align:center;padding:40px 20px;display:none">
+      <div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <p class="b-md c-muted">Tidak ada kartu yang cocok</p>
+      <p class="b-sm c-muted" style="margin-top:8px">Coba kata kunci atau filter lain</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MY CARDS (INVENTORY) ═══════════════════════════════════════════ -->
+<div class="screen" id="s-inventory">
+  <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+    <div>
+      <div class="screen-title">MY CARDS</div>
+      <div class="screen-sub">Kartu Action dan Special yang kamu miliki</div>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
+  </div>
+  
+  <!-- current player info -->
+  <div class="card2 mb16" style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:32px" id="inv-cur-emoji">🎨</span>
+    <div style="flex:1">
+      <div class="b-md" style="font-weight:600" id="inv-cur-name">The Artist</div>
+      <div class="b-sm c-muted" id="inv-cur-count">0 kartu</div>
+    </div>
+  </div>
+  
+  <!-- cards list -->
+  <div class="scroll" style="flex:1;overflow-y:auto">
+    <div class="stack" id="inv-list"></div>
+    <div id="inv-empty" style="text-align:center;padding:40px 20px;display:none">
+      <div style="font-size:64px;margin-bottom:16px">🎒</div>
+      <p class="b-md c-muted">Belum ada kartu</p>
+      <p class="b-sm c-muted" style="margin-top:8px">Draw Action atau Special card untuk menambahkannya</p>
+    </div>
+  </div>
 </div>
 
 <!-- ══ POWER-UP ════════════════════════════════════════════════════════ -->
@@ -762,7 +889,10 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <div class="screen-sub">Siapa yang paling dicurigai sebagai <span style="color:var(--pink)">Fraud</span>?</div>
   </div>
   <div class="lbl mb10">KANDIDAT TERSANGKA</div>
+  <p class="b-sm c-muted mb8" id="vote-instruction">Tiap pemain tap nama tersangka mereka.</p>
+  <div class="lbl c-muted mb12">TOTAL VOTE: <span id="vote-total-count" style="color:var(--yellow)">0</span> / <span id="vote-total-needed">0</span></div>
   <div class="stack mb20" id="voting-list"></div>
+
   <div class="lbl mb8" id="vote-tally-label" style="display:none">HASIL VOTE</div>
   <div class="stack mb20" id="vote-tally" style="display:none"></div>
   <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none" onclick="confirmVote()">EKSEKUSI HASIL →</button>
@@ -820,6 +950,10 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
       </div>
     </div>
 
+    <div id="fm-popup-reason" style="display:none;margin-top:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;text-align:left">
+      <div class="lbl mb6" style="color:var(--text-muted)">KENAPA BEGITU?</div>
+      <p class="b-sm" id="fm-popup-reason-text" style="color:rgba(255,255,255,.75);line-height:1.6"></p>
+    </div>
     <button class="btn btn-p mt16" onclick="closeFmPopup()">LANJUT →</button>
   </div>
 </div>
@@ -853,85 +987,164 @@ const TASKS = [
 const ALL_ITEMS = ['Ensiklopedia','Novel','Americano','Earl Grey Tea','Laptop','Buku Tulis','Ayam Bakar','Es Teh Manis'];
 
 const SCENARIOS = [
-  {text:'Teman kamu cerita soal masalahnya, tapi kamu tau dia yang salah duluan. Kamu ngapain?',
-   opts:[
-     {label:'Dengerin dulu, kasih pendapat jujur pelan-pelan', val:12},
-     {label:'Setuju-setuju aja biar dia ngerasa didukung', val:-8},
-     {label:'Langsung bilang dia yang salah', val:-5},
-     {label:'Ubah topik, males ribet', val:-15},
-   ]},
-  {text:'Ada yang nyebarin gossip soal anggota circle. Kamu tau siapa pelakunya, tapi dia temen deket kamu.',
-   opts:[
-     {label:'Tegur dia diam-diam dulu sebelum bilang ke yang lain', val:10},
-     {label:'Pura-pura ga tau, tapi jaga jarak', val:-5},
-     {label:'Langsung sebut nama di grup chat', val:-10},
-     {label:'Ikut nyebarin karena emang seru', val:-20},
-   ]},
-  {text:'Teman kamu minta tolong ngerjain tugas bareng di last minute, padahal kamu lagi burnout.',
-   opts:[
-     {label:'Bantu tapi bilang jujur kamu lagi capek', val:8},
-     {label:'Bohong bilang sibuk', val:-8},
-     {label:'Bantu tanpa bilang apa-apa, kesel dalem hati', val:-5},
-     {label:'Tolak dengan alasan yang jelas', val:5},
-   ]},
-  {text:'Kamu tau salah satu teman circle kamu suka sama gebetan orang lain di circle. Kamu ngapain?',
-   opts:[
-     {label:'Jaga rahasia, bukan urusan kamu', val:5},
-     {label:'Kasih tau yang punya gebetan diam-diam', val:-12},
-     {label:'Tanya langsung ke yang bersangkutan', val:8},
-     {label:'Biarin aja, bodoamat', val:-5},
-   ]},
-  {text:'Seseorang di circle dikeluarkan dari grup kelas tanpa penjelasan. Ternyata ada drama lama yang kamu ga tau.',
-   opts:[
-     {label:'Dengerin dua sisi cerita dulu', val:15},
-     {label:'Otomatis bela yang dikeluarin', val:-8},
-     {label:'Otomatis bela mayoritas', val:-10},
-     {label:'Ga mau ikut campur sama sekali', val:-5},
-   ]},
-  {text:'Teman kamu body shaming orang lain, tapi dibungkus sebagai bercanda. Suasana lagi ketawa-ketawa.',
-   opts:[
-     {label:'Tegur tapi tetap santai biar ga awkward', val:12},
-     {label:'Ikut ketawa, nanti juga selesai sendiri', val:-15},
-     {label:'Diem dan berharap orang lain yang negur', val:-8},
-     {label:'Langsung defend yang di-shaming', val:10},
-   ]},
-  {text:'Kamu dapat info kalau ada teman yang sering nitip absen buat orang lain. Dosennya strict banget.',
-   opts:[
-     {label:'Ingetin dia soal risikonya secara pribadi', val:8},
-     {label:'Laporin ke dosen', val:-5},
-     {label:'Ga peduli, bukan masalah kamu', val:-8},
-     {label:'Tawarin ikut nitip juga sekalian', val:-15},
-   ]},
-  {text:'Teman circle kamu tiba-tiba ngajak orang baru gabung tanpa izin siapapun. Orang baru itu agak awkward.',
-   opts:[
-     {label:'Kasih kesempatan, sambut dengan terbuka', val:10},
-     {label:'Pas aja tapi pasang muka ramah', val:-5},
-     {label:'Protes ke teman yang ngajak secara pribadi', val:5},
-     {label:'Langsung dingin ke orang barunya', val:-12},
-   ]},
+  {
+    text:'Teman kamu cerita soal masalahnya, tapi kamu tau dia yang salah duluan. Kamu ngapain?',
+    opts:[
+      { label:'Dengerin dulu, kasih pendapat jujur pelan-pelan', val:12,
+        reason:'Mendengarkan dulu sebelum menghakimi adalah tanda pertemanan yang sehat. Circle yang bisa jujur satu sama lain lebih kuat jangka panjangnya.' },
+      { label:'Setuju-setuju aja biar dia ngerasa didukung', val:-8,
+        reason:'Validasi palsu mungkin enak sebentar, tapi tidak membantu temanmu tumbuh. Itu bukan support, itu penghinaan yang dibungkus kebaikan.' },
+      { label:'Langsung bilang dia yang salah', val:-5,
+        reason:'Jujur itu baik, tapi tanpa empati bisa terasa menyerang. Kebenaran yang disampaikan kasar sering tidak terdengar sama sekali.' },
+      { label:'Ubah topik, males ribet', val:-15,
+        reason:'Menghindar dari konflik bukan solusi — itu hanya menunda. Teman yang tidak mau repot tidak bisa diandalkan saat yang penting.' },
+    ]
+  },
+  {
+    text:'Ada yang nyebarin gossip soal anggota circle. Kamu tau siapa pelakunya, tapi dia temen deket kamu.',
+    opts:[
+      { label:'Tegur dia diam-diam dulu sebelum bilang ke yang lain', val:10,
+        reason:'Memberi kesempatan untuk bertanggung jawab secara privat adalah tanda respek. Circle yang sehat menyelesaikan masalah dari dalam dulu.' },
+      { label:'Pura-pura ga tau, tapi jaga jarak', val:-5,
+        reason:'Passive avoidance tidak menyelesaikan masalah — justru membiarkan gossip terus menyebar dan merusak kepercayaan di circle.' },
+      { label:'Langsung sebut nama di grup chat', val:-10,
+        reason:'Public call-out tanpa konteks bisa memperburuk situasi. Itu bukan keadilan, itu drama yang mengundang lebih banyak drama.' },
+      { label:'Ikut nyebarin karena emang seru', val:-20,
+        reason:'Aktif menyebarkan gossip berarti kamu bagian dari masalah. Kepercayaan yang rusak di circle sangat susah dibangun kembali.' },
+    ]
+  },
+  {
+    text:'Teman kamu minta tolong ngerjain tugas bareng di last minute, padahal kamu lagi burnout.',
+    opts:[
+      { label:'Bantu tapi bilang jujur kamu lagi capek', val:8,
+        reason:'Komunikasi jujur soal kondisi diri sendiri adalah kunci hubungan yang seimbang. Kamu tetap hadir tanpa mengorbankan diri sendiri.' },
+      { label:'Bohong bilang sibuk', val:-8,
+        reason:'Kebohongan kecil membangun jarak pelan-pelan. Teman yang bisa jujur soal batasannya jauh lebih berharga dari yang selalu bilang ya.' },
+      { label:'Bantu tanpa bilang apa-apa, kesel dalem hati', val:-5,
+        reason:'Resentment yang disimpan akhirnya meledak dengan cara yang lebih merusak. Diam bukan sabar — sering kali itu bom waktu.' },
+      { label:'Tolak dengan alasan yang jelas', val:5,
+        reason:'Punya batasan yang sehat dan mengkomunikasikannya dengan baik adalah tanda kedewasaan emosional, bukan egois.' },
+    ]
+  },
+  {
+    text:'Kamu tau salah satu teman circle kamu suka sama gebetan orang lain di circle. Kamu ngapain?',
+    opts:[
+      { label:'Jaga rahasia, bukan urusan kamu', val:5,
+        reason:'Tahu kapan harus tidak ikut campur adalah kecerdasan sosial tersendiri. Tidak semua informasi perlu disebarkan.' },
+      { label:'Kasih tau yang punya gebetan diam-diam', val:-12,
+        reason:'Membocorkan perasaan seseorang tanpa izin bisa merusak kepercayaan dan memperumit dinamika circle secara permanen.' },
+      { label:'Tanya langsung ke yang bersangkutan', val:8,
+        reason:'Konfirmasi langsung ke sumbernya jauh lebih etis dari asumsi. Kamu menghormati mereka cukup untuk bertanya sebelum bertindak.' },
+      { label:'Biarin aja, bodoamat', val:-5,
+        reason:'Apatis di dalam circle menciptakan jarak emosional. Kalau semua orang bodoamat, circle itu hanya kumpulan orang asing.' },
+    ]
+  },
+  {
+    text:'Seseorang di circle dikeluarkan dari grup kelas tanpa penjelasan. Ternyata ada drama lama yang kamu ga tau.',
+    opts:[
+      { label:'Dengerin dua sisi cerita dulu', val:15,
+        reason:'Menunda penilaian sampai mendengar semua pihak adalah tanda kebijaksanaan. Satu sisi cerita hampir tidak pernah cukup.' },
+      { label:'Otomatis bela yang dikeluarin', val:-8,
+        reason:'Solidaritas yang tidak kritis bisa memvalidasi perilaku yang salah. Membela tanpa tahu fakta bisa memperburuk situasi.' },
+      { label:'Otomatis bela mayoritas', val:-10,
+        reason:'Ikut arus mayoritas tanpa berpikir sendiri adalah bentuk tekanan sosial, bukan keadilan. Mayoritas tidak selalu benar.' },
+      { label:'Ga mau ikut campur sama sekali', val:-5,
+        reason:'Netralitas total di situasi yang butuh mediasi bisa dibaca sebagai pembiaran. Terkadang diam adalah pihak tersendiri.' },
+    ]
+  },
+  {
+    text:'Teman kamu body shaming orang lain, tapi dibungkus sebagai bercanda. Suasana lagi ketawa-ketawa.',
+    opts:[
+      { label:'Tegur tapi tetap santai biar ga awkward', val:12,
+        reason:'Menegur dengan cara yang tidak mempermalukan siapapun adalah skill sosial tinggi. Kamu menjaga circle tetap aman tanpa bikin drama.' },
+      { label:'Ikut ketawa, nanti juga selesai sendiri', val:-15,
+        reason:'Tawa yang tidak nyaman tetap tawa di mata pelaku. Diam berarti setuju, dan yang di-shaming pasti merasakan itu.' },
+      { label:'Diem dan berharap orang lain yang negur', val:-8,
+        reason:'Menunggu orang lain yang bertindak adalah alasan paling umum kenapa perilaku buruk dibiarkan terus dalam circle.' },
+      { label:'Langsung defend yang di-shaming', val:10,
+        reason:'Berani speak up untuk orang lain saat suasana tidak mendukung adalah tindakan yang membangun rasa aman di circle.' },
+    ]
+  },
+  {
+    text:'Kamu dapat info kalau ada teman yang sering nitip absen buat orang lain. Dosennya strict banget.',
+    opts:[
+      { label:'Ingetin dia soal risikonya secara pribadi', val:8,
+        reason:'Mengingatkan dengan empati dan tanpa menghakimi adalah cara teman yang peduli. Kamu jaga dia tanpa mempermalukannya.' },
+      { label:'Laporin ke dosen', val:-5,
+        reason:'Langsung melapor tanpa mencoba bicara dulu sering terasa seperti pengkhianatan, bukan kepedulian. Konteks itu penting.' },
+      { label:'Ga peduli, bukan masalah kamu', val:-8,
+        reason:'Tidak peduli sama sekali terhadap keputusan buruk teman menciptakan circle yang transaksional dan dangkal.' },
+      { label:'Tawarin ikut nitip juga sekalian', val:-15,
+        reason:'Ikut serta dalam perilaku berisiko bukan solidaritas — itu hanya memperbesar masalah bersama-sama.' },
+    ]
+  },
+  {
+    text:'Teman circle kamu tiba-tiba ngajak orang baru gabung tanpa izin siapapun. Orang baru itu agak awkward.',
+    opts:[
+      { label:'Kasih kesempatan, sambut dengan terbuka', val:10,
+        reason:'Circle yang inklusif dan mau memberi kesempatan orang baru umumnya lebih kuat dan lebih kaya secara sosial.' },
+      { label:'Pas aja tapi pasang muka ramah', val:-5,
+        reason:'Keramahan palsu bisa dirasakan. Orang baru yang tidak benar-benar disambut akhirnya membuat dinamika circle lebih tegang.' },
+      { label:'Protes ke teman yang ngajak secara pribadi', val:5,
+        reason:'Mengkomunikasikan keberatan secara langsung dan privat adalah cara yang lebih sehat dari diam atau drama di depan semua orang.' },
+      { label:'Langsung dingin ke orang barunya', val:-12,
+        reason:'Bersikap dingin ke orang yang bahkan belum berbuat apa-apa menciptakan environment yang tidak aman bagi siapapun di circle.' },
+    ]
+  },
+  {
+    text:'Teman kamu ghosting semua orang di circle selama seminggu tanpa penjelasan. Kamu ngapain?',
+    opts:[
+      { label:'Chat personal, tanya baik-baik ada apa', val:12,
+        reason:'Reach out secara personal menunjukkan bahwa kamu peduli dengan orang-nya, bukan hanya kehadirannya di circle.' },
+      { label:'Tunggu dia muncul sendiri, mungkin lagi butuh waktu', val:5,
+        reason:'Menghormati ruang seseorang itu valid — tapi pastikan ada sinyal bahwa kamu tetap ada kalau dia butuh.' },
+      { label:'Ngomongin ke yang lain dulu, khawatir', val:-8,
+        reason:'Menyebarkan kekhawatiran sebelum mencoba bicara langsung bisa membuat situasi lebih complicated dari yang perlu.' },
+      { label:'Baperan banget sih, udah move on aja', val:-15,
+        reason:'Menganggap enteng perubahan perilaku teman bisa membuat dia merasa tidak ada yang benar-benar peduli di circle.' },
+    ]
+  },
+  {
+    text:'Kamu nulis sesuatu di group chat yang niatnya bercanda, tapi ternyata nyinggung salah satu anggota circle.',
+    opts:[
+      { label:'Minta maaf langsung dan tulus, publik maupun personal', val:15,
+        reason:'Permintaan maaf yang tulus dan tidak defensif memperkuat kepercayaan. Circle yang bisa saling memaafkan jauh lebih solid.' },
+      { label:'Minta maaf tapi tambahin "aku kan cuma bercanda"', val:-10,
+        reason:'"Aku cuma bercanda" membatalkan permintaan maafmu sepenuhnya. Itu memindahkan tanggung jawab ke orang yang tersinggung.' },
+      { label:'Tunggu dia yang menegur dulu baru minta maaf', val:-5,
+        reason:'Menunggu konfrontasi sebelum mengakui kesalahan menunjukkan bahwa kamu tidak peka atau tidak cukup peduli untuk proaktif.' },
+      { label:'Delete pesannya dan pura-pura ga terjadi apa-apa', val:-15,
+        reason:'Menghapus bukti tanpa mengakui dampaknya sama sekali tidak membantu. Orang yang tersinggung masih ingat, meskipun pesannya hilang.' },
+    ]
+  },
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let G = {
-  players: [],       // {char, role, flagged, eliminated, tasks:[], passiveCooldown:0}
-  order: [],         // ordered by turn
+  players: [],
+  order: [],
   currentIdx: 0,
   session: 1,
   totalSessions: 8,
   meter: 30,
   scenario: null,
   scenarioChoice: null,
-  votes: {},         // voterId → targetId
+  scenarioActive: false,
+  scenarioFromMidPhase: false,
+  votes: {},
   eliminatedPlayer: null,
   playerCount: 4,
   selectedChars: [],
   firstPlayer: null,
   leftPlayer: null,
-  voteIdx: 0,        // which voter's turn
+  voteIdx: 0,
   selectedVoteTarget: null,
   prevScreen: null,
-  groupTasks: [],    // Active group tasks
-  detectedCards: {}, // Cards scanned during gameplay (for Card Viewer)
+  groupTasks: [],
+  detectedCards: {},
+  inventory: {},
+  lockedDecks: {},
+  lastUsedItem: null,
 };
 
 // ── UTILS ─────────────────────────────────────────────────────────────────
@@ -964,20 +1177,25 @@ function updateMeter(){
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────
 function goto(screenId){
+  // Track previous screen for back() — only track game screens, not popups
+  const cur=document.querySelector('.screen.active');
+  if(cur) G.prevScreen=cur.id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(screenId).classList.add('active');
   window.scrollTo(0,0);
-  // render hooks
   if(screenId==='s-main')    renderMain();
   if(screenId==='s-task')    renderTasks();
   if(screenId==='s-item')    renderItemScreen();
   if(screenId==='s-passive') renderPassive();
   if(screenId==='s-meeting') resetMeeting();
-  if(screenId==='s-draw')    $('draw-scan-area').innerHTML=`<div style="font-size:48px;margin-bottom:12px">🃏</div><p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu yang diambil</p><button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForDraw()">📷 SCAN KARTU</button>`;
+  if(screenId==='s-draw')    $('draw-scan-area').innerHTML=`<div style="font-size:48px;margin-bottom:12px">🃏</div><p class="b-sm c-muted mb16">Pilih kartu dari draw list atau scan QR</p><button class="btn btn-y mb12" style="width:auto;padding:12px 24px" onclick="gotoDrawCardList()">📋 PILIH KARTU</button><br><button class="btn btn-o btn-sm" style="width:auto" onclick="openScannerForDraw()">📷 Scan QR</button>`;
 }
 
 function back(){
-  goto('s-main');
+  const prev=G.prevScreen||'s-main';
+  // Jangan back ke screen yang tidak valid saat game
+  const safeBack=G.order&&G.order.length>0?'s-main':'s-setup';
+  goto(['s-main','s-setup','s-card-list','s-card-viewer'].includes(prev)?prev:safeBack);
 }
 
 // ── SETUP ─────────────────────────────────────────────────────────────────
@@ -1025,10 +1243,11 @@ function setupDone(){
   const roles = shuffle([...Array(fraudCount).fill('fraud'),...Array(n-fraudCount).fill('friend')]);
   G.players = G.selectedChars.map((c,i)=>({
     char:c, role:roles[i], flagged:false, eliminated:false,
-    tasks:[], passiveCooldown:0, sb:10, burnout:false, nickname:''
+    tasks:[], passiveCooldown:0, sb:10, burnout:false
   }));
   G.session=1; G.totalSessions=n===4?8:12; G.meter=30;
   G.votes={}; G.currentIdx=0;
+  G.inventory={};  // Reset inventory untuk game baru
   startRoleReveal();
 }
 
@@ -1053,25 +1272,16 @@ function renderRoleStep(){
     html=`<div class="role-card">
       <div style="font-size:48px">${p.char.emoji}</div>
       <div class="d md" style="margin:12px 0 4px">${p.char.name}</div>
-      <p class="b-sm c-muted mb16">Pastikan hanya <b style="color:var(--yellow)">${p.char.name}</b> yang melihat layar ini</p>
-      <div style="margin-bottom:20px">
-        <div class="lbl c-muted mb6" style="text-align:left">NAMA KAMU <span style="color:var(--pink);font-size:9px">(opsional)</span></div>
-        <input id="nickname-input" type="text" placeholder="Biar gampang dikenali..." maxlength="20"
-          style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box"
-          value="${p.nickname||''}"
-          oninput="G.players[roleIdx].nickname=this.value.trim()"
-        />
-      </div>
+      <p class="b-sm c-muted mb20">Pastikan hanya <b style="color:var(--yellow)">${p.char.name}</b> yang melihat layar ini</p>
       <button class="btn btn-p" onclick="nextRoleStep()">LIHAT ROLE KU</button>
     </div>`;
 
   } else if(roleStep===1){
     // Step 1: Tampil role
     const isFraud = p.role==='fraud';
-    const displayName = p.nickname ? `${p.char.name} · ${p.nickname}` : p.char.name;
     html=`<div class="role-card">
       <div style="font-size:48px">${p.char.emoji}</div>
-      <div class="d md" style="margin:12px 0 4px">${displayName}</div>
+      <div class="d md" style="margin:12px 0 4px">${p.char.name}</div>
       <div class="role-badge ${isFraud?'rb-fraud':'rb-friend'}" style="margin:8px auto 12px">${isFraud?'😈 FRAUD':'✅ FRIEND'}</div>
       <p class="b-sm mb20" style="color:rgba(255,255,255,.6)">${isFraud?'Gerus Friendship Meter ke 0. Jangan ketahuan!':'Kerja sama, ungkap Fraud, dan capai Friendship Meter 100!'}</p>
       <div class="card2 mb20" style="text-align:left">
@@ -1096,10 +1306,6 @@ function renderRoleStep(){
     </div>`;
   }
   $('role-content').innerHTML=html;
-  // Focus nickname input kalau ada
-  if(roleStep===0){
-    setTimeout(()=>{const inp=$('nickname-input');if(inp)inp.focus();},100);
-  }
 }
 
 function nextRoleStep(){
@@ -1287,7 +1493,7 @@ function renderMain(){
   $('main-active').textContent=active.length;
   updateMeter();
   $('main-cur-emoji').textContent=cur.char.emoji;
-  const displayName = cur.nickname ? `${cur.char.name} · ${cur.nickname}` : cur.char.name;
+  const displayName=cur.nickname?`${cur.char.name} · ${cur.nickname}`:cur.char.name;
   $('main-cur-name').textContent=displayName;
 
   // Tags
@@ -1295,58 +1501,73 @@ function renderMain(){
   tags.innerHTML='';
   if(cur.flagged) tags.innerHTML+='<span class="tag tag-flag mt4" style="display:inline-block">⚑ Flagged</span>';
   if(cur.burnout) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(255,107,53,.15);color:#FF6B35;border:1px solid rgba(255,107,53,.3);margin-left:4px">😵 Burnout</span>';
+  if(cur.fmDoubleActive) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(0,200,150,.15);color:var(--success);border:1px solid rgba(0,200,150,.3);margin-left:4px">📱 FM 2×</span>';
 
   // SB display
-  const sb = cur.sb ?? 10;
-  $('main-sb-val').textContent = sb;
-  $('main-sb-val').style.color = sb<=3?'var(--primary)':sb<=6?'var(--accent)':'var(--success)';
-  $('main-sb-bar').style.width = (sb/10*100)+'%';
-  $('main-sb-bar').style.background = sb<=3?'var(--gradient-sb-low)':sb<=6?'var(--gradient-sb-mid)':'var(--gradient-sb-high)';
-  $('main-sb-pips').innerHTML = Array.from({length:10},(_,i)=>
+  const sb=cur.sb??10;
+  $('main-sb-val').textContent=sb;
+  $('main-sb-val').style.color=sb<=3?'var(--primary)':sb<=6?'var(--accent)':'var(--success)';
+  $('main-sb-bar').style.width=(sb/10*100)+'%';
+  $('main-sb-bar').style.background=sb<=3?'var(--gradient-sb-low)':sb<=6?'var(--gradient-sb-mid)':'var(--gradient-sb-high)';
+  $('main-sb-pips').innerHTML=Array.from({length:10},(_,i)=>
     `<div style="width:6px;height:6px;border-radius:50%;background:${i<sb?(sb<=3?'var(--primary)':sb<=6?'var(--accent)':'var(--success)'):'rgba(255,255,255,.12)'}"></div>`
   ).join('');
 
+  // Action subtitles with SB cost hint
   $('act-task-sub').textContent=`${cur.tasks.length}/3 task aktif`;
+  const drawSub=$('act-draw-sub');
+  if(drawSub){
+    const locked=G.lockedDecks&&Object.keys(G.lockedDecks).length>0;
+    drawSub.textContent=locked?`⚠ ${Object.keys(G.lockedDecks).join(', ')} terkunci`:'Ambil 1 kartu dari deck aktif';
+  }
+  const itemSub=$('act-item-sub');
+  if(itemSub) itemSub.textContent='Input kartu item ke task';
+  const passiveSub=$('act-passive-sub');
 
-  // Burnout: disable semua aksi kecuali end phase
+  // Update inventory count
+  const charId=cur.char.id;
+  const inventory=G.inventory&&G.inventory[charId]||[];
+  const invSub=$('act-inventory-sub');
+  if(invSub) invSub.textContent=`${inventory.length} kartu tersedia`;
+
+  // Burnout: disable semua aksi
   if(cur.burnout){
-    ['act-task','act-item','act-powerup','act-draw'].forEach(id=>{
+    ['act-task','act-item','act-powerup','act-draw','act-inventory'].forEach(id=>{
       const el=$(id); if(el) el.className='act-btn disabled';
     });
-    // Tampilkan pesan burnout di atas actions
-    const stack = document.querySelector('#s-main .stack.mb16');
-    if(stack && !$('burnout-banner')){
-      const banner = document.createElement('div');
-      banner.id = 'burnout-banner';
-      banner.style.cssText = 'background:rgba(255,107,53,.1);border:1.5px solid rgba(255,107,53,.3);border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center';
-      banner.innerHTML = '<span style="color:#FF6B35;font-weight:600">😵 Burnout!</span> <span class="b-sm c-muted">SB habis — skip turn ini. Recover +3 SB di session berikutnya.</span>';
-      stack.parentNode.insertBefore(banner, stack);
+    const stack=document.querySelector('#s-main .stack.mb16');
+    if(stack&&!$('burnout-banner')){
+      const banner=document.createElement('div');
+      banner.id='burnout-banner';
+      banner.style.cssText='background:rgba(255,107,53,.1);border:1.5px solid rgba(255,107,53,.3);border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center';
+      banner.innerHTML='<span style="color:#FF6B35;font-weight:600">😵 Burnout!</span> <span class="b-sm c-muted">SB habis — skip turn ini. Recover +3 SB di session berikutnya.</span>';
+      stack.parentNode.insertBefore(banner,stack);
     }
   } else {
     const banner=$('burnout-banner');
     if(banner) banner.remove();
-    ['act-task','act-item','act-powerup','act-draw'].forEach(id=>{
+    ['act-task','act-item','act-powerup','act-draw','act-inventory'].forEach(id=>{
       const el=$(id); if(el) el.className='act-btn';
     });
   }
 
-  // Passive
+  // Passive button
   const passiveReady=cur.passiveCooldown>=2;
   const passBtn=$('act-passive');
   if(passiveReady){
     passBtn.className='act-btn passive-ready';
     $('act-passive-title').style.color='var(--accent)';
-    $('act-passive-sub').textContent=cur.char.passive;
+    if(passiveSub) passiveSub.textContent=cur.char.passive;
   } else {
     passBtn.className='act-btn disabled';
     $('act-passive-title').style.color='';
-    $('act-passive-sub').textContent=`Tersedia dalam ${2-cur.passiveCooldown} session lagi`;
+    if(passiveSub) passiveSub.textContent=`Tersedia dalam ${2-cur.passiveCooldown} session lagi`;
   }
 
   // Players list
   $('main-players').innerHTML=G.order.map((p,i)=>{
-    const psb = p.sb ?? 10;
-    const pName = p.nickname ? `${p.char.name} · ${p.nickname}` : p.char.name;
+    const psb=p.sb??10;
+    const pName=p.nickname?`${p.char.name} · ${p.nickname}`:p.char.name;
     return `<div class="card2" style="opacity:${p.eliminated?0.4:1};border-left:3px solid ${i===G.currentIdx?'var(--primary)':'transparent'}">
       <div class="row" style="justify-content:space-between">
         <div class="row" style="gap:8px">
@@ -1365,38 +1586,49 @@ function renderMain(){
   }).join('');
 
   // Update card viewer count
-  const countEl = $('card-viewer-count');
-  if(countEl) {
-    const count = G.detectedCards ? Object.keys(G.detectedCards).length : 0;
-    countEl.textContent = `${count} kartu terdeteksi`;
+  const countEl=$('card-viewer-count');
+  if(countEl){
+    const count=G.detectedCards?Object.keys(G.detectedCards).length:0;
+    countEl.textContent=`${count} kartu terdeteksi`;
   }
 }
 
 function endPhase(){
+  // Guard against double-calls (e.g. from FM popup callback + LANJUTKAN button)
+  if(G.phaseEnded) return;
+  G.phaseEnded=true;
+
   const cur=G.order[G.currentIdx];
-  // increment passive cooldown for current player
+  if(!cur){ G.phaseEnded=false; return; }
+
+  // Phantom: extra phase
+  if(cur.phantomExtraPhase){
+    cur.phantomExtraPhase=false;
+    G.phaseEnded=false;
+    goto('s-main');
+    return;
+  }
+
   cur.passiveCooldown=(cur.passiveCooldown||0)+1;
-  // expire tasks
-  cur.tasks=cur.tasks.filter(t=>{
-    if(t.completed) return false;
-    if((G.session-t.sessionTaken)>=2){
-      G.meter=Math.max(0,G.meter-8);
-      return false;
-    }
-    return true;
-  });
+  cur.fmDoubleActive=false;
+
   // find next active player
   const active=activePlayers();
+  if(active.length===0){ checkWinLose(); G.phaseEnded=false; return; }
+
   const curActiveIdx=active.findIndex(p=>p.char.id===cur.char.id);
-  const nextActive=active[(curActiveIdx+1)%active.length];
-  if(nextActive.char.id===active[0].char.id && curActiveIdx===active.length-1){
-    // session end
+  const isLastPlayer = curActiveIdx===active.length-1;
+
+  if(isLastPlayer){
     sessionEnd();
   } else {
+    const nextActive=active[curActiveIdx+1];
     G.currentIdx=G.order.indexOf(nextActive);
+    G.phaseEnded=false;
     if(checkWinLose()) return;
-    // 50% chance mid-phase scenario
-    if(Math.random()<0.5){
+    // 50% mid-phase scenario — only if no active scenario
+    if(!G.scenarioActive && Math.random()<0.5){
+      G.scenarioActive=true;
       G.scenario=pick(SCENARIOS);
       G.scenarioChoice=null;
       G.scenarioFromMidPhase=true;
@@ -1409,24 +1641,40 @@ function endPhase(){
 }
 
 function sessionEnd(){
+  G.session++;
   initGroupTasks();
   // Expire group tasks past deadline
   G.groupTasks=G.groupTasks.filter(gt=>{
     if(gt.completed) return false;
-    if((G.session-gt.sessionStart)>=gt.deadline){
+    if((G.session-gt.sessionStart)>gt.deadline){
       G.meter=Math.max(0,G.meter-8);
       return false;
     }
     return true;
   });
-  // SB recovery: +3 per session, max 10. Burnout reset.
+  // SB recovery + burnout reset per session
   G.order.filter(p=>!p.eliminated).forEach(p=>{
-    p.sb = Math.min(10, (p.sb??10) + 3);
-    p.burnout = false;
+    p.sb=Math.min(10,(p.sb??10)+3);
+    p.burnout=false;
+    p.fmDoubleActive=false;
   });
+  // Clear expired deck locks
+  if(G.lockedDecks){
+    Object.keys(G.lockedDecks).forEach(loc=>{
+      if(G.lockedDecks[loc]<=G.session) delete G.lockedDecks[loc];
+    });
+  }
+  // Reset player index ke awal untuk session baru
+  const firstActive=G.order.find(p=>!p.eliminated);
+  if(firstActive) G.currentIdx=G.order.indexOf(firstActive);
+
+  G.phaseEnded=false;
+  G.scenarioActive=true;
+
   if(checkWinLose()) return;
   G.scenario=pick(SCENARIOS);
   G.scenarioChoice=null;
+  G.scenarioFromMidPhase=false;
   renderScenario();
   goto('s-scenario');
 }
@@ -1525,6 +1773,11 @@ function renderTaskResult(gt, errMsg){
 }
 
 function confirmTask(){ endPhase(); }
+
+function renderTasks(){
+  // Content already populated by renderTaskResult() before goto('s-task') is called.
+  // This stub exists to satisfy the goto() render hook.
+}
 
 function cancelTask(){
   // Remove last added task
@@ -1902,7 +2155,22 @@ function trackDetectedCard(card){
 
 function gotoCardViewer(){
   goto('s-card-viewer');
+  // Reset search
+  const searchInput = $('card-viewer-search');
+  if(searchInput) searchInput.value = '';
+  const clearBtn = $('card-viewer-clear');
+  if(clearBtn) clearBtn.disabled = true;
   renderCardViewer();
+}
+
+function gotoCardList(){
+  goto('s-card-list');
+  // Reset search
+  const searchInput = $('card-list-search');
+  if(searchInput) searchInput.value = '';
+  const clearBtn = $('card-list-clear');
+  if(clearBtn) clearBtn.disabled = true;
+  renderCardList();
 }
 
 function setCardFilter(type){
@@ -1948,22 +2216,37 @@ function renderCardViewer(){
   const empty = $('card-viewer-empty');
   const cards = Object.values(G.detectedCards || {});
   
+  // Get search query
+  const searchQuery = $('card-viewer-search').value.toLowerCase().trim();
+  
+  // Update clear button state
+  const clearBtn = $('card-viewer-clear');
+  if(clearBtn) clearBtn.disabled = searchQuery === '';
+
   // Filter cards
   const filtered = cards.filter(card => {
     const typeMatch = cardViewerFilter === 'all' || card.type === cardViewerFilter;
     const locMatch = cardViewerLocFilter === 'all' || card.loc === cardViewerLocFilter;
-    return typeMatch && locMatch;
+    const searchMatch = searchQuery === '' || 
+      card.name.toLowerCase().includes(searchQuery) || 
+      card.type.toLowerCase().includes(searchQuery) ||
+      (card.loc && card.loc.toLowerCase().includes(searchQuery)) ||
+      (card.effect && card.effect.toLowerCase().includes(searchQuery));
+    return typeMatch && locMatch && searchMatch;
   });
-  
+
   if(filtered.length === 0){
     grid.style.display = 'none';
     empty.style.display = 'block';
+    empty.innerHTML = `<div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <p class="b-md c-muted">${searchQuery ? 'Tidak ada kartu yang cocok dengan pencarian' : 'Belum ada kartu yang terdeteksi'}</p>
+      <p class="b-sm c-muted" style="margin-top:8px">${searchQuery ? 'Coba kata kunci lain' : 'Scan QR code kartu untuk menambahkannya ke koleksi'}</p>`;
     return;
   }
-  
+
   grid.style.display = 'grid';
   empty.style.display = 'none';
-  
+
   grid.innerHTML = filtered.map(card => `
     <div class="card2" style="text-align:center;padding:16px 12px;cursor:pointer;transition:transform .15s" onclick="showCardDetail('${card.name.replace(/'/g, "\\'")}')">
       <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
@@ -2017,11 +2300,6 @@ function showCardDetail(cardName){
 // ── CARD LIST (DATABASE) FUNCTIONS ──────────────────────────────────────
 let cardListTypeFilter = 'all';
 let cardListLocFilter = 'all';
-
-function gotoCardList(){
-  goto('s-card-list');
-  renderCardList();
-}
 
 function setCardListTypeFilter(type){
   cardListTypeFilter = type;
@@ -2088,26 +2366,42 @@ function renderCardList(){
   const empty = $('card-list-empty');
   const allCards = Object.values(CARDS || {});
   
+  // Get search query
+  const searchQuery = $('card-list-search').value.toLowerCase().trim();
+  
+  // Update clear button state
+  const clearBtn = $('card-list-clear');
+  if(clearBtn) clearBtn.disabled = searchQuery === '';
+  
   // Filter cards
   const filtered = allCards.filter(card => {
     const typeMatch = cardListTypeFilter === 'all' || card.type === cardListTypeFilter;
     const locMatch = cardListLocFilter === 'all' || !card.loc || card.loc === cardListLocFilter;
-    return typeMatch && locMatch;
+    const searchMatch = searchQuery === '' || 
+      card.name.toLowerCase().includes(searchQuery) || 
+      card.type.toLowerCase().includes(searchQuery) ||
+      (card.loc && card.loc.toLowerCase().includes(searchQuery)) ||
+      (card.effect && card.effect.toLowerCase().includes(searchQuery)) ||
+      (card.desc && card.desc.toLowerCase().includes(searchQuery));
+    return typeMatch && locMatch && searchMatch;
   });
-  
+
   // Update stats
   $('card-list-count').textContent = filtered.length;
   $('card-list-total').textContent = allCards.length;
-  
+
   if(filtered.length === 0){
     grid.style.display = 'none';
     empty.style.display = 'block';
+    empty.innerHTML = `<div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <p class="b-md c-muted">${searchQuery ? 'Tidak ada kartu yang cocok dengan pencarian' : 'Tidak ada kartu yang cocok dengan filter'}</p>
+      <p class="b-sm c-muted" style="margin-top:8px">${searchQuery ? 'Coba kata kunci lain' : 'Ubah filter untuk melihat lebih banyak kartu'}</p>`;
     return;
   }
-  
+
   grid.style.display = 'grid';
   empty.style.display = 'none';
-  
+
   grid.innerHTML = filtered.map(card => `
     <div class="card-list-item" data-card-name="${card.name.replace(/"/g, "&quot;")}">
       <div style="font-size:36px;margin-bottom:6px">${card.emoji || '🃏'}</div>
@@ -2132,6 +2426,66 @@ if(!$('s-card-list').dataset.hasClickHandler){
     }
   });
   $('s-card-list').dataset.hasClickHandler = 'true';
+}
+
+// Event delegation for draw list clicks
+if(!$('s-draw-list').dataset.hasClickHandler){
+  $('s-draw-list').addEventListener('click', (e) => {
+    const item = e.target.closest('.card-list-item');
+    if(item){
+      e.stopPropagation();
+      const cardName = item.getAttribute('data-card-name');
+      showDrawCardDetail(cardName);
+    }
+  });
+  $('s-draw-list').dataset.hasClickHandler = 'true';
+}
+
+function showDrawCardDetail(cardName){
+  if(typeof CARDS === 'undefined') return;
+  const card = Object.values(CARDS).find(c => c.name === cardName);
+  if(!card) return;
+
+  // Create popup container
+  const popupContainer = document.createElement('div');
+  popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
+  popupContainer.onclick = (e) => {
+    if(e.target === popupContainer) popupContainer.remove();
+  };
+
+  // Create popup content (no cursor pointer so it doesn't close when clicking content)
+  const popupContent = document.createElement('div');
+  popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
+  popupContent.className = 'card';
+  popupContent.innerHTML = `
+    <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
+    <div class="d md mb4">${card.name}</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
+      <span class="tag" style="display:inline-block">${card.type || 'UNKNOWN'}</span>
+      ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+      ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+    </div>
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    <div class="card2 mb20" style="text-align:left;padding:14px">
+      <div class="lbl mb6">EFEK</div>
+      <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
+      ${card.fm ? `<div class="row mt8" style="justify-content:space-between"><span class="b-sm c-muted">FM Change</span><span class="d sm" style="color:${card.fm > 0 ? 'var(--success)' : 'var(--primary)'}">${card.fm > 0 ? '+' : ''}${card.fm}</span></div>` : ''}
+      ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
+    </div>
+    <button class="btn btn-p mb12" onclick="addCardFromPopup('${card.name}')">TAMBAH KE INVENTORY ✓</button>
+    <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
+  `;
+
+  popupContainer.appendChild(popupContent);
+  document.body.appendChild(popupContainer);
+}
+
+function addCardFromPopup(cardName){
+  // Close all dynamic popup containers (exclude static fm-popup)
+  document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(popup => popup.remove());
+  
+  // Add card to inventory
+  addCardToInventory(cardName);
 }
 
 function showCardListDetail(cardName){
@@ -2222,6 +2576,8 @@ function onItemScanned(card){
 function inputItem(itemName, isCorrupt=false){
   const cur=G.order[G.currentIdx];
   let meterDelta=0;
+  // Track last used item for Artist passive
+  if(!isCorrupt) G.lastUsedItem=itemName;
   initGroupTasks();
   G.groupTasks.filter(gt=>!gt.completed&&gt.participants.includes(cur.char.id)).forEach(gt=>{
     const allNeeded=gt.taskDef.items;
@@ -2230,21 +2586,25 @@ function inputItem(itemName, isCorrupt=false){
     allCollected.forEach(it=>{const i=stillNeeded.indexOf(it);if(i>=0)stillNeeded.splice(i,1);});
     if(!stillNeeded.includes(itemName)) return;
     if(!gt.collected[cur.char.id]) gt.collected[cur.char.id]=[];
-    // Simpan sebagai object dengan flag corrupt
     gt.collected[cur.char.id].push({name:itemName, corrupt:isCorrupt, by:cur.char.id});
-    // Validasi task completion — corrupt item dari Fraud tidak dihitung
-    const validCollected = Object.values(gt.collected).flat()
-      .filter(i => !i.corrupt) // hanguskan corrupt items
-      .map(i => i.name||i);
+    const validCollected=Object.values(gt.collected).flat()
+      .filter(i=>!i.corrupt)
+      .map(i=>i.name||i);
     const checkNeeded=[...allNeeded];
     validCollected.forEach(it=>{const i=checkNeeded.indexOf(it);if(i>=0)checkNeeded.splice(i,1);});
     if(checkNeeded.length===0){
       gt.completed=true;
-      meterDelta+=gt.taskDef.reward;
+      // Apply influencer FM double if active
+      const reward=cur.fmDoubleActive?gt.taskDef.reward*2:gt.taskDef.reward;
+      meterDelta+=reward;
     }
   });
-  G.meter=Math.max(0,Math.min(100,G.meter+meterDelta));
-  endPhase();
+  if(meterDelta!==0){
+    G.meter=Math.max(0,Math.min(100,G.meter+meterDelta));
+    showFmPopup(meterDelta, G.meter, ()=>endPhase());
+  } else {
+    endPhase();
+  }
 }
 
 // ── POWER-UP SCAN RESULT ──────────────────────────────────────────────────
@@ -2281,13 +2641,402 @@ function onPowerUpScanned(card){
     <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
 }
 
+// ── DRAW CARD LIST (MANUAL ADD) ──────────────────────────────────────────
+let drawListTypeFilter = 'all';
+let drawListLocFilter = 'all';
+
+function gotoDrawCardList(){
+  goto('s-draw-list');
+  // Reset search dan filter
+  const searchInput = $('draw-list-search');
+  if(searchInput) searchInput.value = '';
+  const clearBtn = $('draw-list-clear');
+  if(clearBtn) clearBtn.disabled = true;
+  drawListTypeFilter = 'all';
+  drawListLocFilter = 'all';
+  // Reset filter buttons
+  ['all','item','action','special','instant'].forEach(f=>{
+    const btn = $(`dlf-${f}`);
+    if(btn){
+      if(f === 'all'){
+        btn.style.background = 'var(--primary)';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = '';
+        btn.style.color = '';
+      }
+    }
+  });
+  ['all','perpustakaan','cafe','kelas','kantin'].forEach(l=>{
+    const btn = $(`dll-${l}`);
+    if(btn){
+      if(l === 'all'){
+        btn.style.background = 'var(--secondary)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--secondary)';
+      } else {
+        btn.style.background = 'rgba(255,255,255,.05)';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderColor = 'rgba(255,255,255,.2)';
+      }
+    }
+  });
+  renderDrawCardList();
+}
+
+// ── RENDER SCENARIO ───────────────────────────────────────────────────
+function renderScenario(){
+  const sc = G.scenario;
+  if(!sc) return;
+
+  // Populate scenario text
+  $('scenario-text').textContent = sc.text;
+
+  // Populate involved players (all active players)
+  const active = activePlayers();
+  $('scenario-involved').innerHTML = active.map(p =>
+    `<div class="tag tag-friend" style="padding:6px 12px;font-size:12px">
+      <span>${p.char.emoji}</span> ${p.char.name}
+    </div>`
+  ).join('');
+
+  // Reset choice
+  G.scenarioChoice = null;
+  $('btn-scenario-confirm').style.display = 'none';
+
+  // Populate options
+  $('scenario-opts').innerHTML = sc.opts.map((opt, i) =>
+    `<button class="vote-opt" id="sc-opt-${i}" onclick="selectScenarioOpt(${i})">
+      <div class="row" style="justify-content:space-between">
+        <span class="b-md" style="flex:1;font-weight:500">${opt.label}</span>
+        <span class="b-sm c-muted" style="white-space:nowrap;margin-left:8px">${opt.val > 0 ? '+' : ''}${opt.val} FM</span>
+      </div>
+    </button>`
+  ).join('');
+}
+
+function selectScenarioOpt(idx){
+  // Clear previous selection
+  const opts = G.scenario.opts;
+  opts.forEach((_, i) => {
+    const el = document.getElementById('sc-opt-' + i);
+    if(el) el.className = 'vote-opt';
+  });
+  // Set new selection
+  G.scenarioChoice = idx;
+  const sel = document.getElementById('sc-opt-' + idx);
+  if(sel) sel.className = 'vote-opt sel-a';
+  $('btn-scenario-confirm').style.display = 'block';
+}
+
+// ── SCENARIO CONFIRM ─────────────────────────────────────────────────
+function scenarioConfirm(){
+  const sc=G.scenario;
+  const chosen=sc.opts[G.scenarioChoice];
+  const delta=chosen.val;
+  const reason=chosen.reason||null;
+  G.meter=Math.max(0,Math.min(100,G.meter+delta));
+  G.scenarioActive=false;
+  showFmPopup(delta, G.meter, function(){
+    if(checkWinLose()) return;
+    if(G.scenarioFromMidPhase){
+      G.scenarioFromMidPhase=false;
+      goto('s-main');
+    } else {
+      goto('s-meeting');
+    }
+  }, reason);
+}
+
+// ── INVENTORY FUNCTIONS ─────────────────────────────────────────────────
+function gotoInventory(){
+  goto('s-inventory');
+  renderInventory();
+}
+
+function renderInventory(){
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const inventory = G.inventory[charId] || [];
+  
+  // Update header
+  $('inv-cur-emoji').textContent = cur.char.emoji;
+  $('inv-cur-name').textContent = cur.char.name;
+  $('inv-cur-count').textContent = `${inventory.length} kartu`;
+  
+  // Update main screen inventory count
+  const invSub = $('act-inventory-sub');
+  if(invSub) invSub.textContent = `${inventory.length} kartu tersedia`;
+  
+  const list = $('inv-list');
+  const empty = $('inv-empty');
+  
+  if(inventory.length === 0){
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  
+  list.style.display = 'flex';
+  empty.style.display = 'none';
+  
+  list.innerHTML = inventory.map((item, idx) => `
+    <div class="card2" style="padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s" onclick="useInventoryCard(${idx})">
+      <div style="font-size:32px;flex-shrink:0">${item.card.emoji || '🃏'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="b-md" style="font-weight:600;margin-bottom:2px">${item.card.name}</div>
+        <div class="b-sm c-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.card.effect}</div>
+        <div class="b-sm" style="margin-top:4px">
+          <span class="tag" style="display:inline-block;font-size:8px;padding:2px 6px">${item.card.type}</span>
+          <span class="b-sm c-muted" style="margin-left:6px">Session ${item.sessionAdded}</span>
+        </div>
+      </div>
+      <div style="font-size:24px;color:var(--muted);flex-shrink:0">›</div>
+    </div>
+  `).join('');
+}
+
+function useInventoryCard(idx){
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const inventory = G.inventory[charId] || [];
+  
+  if(idx < 0 || idx >= inventory.length) return;
+  
+  const item = inventory[idx];
+  const card = item.card;
+  
+  // Create confirmation popup
+  const popupContainer = document.createElement('div');
+  popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  
+  popupContainer.innerHTML = `
+    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+      <div style="font-size:52px;margin-bottom:12px">${card.emoji || '🃏'}</div>
+      <div class="d md mb4">${card.name}</div>
+      <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
+      <div class="card2 mb20" style="text-align:left;padding:14px">
+        <div class="lbl mb6">EFEK</div>
+        <p class="b-md">${card.effect}</p>
+      </div>
+      <button class="btn btn-p mb12" onclick="confirmUseCard(${idx})">GUNAKAN KARTU ✓</button>
+      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
+    </div>
+  `;
+  
+  document.body.appendChild(popupContainer);
+}
+
+function confirmUseCard(idx){
+  // Close popup (exclude static fm-popup)
+  document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(popup => popup.remove());
+  
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const inventory = G.inventory[charId] || [];
+  
+  if(idx < 0 || idx >= inventory.length) return;
+  
+  const item = inventory[idx];
+  const card = item.card;
+  
+  // Remove from inventory
+  G.inventory[charId].splice(idx, 1);
+  
+  // Execute card effect
+  goto('s-inventory');
+  executeCardEffect(card, $('inv-list'), () => {
+    goto('s-main');
+  });
+}
+
+function setDrawListTypeFilter(type){
+  drawListTypeFilter = type;
+  // Update filter buttons
+  ['all','item','action','special','instant'].forEach(f=>{
+    const btn = $(`dlf-${f}`);
+    if(btn){
+      if(f === type){
+        if(f === 'all'){
+          btn.style.background = 'var(--primary)';
+          btn.style.color = '#fff';
+        } else if(f === 'item'){
+          btn.style.background = 'var(--accent)';
+          btn.style.color = 'var(--bg-dark)';
+        } else if(f === 'action'){
+          btn.style.background = 'var(--secondary)';
+          btn.style.color = '#fff';
+        } else if(f === 'special'){
+          btn.style.background = 'var(--primary)';
+          btn.style.color = '#fff';
+        } else if(f === 'instant'){
+          btn.style.background = '#FF6B35';
+          btn.style.color = '#fff';
+        }
+      } else {
+        btn.style.background = '';
+        btn.style.color = '';
+      }
+    }
+  });
+  renderDrawCardList();
+}
+
+function setDrawListLocFilter(loc){
+  drawListLocFilter = loc;
+  // Update location filter buttons
+  ['all','perpustakaan','cafe','kelas','kantin'].forEach(l=>{
+    const btn = $(`dll-${l}`);
+    if(btn){
+      if(l === loc){
+        btn.style.background = 'var(--secondary)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--secondary)';
+      } else {
+        btn.style.background = 'rgba(255,255,255,.05)';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderColor = 'rgba(255,255,255,.2)';
+      }
+    }
+  });
+  renderDrawCardList();
+}
+
+function renderDrawCardList(){
+  const grid = $('draw-list-grid');
+  const empty = $('draw-list-empty');
+  const allCards = Object.values(CARDS || {});
+  
+  // Get search query
+  const searchQuery = $('draw-list-search').value.toLowerCase().trim();
+  
+  // Update clear button state
+  const clearBtn = $('draw-list-clear');
+  if(clearBtn) clearBtn.disabled = searchQuery === '';
+  
+  // Filter cards - hanya tampilkan item, action, special, instant (exclude archetype, power-up, map)
+  const filtered = allCards.filter(card => {
+    const validType = ['item','action','special','instant'].includes(card.type);
+    const typeMatch = drawListTypeFilter === 'all' || card.type === drawListTypeFilter;
+    const locMatch = drawListLocFilter === 'all' || !card.loc || card.loc === drawListLocFilter;
+    const searchMatch = searchQuery === '' || 
+      card.name.toLowerCase().includes(searchQuery) || 
+      card.type.toLowerCase().includes(searchQuery) ||
+      (card.loc && card.loc.toLowerCase().includes(searchQuery)) ||
+      (card.effect && card.effect.toLowerCase().includes(searchQuery));
+    return validType && typeMatch && locMatch && searchMatch;
+  });
+
+  if(filtered.length === 0){
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(card => `
+    <div class="card-list-item" data-card-name="${card.name.replace(/"/g, "&quot;")}" 
+      style="cursor:pointer">
+      <div style="font-size:36px;margin-bottom:6px">${card.emoji || '🃏'}</div>
+      <div class="b-sm" style="font-weight:600;margin-bottom:4px;line-height:1.2">${card.name}</div>
+      <div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap">
+        <span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px">${card.type || 'UNKNOWN'}</span>
+        ${card.loc ? `<span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
+        ${card.corrupt ? `<span class="tag" style="display:inline-block;font-size:8px;padding:3px 6px;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function addCardToInventory(cardName){
+  const card = CARDS[Object.keys(CARDS).find(key => CARDS[key].name === cardName)];
+  if(!card) return;
+  
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  
+  // Initialize inventory untuk player ini jika belum ada
+  if(!G.inventory[charId]) G.inventory[charId] = [];
+  
+  // Handle berdasarkan tipe kartu
+  if(card.type === 'item'){
+    // Item langsung masuk ke group task
+    inputItem(card.name, false);
+  } else if(card.type === 'instant'){
+    // Instant card langsung dieksekusi
+    goto('s-draw');
+    executeCardEffect(card, $('draw-scan-area'), () => {
+      goto('s-main');
+    });
+  } else if(card.type === 'action' || card.type === 'special'){
+    // Action/Special masuk inventory
+    G.inventory[charId].push({
+      card: card,
+      sessionAdded: G.session
+    });
+    
+    // Tampilkan notifikasi sukses
+    showCardAddedPopup(card);
+  }
+}
+
+function showCardAddedPopup(card){
+  // Create popup container
+  const popupContainer = document.createElement('div');
+  popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  
+  popupContainer.innerHTML = `
+    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+      <div style="font-size:52px;margin-bottom:12px">✅</div>
+      <div class="d md mb4">Kartu Disimpan!</div>
+      <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
+      <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">${card.effect}</p>
+      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">LANJUT →</button>
+    </div>
+  `;
+  
+  document.body.appendChild(popupContainer);
+}
+
 // ── CARD EFFECT ENGINE ────────────────────────────────────────────────────
-// Satu fungsi untuk eksekusi semua efek kartu — dipake oleh draw, action, special, instant
 function executeCardEffect(card, area, onDone){
   if(!onDone) onDone = () => endPhase();
   const cur = G.order[G.currentIdx];
 
-  // ── FLIP COIN (Titip Absen) ──────────────────────────────────────────────
+  // Helper: show result then advance via FM popup (no separate LANJUTKAN button)
+  function fmResult(emoji, name, fmDelta, extraHtml, sbNote){
+    const col = fmDelta>0?'var(--success)':'var(--primary)';
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${emoji}</div>
+      <div class="d sm mb4">${name}</div>
+      <div class="card2" style="text-align:center;padding:14px;margin-bottom:8px">
+        <div class="d md" style="color:${col}">${fmDelta>0?'+':''}${fmDelta} FM</div>
+        ${extraHtml||''}
+        ${sbNote?`<div class="b-sm c-muted mt4">${sbNote}</div>`:''}
+      </div>`;
+    // FM popup is the ONLY navigation exit — no LANJUTKAN button to prevent double endPhase
+    showFmPopup(fmDelta, G.meter, onDone);
+  }
+
+  // Helper: no-FM result with single LANJUTKAN button
+  function plainResult(emoji, name, html){
+    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${emoji}</div>
+      <div class="d sm mb4">${name}</div>
+      ${html}
+      <button class="btn btn-p mt4" style="width:auto;padding:12px 32px" onclick="_cardDone()">LANJUTKAN →</button>`;
+  }
+
+  // Single safe exit for non-FM cards — prevents double-call
+  window._cardDone = function(){
+    window._cardDone = ()=>{};  // neutralize after first call
+    onDone();
+    setTimeout(()=>{ window._cardDone = function(){ onDone(); }; }, 500);
+  };
+
+  // ── FLIP COIN (Titip Absen) ─────────────────────────────────────────────
   if(card.flipCoin){
     area.innerHTML=`<div style="font-size:64px;margin-bottom:12px;animation:coinSpin 0.6s ease">🪙</div>
       <div class="d sm mb4">${card.name}</div>
@@ -2301,304 +3050,176 @@ function executeCardEffect(card, area, onDone){
     setTimeout(()=>{
       const heads=Math.random()<0.5;
       const delta=heads?(card.fm||15):-(card.fm||15);
-      const prev=G.meter;
       G.meter=Math.max(0,Math.min(100,G.meter+delta));
       area.innerHTML=`
         <div style="font-size:64px;margin-bottom:12px;animation:pop .4s ease">${heads?'😄':'😬'}</div>
         <div class="d sm mb4">${card.name}</div>
-        <div class="card2 mb16" style="text-align:center;padding:16px">
+        <div class="card2 mb4" style="text-align:center;padding:16px">
           <div style="font-size:32px;margin-bottom:8px">${heads?'👑 HEADS':'💀 TAILS'}</div>
           <div class="d md" style="color:${heads?'var(--success)':'var(--primary)'}">${heads?'+':''}${delta} FM</div>
           <p class="b-sm c-muted mt4">${heads?'Keberuntungan berpihak padamu!':'Nasib berkata lain...'}</p>
-        </div>
-        <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="(${onDone.toString()})()">LANJUTKAN →</button>`;
+        </div>`;
       showFmPopup(delta, G.meter, onDone);
     },800);
     return;
   }
 
-  // ── INITIATE SCENARIO (Ceramah Dosen, WFC Bareng) ────────────────────────
+  // ── SCENARIO TRIGGER (Ceramah Dosen, WFC Bareng) ────────────────────────
   if(card.name==='Ceramah Dosen' || card.name==='WFC Bareng'){
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm c-muted mb16">${card.effect}</p>
-      <div class="tag tag-flag" style="display:inline-block;margin-bottom:16px">⚡ Scenario akan dimulai!</div><br>
-      <button class="btn btn-p mt12" style="width:auto;padding:12px 32px" onclick="triggerScenarioFromCard()">MULAI SCENARIO →</button>`;
+    plainResult(card.emoji, card.name,
+      `<p class="b-sm c-muted mb12">${card.effect}</p>
+       <div class="tag tag-flag" style="display:inline-block;margin-bottom:12px">⚡ Scenario akan dimulai!</div><br>`);
+    // Override LANJUTKAN to trigger scenario instead
+    area.querySelector('button').onclick = ()=>{ window._cardDone=()=>{}; triggerScenarioFromCard(); };
     return;
   }
 
-  // ── GHIBAH (Cafe Special) ────────────────────────────────────────────────
+  // ── GHIBAH ──────────────────────────────────────────────────────────────
   if(card.name==='Ghibah'){
     const fraudPlayers=G.order.filter(p=>p.role==='fraud'&&!p.eliminated);
-    if(fraudPlayers.length===0){
-      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">🤷</div>
-        <p class="b-sm c-muted mb16">Tidak ada informasi yang bisa didapat.</p>
-        <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="(${onDone.toString()})()">LANJUTKAN →</button>`;
-      return;
-    }
-    const hints=fraudPlayers.map(fraud=>{
-      const sb=fraud.sb??10;
-      const sbLabel=sb>=5?'BANYAK':'DIKIT';
-      const sbColor=sb>=5?'var(--success)':'var(--primary)';
-      return `<div class="card2 mb8" style="text-align:left">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <span class="b-sm c-muted">Ada seseorang di circle ini...</span>
-          <span class="d sm" style="color:${sbColor}">SB ${sbLabel}</span>
-        </div>
-      </div>`;
-    });
-    area.innerHTML=`
-      <div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">👀</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm c-muted mb12">"Radar sosial aktif. Sesuatu terungkap..."</p>
-      ${hints.join('')}
-      <p class="b-sm mt8 mb16" style="color:rgba(255,255,255,.3);font-size:10px">Petunjuk ini bersifat samar — bukan konfirmasi identitas.</p>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    const hints=fraudPlayers.length===0
+      ? '<p class="b-sm c-muted mb12">Tidak ada informasi yang bisa didapat.</p>'
+      : fraudPlayers.map(f=>{
+          const sb=f.sb??10; const col=sb>=5?'var(--success)':'var(--primary)';
+          return `<div class="card2 mb8" style="text-align:left"><div class="row" style="justify-content:space-between;align-items:center"><span class="b-sm c-muted">Ada seseorang di circle ini...</span><span class="d sm" style="color:${col}">SB ${sb>=5?'BANYAK':'DIKIT'}</span></div></div>`;
+        }).join('');
+    plainResult('👀', card.name,
+      `<p class="b-sm c-muted mb12">"Radar sosial aktif. Sesuatu terungkap..."</p>${hints}
+       <p class="b-sm mb12" style="color:rgba(255,255,255,.3);font-size:10px">Petunjuk bersifat samar.</p>`);
     return;
   }
 
-  // ── MEETING SEKARANG! (Perp Special) ────────────────────────────────────
+  // ── MEETING SEKARANG! ────────────────────────────────────────────────────
   if(card.name==='Meeting Sekarang!'){
-    // Extend deadline of active tasks for current player by 2 sessions
     let extended=0;
-    if(G.groupTasks){
-      G.groupTasks.filter(gt=>!gt.completed&&gt.participants&&gt.participants.includes(cur.char.id)).forEach(gt=>{
-        gt.deadline=(gt.deadline||2)+2;
-        extended++;
-      });
-    }
-    const msg=extended>0?`${extended} task diperpanjang 2 session!`:'Tidak ada task aktif yang bisa diperpanjang.';
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="tag tag-reward" style="display:inline-block;margin:8px 0 16px">${msg}</div>
-      <p class="b-sm c-muted mb16">${card.effect}</p>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    if(G.groupTasks) G.groupTasks.filter(gt=>!gt.completed&&gt.participants&&gt.participants.includes(cur.char.id)).forEach(gt=>{ gt.deadline=(gt.deadline||2)+2; extended++; });
+    plainResult(card.emoji, card.name,
+      `<div class="tag tag-reward" style="display:inline-block;margin:8px 0 12px">${extended>0?`${extended} task diperpanjang 2 session!`:'Tidak ada task aktif.'}</div>`);
     return;
   }
 
-  // ── PRESENTASI KELOMPOK (Kelas Special) ─────────────────────────────────
+  // ── PRESENTASI KELOMPOK ──────────────────────────────────────────────────
   if(card.name==='Presentasi Kelompok'){
-    // All active players -2 SB, but FM +15 if everyone survives
-    const active=activePlayers();
-    active.forEach(p=>{ p.sb=Math.max(0,( p.sb??10)-2); if(p.sb===0) p.burnout=true; });
-    const prevMeter=G.meter;
+    activePlayers().forEach(p=>{ p.sb=Math.max(0,(p.sb??10)-2); if(p.sb===0) p.burnout=true; });
     G.meter=Math.min(100,G.meter+15);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm c-muted mb12">Semua pemain -2 Social Battery untuk tampil bersama!</p>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--success)">+15 FM</div>
-        <p class="b-sm c-muted mt4">Presentasi berjalan sukses.</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(15, G.meter, onDone);
+    fmResult(card.emoji, card.name, 15, '<p class="b-sm c-muted mt4">Semua pemain -2 SB.</p>');
     return;
   }
 
-  // ── SURPRISE HABEDE!! (Kantin Special) ──────────────────────────────────
+  // ── SURPRISE HABEDE!! ────────────────────────────────────────────────────
   if(card.name==='Surprise, HABEDE!!'){
-    const prev=G.meter;
-    G.meter=Math.min(100,G.meter+(card.fm||25));
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm c-muted mb12">${card.effect}</p>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--success)">+${card.fm||25} FM</div>
-        <p class="b-sm c-muted mt4">Ambil 1 kartu bebas dari deck manapun!</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(card.fm||25, G.meter, onDone);
+    const gain=card.fm||25;
+    G.meter=Math.min(100,G.meter+gain);
+    fmResult(card.emoji, card.name, gain, '<p class="b-sm c-muted mt4">Ambil 1 kartu bebas dari deck manapun!</p>');
     return;
   }
 
-  // ── BESOK UJIAN (Perp Action) ────────────────────────────────────────────
+  // ── BESOK UJIAN ──────────────────────────────────────────────────────────
   if(card.name==='Besok Ujian'){
     const sbCost=card.sb||4;
-    if((cur.sb??10)<sbCost){
-      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
-        <div class="d sm mb4">${card.name}</div>
-        <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
-        <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
-      return;
-    }
+    if((cur.sb??10)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
     cur.sb=Math.max(0,(cur.sb??10)-sbCost);
-    const fmGain=G.meter>=60?20:15;
-    const prev=G.meter;
-    G.meter=Math.min(100,G.meter+fmGain);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--success)">+${fmGain} FM</div>
-        <p class="b-sm c-muted mt4">${G.meter>=60?'FM tinggi — belajar makin efektif!':'FM standar — cukup untuk lanjut.'}</p>
-        <p class="b-sm c-muted mt4">-${sbCost} SB dipakai</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(fmGain, G.meter, onDone);
+    const gain=G.meter>=60?20:15;
+    G.meter=Math.min(100,G.meter+gain);
+    fmResult(card.emoji, card.name, gain, `<p class="b-sm c-muted mt4">-${sbCost} SB dipakai.</p>`);
     return;
   }
 
-  // ── FOKUS BELAJAR (Perp Action) ──────────────────────────────────────────
+  // ── FOKUS BELAJAR ────────────────────────────────────────────────────────
   if(card.name==='Fokus Belajar'){
-    const sbCost=card.sb||1;
-    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
-    const sbRecover=3;
-    cur.sb=Math.min(10,(cur.sb??10)+sbRecover);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:left;padding:14px">
-        <div class="b-sm mb4"><span class="c-green">+${sbRecover} SB</span> dipulihkan</div>
-        <div class="b-sm c-muted">Ambil 1 kartu Ensiklopedia atau Novel dari deck Perpustakaan secara fisik.</div>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    cur.sb=Math.max(0,(cur.sb??10)-(card.sb||1));
+    cur.sb=Math.min(10,(cur.sb??10)+3);
+    plainResult(card.emoji, card.name,
+      `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm mb4"><span class="c-green">+3 SB</span> dipulihkan</div><div class="b-sm c-muted">Ambil 1 kartu Ensiklopedia atau Novel dari deck Perpustakaan secara fisik.</div></div>`);
     return;
   }
 
-  // ── SHARING IS CARING (Kantin Action) ───────────────────────────────────
+  // ── SHARING IS CARING ────────────────────────────────────────────────────
   if(card.name==='Sharing is Caring'){
     const sbCost=card.sb||2;
-    if((cur.sb??10)<sbCost){
-      area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
-        <div class="d sm mb4">${card.name}</div>
-        <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
-        <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
-      return;
-    }
+    if((cur.sb??10)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
     cur.sb=Math.max(0,(cur.sb??10)-sbCost);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:left;padding:14px">
-        <div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Es Teh Manis teratas dari deck Kantin secara fisik.</div>
-        <div class="b-sm mt8"><span style="color:var(--primary)">-${sbCost} SB</span> dipakai</div>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    plainResult(card.emoji, card.name,
+      `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Es Teh Manis dari deck Kantin secara fisik.</div><div class="b-sm mt8" style="color:var(--primary)">-${sbCost} SB dipakai</div></div>`);
     return;
   }
 
-  // ── AWAS TUMPAH! (Cafe Instant) ──────────────────────────────────────────
+  // ── AWAS TUMPAH! ─────────────────────────────────────────────────────────
   if(card.name==='Awas Tumpah!'){
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm c-muted mb12">${card.effect}</p>
-      <div class="card2 mb16" style="text-align:left;padding:14px">
-        <div class="b-sm c-muted">Ambil 1 kartu Americano atau Earl Grey Tea teratas dari deck Cafe — lalu buang ke discard pile.</div>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    plainResult(card.emoji, card.name,
+      `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Americano atau Earl Grey Tea dari deck Cafe — buang ke discard pile.</div></div>`);
     return;
   }
 
-  // ── DECK LOCK (Dosen Killer Masuk!, Awas Ada Razia!) ────────────────────
+  // ── DECK LOCK ────────────────────────────────────────────────────────────
   if(card.name==='Dosen Killer Masuk!' || card.name==='Awas Ada Razia!'){
-    const locLabel=card.loc?card.loc.charAt(0).toUpperCase()+card.loc.slice(1):'Ini';
     if(!G.lockedDecks) G.lockedDecks={};
     if(card.loc) G.lockedDecks[card.loc]=(G.session||1)+1;
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px;border-left:3px solid var(--primary)">
-        <div class="b-md" style="color:var(--primary)">🔒 Deck ${locLabel} dikunci!</div>
-        <p class="b-sm c-muted mt4">Tidak bisa draw dari lokasi ini sampai session berikutnya.</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+    const locLabel=card.loc?card.loc.charAt(0).toUpperCase()+card.loc.slice(1):'Deck';
+    plainResult(card.emoji, card.name,
+      `<div class="card2 mb12" style="text-align:center;padding:14px;border-left:3px solid var(--primary)"><div class="b-md" style="color:var(--primary)">🔒 Deck ${locLabel} dikunci!</div><p class="b-sm c-muted mt4">Tidak bisa draw dari lokasi ini sampai session berikutnya.</p></div>`);
     return;
   }
 
-  // ── KETIDURAN DI KELAS (Kelas Instant) ──────────────────────────────────
+  // ── KETIDURAN DI KELAS ───────────────────────────────────────────────────
   if(card.name==='Ketiduran di Kelas'){
     const fmDelta=card.fm||-10;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
     cur.sb=Math.min(10,(cur.sb??10)+1);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
-        <p class="b-sm c-muted mt4">Tapi kamu dapat +1 SB karena istirahat.</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(fmDelta, G.meter, onDone);
+    fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">+1 SB karena istirahat.</p>');
     return;
   }
 
-  // ── AWAS JATOH! (Kantin Instant) ────────────────────────────────────────
+  // ── AWAS JATOH! ──────────────────────────────────────────────────────────
   if(card.name==='Awas Jatoh!'){
     const fmDelta=card.fm||-10;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
     cur.sb=Math.max(0,(cur.sb??10)-1);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
-        <p class="b-sm c-muted mt4">-1 SB karena insiden.</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(fmDelta, G.meter, onDone);
+    fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">-1 SB karena insiden.</p>');
     return;
   }
 
-  // ── BISA DIEM GAK? (Perp Instant) ───────────────────────────────────────
+  // ── BISA DIEM GAK? ───────────────────────────────────────────────────────
   if(card.name==='Bisa diem gak?'){
     const fmDelta=card.fm||-10;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
     cur.sb=Math.max(0,(cur.sb??10)-1);
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:var(--primary)">${fmDelta} FM</div>
-        <p class="b-sm c-muted mt4">-1 SB untuk pemain aktif.</p>
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(fmDelta, G.meter, onDone);
+    fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">-1 SB untuk pemain aktif.</p>');
     return;
   }
 
   // ── GENERIC FM + SB HANDLER ──────────────────────────────────────────────
-  // Handles: Nugas Bareng, Sesi Curhat, Nongki Ges, Traktir Seblak, Traktir Seblak power-up, dll
   const sbCost=card.sb||0;
   const fmDelta=typeof card.fm==='number'?card.fm:0;
 
   if(sbCost>0 && (cur.sb??10)<sbCost){
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px">😓</div>
-      <div class="d sm mb4">${card.name}</div>
-      <p class="b-sm" style="color:var(--primary);margin-bottom:16px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>
-      <button class="btn btn-o" style="width:auto;padding:12px 32px" onclick="endPhase()">SKIP</button>`;
+    plainResult('😓', card.name, `<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`);
     return;
   }
-
   if(sbCost>0) cur.sb=Math.max(0,(cur.sb??10)-sbCost);
 
   if(fmDelta!==0){
-    const prev=G.meter;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
-    // All-player SB bonus (Nugas Bareng, Sesi Curhat, Nongki Ges, Traktir Seblak)
-    const sbBonus=typeof card.sbBonus==='number'?card.sbBonus:
-                  (card.name==='Nongki Ges'?3:
-                   card.name==='Nugas Bareng'||card.name==='Sesi Curhat'||card.name==='Traktir Seblak'?1:0);
+    const sbBonus = card.name==='Nongki Ges'?3 : ['Nugas Bareng','Sesi Curhat','Traktir Seblak'].includes(card.name)?1 : 0;
     if(sbBonus>0) activePlayers().forEach(p=>{ p.sb=Math.min(10,(p.sb??10)+sbBonus); });
-
-    const bonusMsg=sbBonus>0?`<div class="b-sm mt4 c-green">+${sbBonus} SB untuk semua pemain</div>`:'';
-    area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-      <div class="d sm mb4">${card.name}</div>
-      <div class="card2 mb16" style="text-align:center;padding:14px">
-        <div class="d md" style="color:${fmDelta>0?'var(--success)':'var(--primary)'}">${fmDelta>0?'+':''}${fmDelta} FM</div>
-        ${bonusMsg}
-        ${sbCost>0?`<div class="b-sm mt4" style="color:var(--primary)">-${sbCost} SB dipakai</div>`:''}
-      </div>
-      <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
-    showFmPopup(fmDelta, G.meter, onDone);
+    const extra = [
+      sbBonus>0?`<div class="b-sm mt4 c-green">+${sbBonus} SB untuk semua pemain</div>`:'',
+      sbCost>0?`<div class="b-sm mt4" style="color:var(--primary)">-${sbCost} SB dipakai</div>`:''
+    ].join('');
+    fmResult(card.emoji, card.name, fmDelta, extra);
     return;
   }
 
-  // Fallback — kartu tanpa efek otomatis, tampil deskripsi saja
-  area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
-    <div class="d sm mb4">${card.name}</div>
-    <p class="b-sm c-muted mb16">${card.effect||'Tidak ada efek otomatis.'}</p>
-    <button class="btn btn-p" style="width:auto;padding:12px 32px" onclick="endPhase()">LANJUTKAN →</button>`;
+  // Fallback — no FM, no special logic
+  plainResult(card.emoji, card.name, `<p class="b-sm c-muted mb12">${card.effect||'Tidak ada efek otomatis.'}</p>`);
 }
 
 function triggerScenarioFromCard(){
   G.scenario=pick(SCENARIOS);
   G.scenarioChoice=null;
   G.scenarioFromMidPhase=true;
-  goto('s-scenario');
   renderScenario();
+  goto('s-scenario');
 }
 
 // ── ACTION SCAN RESULT ────────────────────────────────────────────────────
@@ -2723,116 +3344,216 @@ function renderPassive(){
 function usePassive(){
   const cur=G.order[G.currentIdx];
   cur.passiveCooldown=0;
-  // apply effect
-  if(cur.char.id==='influencer') G.meter=Math.min(100,G.meter+5);
-  if(cur.char.id==='nerd'){
-    if(cur.tasks.length<3) cur.tasks.push({...TASKS[0],collected:[],sessionTaken:G.session,completed:false});
+  const id=cur.char.id;
+
+  // ── ARTIST: ambil ulang item terakhir yang dipakai ────────────────────────
+  if(id==='artist'){
+    const lastItem=G.lastUsedItem||null;
+    if(lastItem){
+      // Tampilkan popup konfirmasi item yang diambil ulang
+      const popupEl=document.createElement('div');
+      popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+      popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        <div style="font-size:52px;margin-bottom:12px">🖌️</div>
+        <div class="d md mb4">ATELIER</div>
+        <p class="b-sm c-muted mb16">Kamu mengambil ulang item terakhir dari deck aktif.</p>
+        <div class="card2 mb20" style="padding:14px">
+          <div class="b-md" style="font-weight:600">${lastItem}</div>
+          <div class="b-sm c-muted mt4">Item diambil dari deck</div>
+        </div>
+        <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();inputItem('${lastItem}',false)">AMBIL ITEM ✓</button>
+      </div>`;
+      document.body.appendChild(popupEl);
+    } else {
+      // Belum ada item yang pernah dipakai — tampilkan pesan
+      const popupEl=document.createElement('div');
+      popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+      popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        <div style="font-size:52px;margin-bottom:12px">🖌️</div>
+        <div class="d md mb4">ATELIER</div>
+        <p class="b-sm c-muted mb20">Belum ada item yang pernah digunakan di game ini.</p>
+        <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">TUTUP</button>
+      </div>`;
+      document.body.appendChild(popupEl);
+    }
+    return;
+  }
+
+  // ── BUSY BEE: inisiasi Emergency Meeting langsung ────────────────────────
+  if(id==='busybee'){
+    G.scenario=pick(SCENARIOS);
+    G.scenarioChoice=null;
+    G.scenarioFromMidPhase=false;
+    goto('s-meeting');
+    return;
+  }
+
+  // ── FASHIONISTA: trade 1 kartu dari inventory dengan pemain lain ─────────
+  if(id==='fashion'){
+    const others=activePlayers().filter(p=>p.char.id!==cur.char.id);
+    const curInv=G.inventory[cur.char.id]||[];
+    if(curInv.length===0||others.length===0){
+      const popupEl=document.createElement('div');
+      popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+      popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        <div style="font-size:52px;margin-bottom:12px">💄</div>
+        <div class="d md mb4">MAIN CHARACTER ENERGY</div>
+        <p class="b-sm c-muted mb20">${curInv.length===0?'Kamu tidak punya kartu di inventory untuk di-trade.':'Tidak ada pemain lain yang bisa diajak trade.'}</p>
+        <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">TUTUP</button>
+      </div>`;
+      document.body.appendChild(popupEl);
+      return;
+    }
+    // Tampilkan pilihan pemain untuk trade
+    const popupEl=document.createElement('div');
+    popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto';
+    popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      <div style="font-size:52px;margin-bottom:12px">💄</div>
+      <div class="d md mb4">TRADE KARTU</div>
+      <p class="b-sm c-muted mb16">Pilih pemain untuk diajak trade 1 kartu dari inventory.</p>
+      <div class="stack mb16">
+        ${others.map(p=>`<button class="act-btn" onclick="doFashionistaTrade('${p.char.id}');this.closest('div[style*=fixed]').remove()">
+          <span style="font-size:24px">${p.char.emoji}</span>
+          <span class="b-md" style="font-weight:600">${p.char.name}</span>
+          <span class="b-sm c-muted">${(G.inventory[p.char.id]||[]).length} kartu</span>
+        </button>`).join('')}
+      </div>
+      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">Batal</button>
+    </div>`;
+    document.body.appendChild(popupEl);
+    return;
+  }
+
+  // ── NERD: ambil Ensiklopedia atau Novel dari deck aktif ───────────────────
+  if(id==='nerd'){
+    const itemChoices=['Ensiklopedia','Novel'];
+    const popupEl=document.createElement('div');
+    popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+    popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      <div style="font-size:52px;margin-bottom:12px">📚</div>
+      <div class="d md mb4">AHEAD OF SYLLABUS</div>
+      <p class="b-sm c-muted mb16">Pilih item yang mau diambil dari deck Perpustakaan.</p>
+      <div class="stack mb16">
+        ${itemChoices.map(item=>`<button class="act-btn" onclick="this.closest('div[style*=fixed]').remove();inputItem('${item}',false)">
+          <span style="font-size:24px">${item==='Ensiklopedia'?'📚':'📖'}</span>
+          <span class="b-md" style="font-weight:600">${item}</span>
+        </button>`).join('')}
+      </div>
+      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">Batal</button>
+    </div>`;
+    document.body.appendChild(popupEl);
+    return;
+  }
+
+  // ── INFLUENCER: FM gain 2× untuk session ini ─────────────────────────────
+  if(id==='influencer'){
+    cur.fmDoubleActive=true;
+    const popupEl=document.createElement('div');
+    popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+    popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      <div style="font-size:52px;margin-bottom:12px">📱</div>
+      <div class="d md mb4">GOING VIRAL</div>
+      <p class="b-sm c-muted mb20">Semua FM gain kamu di session ini akan <span style="color:var(--success)">2×</span>!</p>
+      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">AKTIFKAN ✓</button>
+    </div>`;
+    document.body.appendChild(popupEl);
+    return;
+  }
+
+  // ── PHANTOM: jalankan phase 2× berturut-turut ────────────────────────────
+  if(id==='phantom'){
+    cur.phantomExtraPhase=true;
+    const popupEl=document.createElement('div');
+    popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+    popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      <div style="font-size:52px;margin-bottom:12px">👻</div>
+      <div class="d md mb4">NOW YOU SEE ME</div>
+      <p class="b-sm c-muted mb20">Kamu akan main 2 phase berturut-turut di giliranmu!</p>
+      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">AKTIFKAN ✓</button>
+    </div>`;
+    document.body.appendChild(popupEl);
+    return;
+  }
+
+  endPhase();
+}
+
+function doFashionistaTrade(targetCharId){
+  const cur=G.order[G.currentIdx];
+  const target=G.order.find(p=>p.char.id===targetCharId);
+  if(!target) { endPhase(); return; }
+  const curInv=G.inventory[cur.char.id]||[];
+  const tarInv=G.inventory[targetCharId]||[];
+  if(curInv.length===0) { endPhase(); return; }
+  // Trade kartu pertama dari masing-masing
+  const curCard=curInv[0];
+  const tarCard=tarInv[0]||null;
+  G.inventory[cur.char.id]=curInv.slice(1);
+  if(tarCard){
+    G.inventory[targetCharId]=tarInv.slice(1);
+    G.inventory[cur.char.id].push(tarCard);
+    G.inventory[targetCharId].push(curCard);
+  } else {
+    G.inventory[targetCharId]=[curCard];
   }
   endPhase();
 }
 
-// ── PASSIVE ───────────────────────────────────────────────────────────────
+// ── FM POPUP ──────────────────────────────────────────────────────────────
 let fmPopupCallback=null;
-function showFmPopup(delta, newVal, callback){
+function showFmPopup(delta, newVal, callback, reason){
   fmPopupCallback=callback;
   const isPos=delta>0;
-  const oldVal=newVal-delta; // derive old value
+  const oldVal=newVal-delta;
   const clampOld=Math.max(0,Math.min(100,oldVal));
   const clampNew=Math.max(0,Math.min(100,newVal));
 
-  // Icon + label + delta text
   $('fm-popup-icon').textContent=delta===0?'😐':isPos?'🎉':'💔';
   $('fm-popup-label').textContent=isPos?'Friendship Meter naik!':'Friendship Meter turun...';
   $('fm-popup-delta').textContent=(isPos?'+':'')+delta+' FM';
   $('fm-popup-delta').style.color=isPos?'var(--success)':'var(--primary)';
 
-  // Meter bar color based on new value
   const barColor=clampNew<=25?'var(--gradient-meter-low)':
                  clampNew<=50?'var(--gradient-meter-mid)':
                  clampNew<=75?'var(--gradient-meter-high)':
                               'var(--gradient-meter-full)';
 
-  // Set values
   $('fm-val-before').textContent=clampOld;
   $('fm-val-after').textContent=clampNew;
-
-  // Ghost bar = old value (instant)
   $('fm-bar-ghost').style.width=clampOld+'%';
   $('fm-bar-ghost').style.background=isPos?'rgba(255,255,255,.15)':'rgba(255,45,120,.2)';
-
-  // Tick mark at old value
   $('fm-bar-tick').style.left='calc('+clampOld+'% - 1px)';
   $('fm-bar-tick').style.display=clampOld>0&&clampOld<100?'block':'none';
 
-  // Fill bar starts at old value (no transition), then animate to new
   const fill=$('fm-bar-fill');
   fill.style.transition='none';
   fill.style.background=barColor;
   fill.style.width=clampOld+'%';
 
-  // Show popup first
+  // Reason box
+  const reasonBox=$('fm-popup-reason');
+  if(reasonBox){
+    if(reason){
+      $('fm-popup-reason-text').textContent=reason;
+      reasonBox.style.display='none';
+    } else {
+      reasonBox.style.display='none';
+    }
+  }
+
   $('fm-popup').style.display='flex';
 
-  // Then trigger animation after tiny delay so browser paints first
   setTimeout(()=>{
     fill.style.transition='width 1.2s cubic-bezier(.34,1.2,.64,1)';
     fill.style.width=clampNew+'%';
+    if(reason && reasonBox){
+      setTimeout(()=>{ reasonBox.style.display='block'; }, 1300);
+    }
   }, 80);
 }
 function closeFmPopup(){
   $('fm-popup').style.display='none';
   if(fmPopupCallback){fmPopupCallback();fmPopupCallback=null;}
-}
-
-function renderScenario(){
-  const sc=G.scenario;
-  $('scenario-text').textContent=sc.text;
-  $('btn-scenario-confirm').style.display='none';
-  G.scenarioChoice=null;
-  // 4 options — no FM value shown, all grey
-  $('scenario-opts').innerHTML=sc.opts.map((opt,i)=>`
-    <button class="vote-opt" id="sc-opt-${i}" onclick="scenarioVote(${i})">
-      <div class="row" style="gap:12px">
-        <div style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-d);font-size:16px;color:var(--text-muted)">${i+1}</div>
-        <span class="b-md" style="font-weight:500;color:rgba(255,255,255,.75)">${opt.label}</span>
-      </div>
-    </button>`).join('');
-  // involved
-  const involved=shuffle(activePlayers()).slice(0,Math.min(3,activePlayers().length));
-  $('scenario-involved').innerHTML=involved.map(p=>`
-    <div class="card2 row" style="padding:8px 12px;gap:8px">
-      <span style="font-size:20px">${p.char.emoji}</span>
-      <span class="b-sm" style="font-weight:600">${p.char.name}</span>
-    </div>`).join('');
-}
-
-function scenarioVote(idx){
-  G.scenarioChoice=idx;
-  document.querySelectorAll('#scenario-opts .vote-opt').forEach((b,i)=>{
-    b.className='vote-opt'+(i===idx?' sel-a':'');
-    // highlight number circle
-    const circle=b.querySelector('div');
-    if(circle) circle.style.borderColor=i===idx?'var(--secondary)':'rgba(255,255,255,.2)';
-    const label=b.querySelector('span');
-    if(label) label.style.color=i===idx?'var(--text-primary)':'rgba(255,255,255,.75)';
-  });
-  $('btn-scenario-confirm').style.display='block';
-}
-
-function scenarioConfirm(){
-  const sc=G.scenario;
-  const delta=sc.opts[G.scenarioChoice].val;
-  const prevMeter=G.meter;
-  G.meter=Math.max(0,Math.min(100,G.meter+delta));
-  showFmPopup(delta, G.meter, function(){
-    if(checkWinLose()) return;
-    if(G.scenarioFromMidPhase){
-      G.scenarioFromMidPhase=false;
-      goto('s-main');
-    } else {
-      goto('s-meeting');
-    }
-  });
 }
 
 // ── MEETING ───────────────────────────────────────────────────────────────
@@ -2880,7 +3601,17 @@ function renderVoting(){
   $('vote-tally').style.display='none';
   $('btn-confirm-vote').style.display='none';
   const active=activePlayers();
-  // Show all candidates — tap to accumulate votes
+  const totalVoters=active.length;
+
+  // Update static instruction elements (no dynamic injection — avoids duplicate IDs)
+  const instr=$('vote-instruction');
+  if(instr) instr.textContent=`Tiap pemain tap nama tersangka mereka. Total ${totalVoters} vote harus diisi.`;
+  const needed=$('vote-total-needed');
+  if(needed) needed.textContent=totalVoters;
+  const counter=$('vote-total-count');
+  if(counter) counter.textContent='0';
+
+  // Show all candidates
   $('voting-list').innerHTML=active.map(p=>`
     <button class="vote-opt" id="vopt-${p.char.id}" onclick="toggleVote('${p.char.id}')">
       <div class="row" style="justify-content:space-between">
@@ -2892,12 +3623,6 @@ function renderVoting(){
         <div class="d sm" id="vcount-${p.char.id}" style="color:var(--muted);min-width:24px;text-align:right">0</div>
       </div>
     </button>`).join('');
-  // Show instruction
-  const totalVoters=active.length;
-  $('voting-list').insertAdjacentHTML('beforebegin',
-    `<p class="b-sm c-muted mb12">Tiap pemain tap nama tersangka mereka. Total <b style="color:var(--light)">${totalVoters} vote</b> harus diisi.</p>
-     <div class="lbl c-muted mb8">TOTAL VOTE: <span id="vote-total-count" style="color:var(--yellow)">0</span> / ${totalVoters}</div>`
-  );
 }
 
 function toggleVote(targetId){
@@ -2918,7 +3643,8 @@ function toggleVote(targetId){
   });
   // Update total
   const newTotal=Object.keys(G.votes).length;
-  $('vote-total-count').textContent=newTotal;
+  const countEl=$('vote-total-count');
+  if(countEl) countEl.textContent=newTotal;
   // Highlight voted
   if(tally[targetId]>0){
     const btn=$('vopt-'+targetId);
@@ -3085,6 +3811,7 @@ function restartGame(){
     meter:30,
     scenario:null,
     scenarioChoice:null,
+    scenarioActive:false,
     votes:{},
     eliminatedPlayer:null,
     playerCount:4,
@@ -3096,7 +3823,10 @@ function restartGame(){
     prevScreen:null,
     groupTasks:[],
     scenarioFromMidPhase:false,
-    detectedCards:{}  // Reset scanned cards
+    detectedCards:{},
+    inventory:{},
+    lockedDecks:{},
+    lastUsedItem:null,
   };
   // Reset UI state
   $('btn4').classList.remove('sel');
