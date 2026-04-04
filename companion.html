@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -12,25 +11,28 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    COLOR PALETTE INDEX — Ubah warna di sini saja
    ═══════════════════════════════════════════════════════════════════════════
-   
+
    CARA MENGGANTI TEMA WARNA:
    --------------------------
    1. Ubah nilai hex di bawah ini sesuai warna yang diinginkan
    2. Semua warna akan otomatis berubah di seluruh aplikasi
-   
+
    CONTOH:
    -------
    --primary: #000000;  // Mengubah warna utama menjadi hitam
    --secondary: #FFFFFF; // Mengubah warna sekunder menjadi putih
-   
+
    REKOMENDASI PALET WARNA:
    ------------------------
    • Minimalist: Primary=#000000, Secondary=#666666, Accent=#FFD600
    • Ocean: Primary=#0077B6, Secondary=#00B4D8, Accent=#90E0EF
    • Sunset: Primary=#FF6B35, Secondary=#F7C59F, Accent=#2EC4B6
    • Forest: Primary=#2D6A4F, Secondary=#52B788, Accent=#D8F3DC
-   
+
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Prevent image drag globally */
+img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;-o-user-drag:none;user-drag:none;pointer-events:none;}
 :root{
   /* ── PRIMARY COLORS (Main Brand Colors) ────────────────────────────────── */
   --primary: #FF2D78;           /* Pink - Main action color */
@@ -371,7 +373,10 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
 <div class="app">
 
 <!-- ══ SPLASH ══════════════════════════════════════════════════════════ -->
-<div class="screen active" id="s-splash" style="padding:0;position:relative;min-height:100vh;min-height:100dvh;align-items:center;justify-content:space-between;flex-direction:column">
+<div class="screen active" id="s-splash" 
+  style="padding:0;position:relative;min-height:100vh;min-height:100dvh;align-items:center;justify-content:space-between;flex-direction:column"
+  ondragstart="return false;" 
+  oncontextmenu="return false;">
 
   <!-- Background layers -->
   <div class="splash-bg"></div>
@@ -383,16 +388,19 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <!-- TOP: PALLET'S logo -->
   <div style="position:relative;z-index:3;padding-top:44px;display:flex;justify-content:center;width:100%;animation:splashFadeIn .6s ease both">
     <img src="Resources/pallets.png" alt="PALLET'S"
-      style="width:80px;height:auto;filter:drop-shadow(0 4px 16px rgba(0,0,0,.3))"/>
+      draggable="false"
+      style="width:80px;height:auto;filter:drop-shadow(0 4px 16px rgba(0,0,0,.3));user-select:none;-webkit-user-drag:none;-moz-user-select:none;-webkit-user-select:none;pointer-events:none"/>
   </div>
 
   <!-- MIDDLE: Game logo -->
   <div style="position:relative;z-index:3;display:flex;align-items:center;justify-content:center;flex:1;width:100%;padding:16px 24px">
     <img src="Resources/fof.png" alt="Friend or Fraud?"
       id="splash-logo"
+      draggable="false"
       style="width:90%;max-width:340px;height:auto;
              filter:drop-shadow(0 8px 32px rgba(0,0,0,.4));
-             animation:logoPop .7s cubic-bezier(.34,1.56,.64,1) .3s both,logoFloat 4s ease-in-out 1.5s infinite"/>
+             animation:logoPop .7s cubic-bezier(.34,1.56,.64,1) .3s both,logoFloat 4s ease-in-out 1.5s infinite;
+             user-select:none;-webkit-user-drag:none;-moz-user-select:none;-webkit-user-select:none;pointer-events:none"/>
   </div>
 
   <!-- BOTTOM: Start button -->
@@ -530,22 +538,17 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     </button>
     <button class="act-btn" id="act-item" onclick="goto('s-item')">
       <div class="act-icon" style="background:rgba(255,214,0,.12)">📦</div>
-      <div style="flex:1"><div class="b-md" style="font-weight:600">Input Item</div><div class="b-sm c-muted">Scan QR kartu item</div></div>
+      <div style="flex:1"><div class="b-md" style="font-weight:600">Input Item</div><div class="b-sm c-muted" id="act-item-sub">Scan QR atau pakai dari inventory</div></div>
       <div style="color:var(--muted);font-size:18px">›</div>
     </button>
     <button class="act-btn" id="act-powerup" onclick="goto('s-powerup')">
       <div class="act-icon" style="background:rgba(255,45,120,.12)">⚡</div>
-      <div style="flex:1"><div class="b-md" style="font-weight:600">Use Power-Up</div><div class="b-sm c-muted">Scan QR kartu power-up</div></div>
+      <div style="flex:1"><div class="b-md" style="font-weight:600">Use Power-Up</div><div class="b-sm c-muted" id="act-powerup-sub">Scan QR atau pakai dari inventory</div></div>
       <div style="color:var(--muted);font-size:18px">›</div>
     </button>
     <button class="act-btn" id="act-draw" onclick="drawCard()">
       <div class="act-icon" style="background:rgba(0,200,150,.12)">🃏</div>
       <div style="flex:1"><div class="b-md" style="font-weight:600">Draw a Card</div><div class="b-sm c-muted" id="act-draw-sub">Ambil 1 kartu dari deck</div></div>
-      <div style="color:var(--muted);font-size:18px">›</div>
-    </button>
-    <button class="act-btn" id="act-inventory" onclick="gotoInventory()">
-      <div class="act-icon" style="background:rgba(255,214,0,.12)">🎒</div>
-      <div style="flex:1"><div class="b-md" style="font-weight:600">My Cards</div><div class="b-sm c-muted" id="act-inventory-sub">0 kartu tersedia</div></div>
       <div style="color:var(--muted);font-size:18px">›</div>
     </button>
     <button class="act-btn" id="act-passive" onclick="goto('s-passive')">
@@ -698,14 +701,21 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
     <div>
       <div class="screen-title">INPUT ITEM</div>
-      <div class="screen-sub">Scan QR code kartu Item</div>
+      <div class="screen-sub">Scan QR atau pakai dari inventory</div>
     </div>
     <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
   </div>
-  <div class="scan-area" id="scan-area">
+  <div class="sec-lbl mb8"><span class="lbl">SCAN KARTU</span></div>
+  <div class="scan-area" id="scan-area" style="margin-bottom:24px">
     <div style="font-size:48px;margin-bottom:12px">📦</div>
     <p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu Item</p>
     <button class="btn btn-y" style="width:auto;padding:12px 28px" onclick="openScannerForItem()">📷 SCAN QR CODE</button>
+  </div>
+  <div class="sec-lbl mb8"><span class="lbl">DARI INVENTORY</span></div>
+  <div id="item-inventory-list">
+    <div id="item-inventory-empty" class="card" style="text-align:center;padding:24px;display:none">
+      <p class="b-sm c-muted">Tidak ada kartu Item di inventory</p>
+    </div>
   </div>
   <div id="item-tasks"></div>
 </div>
@@ -825,16 +835,30 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
 </div>
 
 <!-- ══ POWER-UP ════════════════════════════════════════════════════════ -->
-<div class="screen" id="s-powerup" style="justify-content:center;text-align:center">
-  <div style="font-size:52px;margin-bottom:16px">⚡</div>
-  <div class="d md mb4">USE POWER-UP</div>
-  <p class="b-sm c-muted mb20">Scan QR code kartu Power-Up kamu</p>
-  <div class="scan-area" id="pu-scan-area" style="margin-bottom:16px">
+<div class="screen" id="s-powerup">
+  <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+    <div>
+      <div class="screen-title">USE POWER-UP</div>
+      <div class="screen-sub">Scan QR atau pilih dari inventory</div>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
+  </div>
+
+  <!-- Scan QR section -->
+  <div class="sec-lbl mb8"><span class="lbl">SCAN KARTU</span></div>
+  <div class="scan-area" id="pu-scan-area" style="margin-bottom:24px;text-align:center">
     <div style="font-size:48px;margin-bottom:12px">⚡</div>
     <p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu Power-Up</p>
     <button class="btn btn-y" style="width:auto;padding:12px 28px" onclick="openScannerForPowerUp()">📷 SCAN QR CODE</button>
   </div>
-  <button class="btn btn-o mt8" onclick="back()">Kembali</button>
+
+  <!-- Inventory power-up section -->
+  <div class="sec-lbl mb8"><span class="lbl">DARI INVENTORY</span></div>
+  <div id="pu-inventory-list">
+    <div id="pu-inventory-empty" class="card" style="text-align:center;padding:24px;display:none">
+      <p class="b-sm c-muted">Tidak ada kartu Power-Up di inventory</p>
+    </div>
+  </div>
 </div>
 
 <!-- ══ PASSIVE ═════════════════════════════════════════════════════════ -->
@@ -1143,6 +1167,7 @@ let G = {
   groupTasks: [],
   detectedCards: {},
   inventory: {},
+  itemInventory: {},
   lockedDecks: {},
   lastUsedItem: null,
 };
@@ -1187,6 +1212,7 @@ function goto(screenId){
   if(screenId==='s-task')    renderTasks();
   if(screenId==='s-item')    renderItemScreen();
   if(screenId==='s-passive') renderPassive();
+  if(screenId==='s-powerup') renderPowerUp();
   if(screenId==='s-meeting') resetMeeting();
   if(screenId==='s-draw')    $('draw-scan-area').innerHTML=`<div style="font-size:48px;margin-bottom:12px">🃏</div><p class="b-sm c-muted mb16">Pilih kartu dari draw list atau scan QR</p><button class="btn btn-y mb12" style="width:auto;padding:12px 24px" onclick="gotoDrawCardList()">📋 PILIH KARTU</button><br><button class="btn btn-o btn-sm" style="width:auto" onclick="openScannerForDraw()">📷 Scan QR</button>`;
 }
@@ -1514,7 +1540,8 @@ function renderMain(){
   ).join('');
 
   // Action subtitles with SB cost hint
-  $('act-task-sub').textContent=`${cur.tasks.length}/3 task aktif`;
+  const curTasks=G.groupTasks?G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id)):[];
+  $('act-task-sub').textContent=`${curTasks.length}/3 task aktif`;
   const drawSub=$('act-draw-sub');
   if(drawSub){
     const locked=G.lockedDecks&&Object.keys(G.lockedDecks).length>0;
@@ -1524,15 +1551,19 @@ function renderMain(){
   if(itemSub) itemSub.textContent='Input kartu item ke task';
   const passiveSub=$('act-passive-sub');
 
-  // Update inventory count
+  // Update power-up subtitle with inventory count
   const charId=cur.char.id;
   const inventory=G.inventory&&G.inventory[charId]||[];
-  const invSub=$('act-inventory-sub');
-  if(invSub) invSub.textContent=`${inventory.length} kartu tersedia`;
+  const puSub=$('act-powerup-sub');
+  if(puSub) puSub.textContent=inventory.length>0?`${inventory.length} kartu di inventory`:'Scan QR atau pakai dari inventory';
+
+  // Update input item subtitle with item inventory count
+  const itemInv=G.itemInventory&&G.itemInventory[charId]||[];
+  if(itemSub) itemSub.textContent=itemInv.length>0?`${itemInv.length} item di inventory`:'Scan QR atau pakai dari inventory';
 
   // Burnout: disable semua aksi
   if(cur.burnout){
-    ['act-task','act-item','act-powerup','act-draw','act-inventory'].forEach(id=>{
+    ['act-task','act-item','act-powerup','act-draw'].forEach(id=>{
       const el=$(id); if(el) el.className='act-btn disabled';
     });
     const stack=document.querySelector('#s-main .stack.mb16');
@@ -1546,7 +1577,7 @@ function renderMain(){
   } else {
     const banner=$('burnout-banner');
     if(banner) banner.remove();
-    ['act-task','act-item','act-powerup','act-draw','act-inventory'].forEach(id=>{
+    ['act-task','act-item','act-powerup','act-draw'].forEach(id=>{
       const el=$(id); if(el) el.className='act-btn';
     });
   }
@@ -1568,6 +1599,10 @@ function renderMain(){
   $('main-players').innerHTML=G.order.map((p,i)=>{
     const psb=p.sb??10;
     const pName=p.nickname?`${p.char.name} · ${p.nickname}`:p.char.name;
+    
+    // Find active tasks for this player (only confirmed ones)
+    const playerTasks=G.groupTasks?G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(p.char.id)):[];
+    
     return `<div class="card2" style="opacity:${p.eliminated?0.4:1};border-left:3px solid ${i===G.currentIdx?'var(--primary)':'transparent'}">
       <div class="row" style="justify-content:space-between">
         <div class="row" style="gap:8px">
@@ -1578,10 +1613,42 @@ function renderMain(){
           ${p.burnout&&!p.eliminated?'<span style="font-size:12px">😵</span>':''}
         </div>
         <div style="display:flex;gap:2px;align-items:center">
-          ${Array.from({length:10},(_,i)=>`<div style="width:5px;height:5px;border-radius:50%;background:${i<psb?'var(--accent)':'rgba(255,255,255,.1)'}"></div>`).join('')}
+          ${Array.from({length:10},(_,j)=>`<div style="width:5px;height:5px;border-radius:50%;background:${j<psb?'var(--accent)':'rgba(255,255,255,.1)'}"></div>`).join('')}
         </div>
       </div>
-      ${p.tasks.length>0&&!p.eliminated?`<div class="b-sm c-muted mt4">${p.tasks.length} task aktif</div>`:''}
+      ${playerTasks.length>0&&!p.eliminated?`
+        <div class="mt8" style="border-top:1px solid rgba(255,255,255,.05);padding-top:8px">
+          <div class="lbl c-muted mb4" style="font-size:9px">${playerTasks.length} TASK AKTIF</div>
+          ${playerTasks.map(gt=>{
+            const allNeeded=gt.taskDef.items;
+            const allCollected=Object.values(gt.collected).flat();
+            const needed=[...allNeeded];
+            const got=[];
+            allCollected.forEach(it=>{const idx=needed.indexOf(it.name||it);if(idx>=0){needed.splice(idx,1);got.push(it);}});
+            const totalItems=allNeeded.length;
+            const collectedCount=got.length;
+            const progressPct=Math.round((collectedCount/totalItems)*100);
+            const sessLeft=gt.deadline-(G.session-gt.sessionStart);
+            
+            return `<div class="card2 mb4" style="padding:10px 12px;background:rgba(255,255,255,.03)">
+              <div class="row mb4" style="justify-content:space-between">
+                <div class="b-sm" style="font-weight:600;font-size:12px">${gt.taskDef.name}</div>
+                <span class="tag" style="font-size:8px;padding:2px 6px;${sessLeft<=2?'background:rgba(255,45,120,.15);color:var(--primary)':'background:rgba(255,214,0,.15);color:var(--yellow)'}">${sessLeft}s</span>
+              </div>
+              <div style="margin-bottom:4px">
+                <div class="meter-wrap" style="height:4px">
+                  <div class="meter-fill ${progressPct>=75?'m-high':progressPct>=50?'m-mid':'m-low'}" style="width:${progressPct}%"></div>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+                ${got.map(it=>`<span class="tag" style="font-size:7px;padding:2px 4px;background:rgba(0,200,150,.15);color:var(--success)">✓ ${it.name||it}</span>`).join('')}
+                ${needed.length>0?needed.map(it=>`<span class="tag" style="font-size:7px;padding:2px 4px;background:rgba(255,255,255,.05);color:var(--text-muted)">⌛ ${it}</span>`).join(''):'<span class="tag" style="font-size:7px;padding:2px 4px;background:rgba(0,200,150,.15);color:var(--success)">✓ DONE</span>'}
+              </div>
+              <div class="b-sm c-muted mt4" style="font-size:9px">Progress: ${collectedCount}/${totalItems} (${progressPct}%)</div>
+            </div>`;
+          }).join('')}
+        </div>
+      `:`${p.tasks&&p.tasks.length>0&&!p.eliminated?`<div class="b-sm c-muted mt4">${p.tasks.length} task aktif</div>`:''}`}
     </div>`;
   }).join('');
 
@@ -1611,6 +1678,12 @@ function endPhase(){
 
   cur.passiveCooldown=(cur.passiveCooldown||0)+1;
   cur.fmDoubleActive=false;
+
+  // Clear pending (unconfirmed) tasks for current player — they don't carry over to next player
+  G.groupTasks=G.groupTasks.filter(gt=>{
+    const isCurrentPlayerPending=!gt.completed&&!gt.confirmed&&gt.participants.includes(cur.char.id);
+    return !isCurrentPlayerPending;
+  });
 
   // find next active player
   const active=activePlayers();
@@ -1704,20 +1777,37 @@ function gotoTakeTask(){
 
 function assignRandomTask(){
   initGroupTasks();
+  const cur=G.order[G.currentIdx];
   const active=activePlayers();
   if(active.length<2){ renderTaskResult(null,'Butuh minimal 2 pemain untuk task!'); return; }
 
-  // Pick random task (avoid active ones)
-  const activeTIds=G.groupTasks.map(t=>t.taskDef.id);
+  // Cek apakah current player eliminated/burnout — jika ya, tidak bisa ambil task
+  if(cur.eliminated||cur.burnout){
+    renderTaskResult(null,'Kamu tidak bisa mengambil task saat ini!');
+    return;
+  }
+
+  // Cek apakah sudah ada pending task untuk player ini — jika ya, tampilkan ulang
+  const existingPending=G.groupTasks.find(gt=>!gt.completed&&!gt.confirmed&&gt.participants.includes(cur.char.id));
+  if(existingPending){
+    renderTaskResult(existingPending, null);
+    return;
+  }
+
+  // Pick random task (avoid active ONES — yang sudah confirmed/aktif)
+  const activeTIds=G.groupTasks.filter(t=>t.confirmed).map(t=>t.taskDef.id);
   const pool=TASKS.filter(t=>!activeTIds.includes(t.id));
   if(pool.length===0){ renderTaskResult(null,'Semua task sedang aktif!'); return; }
   const taskDef=pick(pool);
 
-  // Random participants: 2–min(4, active.length)
-  const maxP=Math.min(4,active.length);
-  const minP=Math.min(2,active.length);
-  const numP=minP+Math.floor(Math.random()*(maxP-minP+1));
-  const participants=shuffle(active).slice(0,numP);
+  // Current player SELALU jadi partisipan!
+  const others=active.filter(p=>p.char.id!==cur.char.id);
+  // Random 1-3 players lain (total 2-4 dengan current player)
+  const minOthers=1;
+  const maxOthers=Math.min(3,others.length);
+  const numOthers=minOthers+Math.floor(Math.random()*(maxOthers-minOthers+1));
+  const randomOthers=shuffle(others).slice(0,numOthers);
+  const participants=[cur,...randomOthers];
 
   // Deadline based on task weight
   const deadline=taskDef.deadline;
@@ -1729,6 +1819,7 @@ function assignRandomTask(){
     sessionStart: G.session,
     deadline,
     completed: false,
+    confirmed: false,  // Belum dikonfirmasi
   };
   participants.forEach(p=>{ groupTask.collected[p.char.id]=[]; });
   G.groupTasks.push(groupTask);
@@ -1772,7 +1863,13 @@ function renderTaskResult(gt, errMsg){
     <button class="btn btn-o" onclick="cancelTask()">Batalkan</button>`;
 }
 
-function confirmTask(){ endPhase(); }
+function confirmTask(){
+  const cur=G.order[G.currentIdx];
+  // Mark task as confirmed
+  const pendingTasks=G.groupTasks.filter(gt=>!gt.completed&&!gt.confirmed&&gt.participants.includes(cur.char.id));
+  pendingTasks.forEach(gt=>{ gt.confirmed=true; });
+  endPhase();
+}
 
 function renderTasks(){
   // Content already populated by renderTaskResult() before goto('s-task') is called.
@@ -1780,8 +1877,8 @@ function renderTasks(){
 }
 
 function cancelTask(){
-  // Remove last added task
-  if(G.groupTasks&&G.groupTasks.length>0) G.groupTasks.pop();
+  // Jangan hapus pending task — biarkan tetap ada sampai ganti pemain
+  // Player bisa ambil task lagi dan akan dapat task yang sama
   back();
 }
 
@@ -1789,38 +1886,134 @@ function cancelTask(){
 function renderItemScreen(){
   const cur=G.order[G.currentIdx];
   initGroupTasks();
+
+  // Reset scan area
   const scanArea=$('scan-area');
   scanArea.className='scan-area';
   scanArea.innerHTML=`<div style="font-size:48px;margin-bottom:12px">📦</div>
     <p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu Item</p>
     <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForItem()">📷 SCAN QR CODE</button>`;
-  // Show group tasks that include this player
-  const myTasks=G.groupTasks.filter(gt=>!gt.completed&&gt.participants.includes(cur.char.id));
-  if(myTasks.length>0){
-    $('item-tasks').innerHTML=`<div class="lbl c-muted mb8 mt16">GROUP TASK KAMU</div>`+
-      myTasks.map(gt=>{
+
+  // Render item inventory
+  const charId=cur.char.id;
+  const itemInv=G.itemInventory&&G.itemInventory[charId]||[];
+  const list=$('item-inventory-list');
+
+  // Render inventory jika elemen ada
+  if(list){
+    if(itemInv.length===0){
+      // Render empty state tanpa appendChild (hindari elemen hilang)
+      list.innerHTML=`<div id="item-inventory-empty" class="card" style="text-align:center;padding:24px;display:block">
+        <p class="b-sm c-muted">Tidak ada kartu Item di inventory</p>
+      </div>`;
+    } else {
+      list.innerHTML=itemInv.map((item, idx)=>`
+        <div class="card2 mb10" style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;transition:all .15s" onclick="useItemFromInventory(${idx})">
+          <div style="font-size:32px;flex-shrink:0">${item.card.emoji||'📦'}</div>
+          <div style="flex:1;min-width:0">
+            <div class="b-md" style="font-weight:600;margin-bottom:2px">${item.card.name}</div>
+            ${item.card.corrupt?'<span class="tag" style="display:inline-block;font-size:8px;padding:2px 6px;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">CORRUPT</span>':''}
+            <span class="tag tag-item" style="display:inline-block;font-size:8px;padding:2px 6px;margin-top:4px">ITEM</span>
+          </div>
+          <div style="color:var(--text-muted);font-size:18px;flex-shrink:0">›</div>
+        </div>`).join('');
+    }
+  } else {
+    console.warn('Item inventory list element not found - skipping inventory render');
+  }
+
+  // Show group tasks that include this player (only confirmed)
+  const myTasks=G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id));
+  const tasksContainer=$('item-tasks');
+  if(tasksContainer){
+    if(myTasks.length>0){
+      let tasksHtml=`<div class="lbl c-muted mb8 mt16">GROUP TASK KAMU</div>`;
+      myTasks.forEach(gt=>{
         const allNeeded=gt.taskDef.items;
-        // flatten all collected across all participants
         const allCollected=Object.values(gt.collected).flat();
-        // count remaining
         const needed=[...allNeeded];
         const got=[];
-        allCollected.forEach(it=>{const i=needed.indexOf(it);if(i>=0){needed.splice(i,1);got.push(it);}});
+        allCollected.forEach(it=>{const i=needed.indexOf(it.name||it);if(i>=0){needed.splice(i,1);got.push(it);}});
         const sessLeft=gt.deadline-(G.session-gt.sessionStart);
-        return `<div class="card2 mb8">
+        const totalItems=allNeeded.length;
+        const collectedCount=got.length;
+        const progressPct=Math.round((collectedCount/totalItems)*100);
+        
+        // Get participant names
+        const participantNames=gt.participants.map(id=>{
+          const p=G.order.find(x=>x.char.id===id);
+          return p?`${p.char.emoji} ${p.char.name}`:'?';
+        });
+        
+        tasksHtml+=`<div class="card2 mb8">
           <div class="row mb4" style="justify-content:space-between">
             <div class="b-md" style="font-weight:600">${gt.taskDef.name}</div>
             <span class="tag" style="background:rgba(255,214,0,.15);color:var(--yellow);border:1px solid rgba(255,214,0,.3)">${sessLeft}s lagi</span>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-            ${got.map(it=>`<span class="tag tag-done">✓ ${it}</span>`).join('')}
-            ${needed.map(it=>`<span class="tag tag-item">${it}</span>`).join('')}
+          <div style="margin-bottom:6px">
+            <div class="b-sm c-muted" style="font-size:11px;margin-bottom:4px">Progress: ${collectedCount}/${totalItems} items (${progressPct}%)</div>
+            <div class="meter-wrap" style="height:6px">
+              <div class="meter-fill ${progressPct>=75?'m-high':progressPct>=50?'m-mid':'m-low'}" style="width:${progressPct}%"></div>
+            </div>
           </div>
+          <div style="margin-bottom:6px">
+            <div class="b-sm c-muted" style="font-size:10px;margin-bottom:4px">PEMAIN TERLIBAT</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${participantNames.map(name=>`<span class="tag" style="font-size:8px;padding:3px 6px;background:rgba(71,84,214,.15);color:#9B9FFF;border:1px solid rgba(71,84,214,.25)">${name}</span>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            ${got.map(it=>`<span class="tag tag-done">✓ ${it.name||it}</span>`).join('')}
+            ${needed.length>0?needed.map(it=>`<span class="tag tag-item">⌛ ${it}</span>`).join(''):'<span class="tag tag-reward">✓ COMPLETE</span>'}
+          </div>
+          ${sessLeft<=2?'<div class="b-sm mt6" style="color:var(--primary);font-weight:600">⚠️ Deadline mendekat!</div>':''}
         </div>`;
-      }).join('');
-  } else {
-    $('item-tasks').innerHTML='<p class="b-sm c-muted mt8">Kamu tidak punya group task aktif.</p>';
+      });
+      tasksContainer.innerHTML=tasksHtml;
+    } else {
+      tasksContainer.innerHTML='<p class="b-sm c-muted mt16">Kamu tidak punya group task aktif.</p>';
+    }
   }
+}
+
+function useItemFromInventory(idx){
+  const cur=G.order[G.currentIdx];
+  const charId=cur.char.id;
+  const itemInv=G.itemInventory[charId]||[];
+  if(idx<0||idx>=itemInv.length) return;
+  const item=itemInv[idx];
+  const card=item.card;
+
+  const popup=document.createElement('div');
+  popup.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  popup.innerHTML=`
+    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+      <div style="font-size:52px;margin-bottom:12px">${card.emoji||'📦'}</div>
+      <div class="d md mb4">${card.name}</div>
+      <span class="tag tag-item" style="display:inline-block;margin-bottom:16px">ITEM</span>
+      ${card.corrupt?'<div class="tag" style="display:inline-block;margin-bottom:12px;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">⚠ CORRUPT</div>':''}
+      <p class="b-sm c-muted mb20">${card.effect||''}</p>
+      <button class="btn btn-p mb12" onclick="confirmUseItemFromInventory(${idx})">INPUT ITEM INI ✓</button>
+      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+function confirmUseItemFromInventory(idx){
+  document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(p=>p.remove());
+  const cur=G.order[G.currentIdx];
+  const charId=cur.char.id;
+  const itemInv=G.itemInventory[charId]||[];
+  if(idx<0||idx>=itemInv.length) return;
+  const card=itemInv[idx].card;
+  // Remove from item inventory
+  G.itemInventory[charId].splice(idx,1);
+  // Execute as scanned item
+  const isFraud=cur.role==='fraud';
+  const isCorrupt=card.corrupt&&isFraud;
+  inputItem(card.name, isCorrupt);
+  // Re-render the screen to reflect updated inventory
+  renderItemScreen();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2576,10 +2769,11 @@ function onItemScanned(card){
 function inputItem(itemName, isCorrupt=false){
   const cur=G.order[G.currentIdx];
   let meterDelta=0;
+  let itemUsedInTask=false;
   // Track last used item for Artist passive
   if(!isCorrupt) G.lastUsedItem=itemName;
   initGroupTasks();
-  G.groupTasks.filter(gt=>!gt.completed&&gt.participants.includes(cur.char.id)).forEach(gt=>{
+  G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id)).forEach(gt=>{
     const allNeeded=gt.taskDef.items;
     const allCollected=Object.values(gt.collected).flat().map(i=>i.name||i);
     const stillNeeded=[...allNeeded];
@@ -2587,6 +2781,7 @@ function inputItem(itemName, isCorrupt=false){
     if(!stillNeeded.includes(itemName)) return;
     if(!gt.collected[cur.char.id]) gt.collected[cur.char.id]=[];
     gt.collected[cur.char.id].push({name:itemName, corrupt:isCorrupt, by:cur.char.id});
+    itemUsedInTask=true;
     const validCollected=Object.values(gt.collected).flat()
       .filter(i=>!i.corrupt)
       .map(i=>i.name||i);
@@ -2599,6 +2794,13 @@ function inputItem(itemName, isCorrupt=false){
       meterDelta+=reward;
     }
   });
+
+  // Jika item tidak digunakan di task manapun, tampilkan popup warning
+  if(!itemUsedInTask){
+    showItemNotInTaskPopup(itemName, meterDelta, cur);
+    return;
+  }
+
   if(meterDelta!==0){
     G.meter=Math.max(0,Math.min(100,G.meter+meterDelta));
     showFmPopup(meterDelta, G.meter, ()=>endPhase());
@@ -2607,9 +2809,149 @@ function inputItem(itemName, isCorrupt=false){
   }
 }
 
+// ── POPUP: ITEM TIDAK DIGUNAKAN DI TASK ──────────────────────────────────
+function showItemNotInTaskPopup(itemName, meterDelta, cur){
+  // Cari apakah ada task lain (bukan task pemain ini) yang membutuhkan item ini (only confirmed)
+  const otherTasks=G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&!gt.participants.includes(cur.char.id));
+  let otherTaskNeedingItem=null;
+  for(const gt of otherTasks){
+    const allNeeded=gt.taskDef.items;
+    const allCollected=Object.values(gt.collected).flat().map(i=>i.name||i);
+    const stillNeeded=[...allNeeded];
+    allCollected.forEach(it=>{const i=stillNeeded.indexOf(it);if(i>=0)stillNeeded.splice(i,1);});
+    if(stillNeeded.includes(itemName)){
+      otherTaskNeedingItem=gt;
+      break;
+    }
+  }
+
+  const popupEl=document.createElement('div');
+  popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  
+  let warningMessage=`<div style="font-size:52px;margin-bottom:12px">⚠️</div>
+    <div class="d md mb4">ITEM TIDAK DIGUNAKAN</div>
+    <p class="b-sm c-muted mb16">Tidak ada Group Task aktif yang membutuhkan <strong style="color:var(--accent)">${itemName}</strong> untuk pemain ini.</p>
+    <div class="card2 mb16" style="text-align:left;padding:14px">
+      <div class="lbl mb8" style="color:var(--text-muted)">MENGAPA BEGITU?</div>
+      <p class="b-sm" style="color:rgba(255,255,255,.7);line-height:1.6">Limited Task membutuhkan item spesifik untuk diselesaikan. Item yang kamu input harus sesuai dengan kebutuhan task yang sedang aktif untuk karaktermu.</p>
+    </div>`;
+
+  if(otherTaskNeedingItem){
+    warningMessage+=`<div class="card2 mb16" style="text-align:left;padding:14px;border:1px solid rgba(71,84,214,.3)">
+      <div class="lbl mb6" style="color:var(--secondary)">💡 TASK LAIN MEMBUTUHKAN INI</div>
+      <p class="b-sm" style="color:rgba(255,255,255,.8)">Task <strong>${otherTaskNeedingItem.taskDef.name}</strong> masih membutuhkan ${itemName}. Tapi kamu tidak berpartisipasi di task ini.</p>
+    </div>`;
+  }
+
+  warningMessage+=`<button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">MENGERTI →</button>`;
+
+  popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">${warningMessage}</div>`;
+  document.body.appendChild(popupEl);
+}
+
 // ── POWER-UP SCAN RESULT ──────────────────────────────────────────────────
 function openScannerForPowerUp(){
   openScanner('powerup','SCAN POWER-UP','Arahkan ke QR code kartu Power-Up');
+}
+
+function renderPowerUp(){
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const allInv = G.inventory[charId] || [];
+  // Only action & special belong here
+  const inventory = allInv.filter(item => item.card.type === 'action' || item.card.type === 'special');
+
+  const list = $('pu-inventory-list');
+
+  // Reset scan area
+  const area = $('pu-scan-area');
+  area.className = 'scan-area';
+  area.innerHTML = `<div style="font-size:48px;margin-bottom:12px">⚡</div>
+    <p class="b-sm c-muted mb16">Arahkan kamera ke QR code kartu Power-Up</p>
+    <button class="btn btn-y" style="width:auto;padding:12px 28px" onclick="openScannerForPowerUp()">📷 SCAN QR CODE</button>`;
+
+  if(inventory.length === 0){
+    list.innerHTML = `<div id="pu-inventory-empty" class="card" style="text-align:center;padding:24px;display:block">
+      <p class="b-sm c-muted">Tidak ada kartu Power-Up di inventory</p>
+    </div>`;
+    return;
+  }
+
+  const typeColors = {
+    'power-up': 'rgba(255,45,120,.15)',
+    'action':   'rgba(71,84,214,.15)',
+    'special':  'rgba(255,45,120,.1)',
+    'instant':  'rgba(255,107,53,.15)',
+  };
+  const typeTextColors = {
+    'power-up': 'var(--primary)',
+    'action':   '#9B9FFF',
+    'special':  'var(--primary)',
+    'instant':  '#FF6B35',
+  };
+
+  list.innerHTML = inventory.map((item, realIdx) => {
+    const tBg   = typeColors[item.card.type]   || 'rgba(255,255,255,.07)';
+    const tText = typeTextColors[item.card.type] || 'var(--text-muted)';
+    return `<div class="card2 mb10" style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;transition:all .15s" onclick="usePowerUpFromInventory(${realIdx})">
+      <div style="font-size:32px;flex-shrink:0">${item.card.emoji || '🃏'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="b-md" style="font-weight:600;margin-bottom:2px">${item.card.name}</div>
+        <div class="b-sm c-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.card.effect}</div>
+        <span class="tag" style="display:inline-block;font-size:8px;padding:2px 6px;margin-top:4px;background:${tBg};color:${tText};border:1px solid ${tBg}">${item.card.type.toUpperCase()}</span>
+      </div>
+      <div style="color:var(--text-muted);font-size:18px;flex-shrink:0">›</div>
+    </div>`;
+  }).join('');
+}
+
+function usePowerUpFromInventory(idx){
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const inventory = G.inventory[charId] || [];
+
+  if(idx < 0 || idx >= inventory.length) return;
+  const item = inventory[idx];
+  const card = item.card;
+
+  // Confirmation popup
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  popup.innerHTML = `
+    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,45,120,.2)">
+      <div style="font-size:52px;margin-bottom:12px">${card.emoji || '⚡'}</div>
+      <div class="d md mb4">${card.name}</div>
+      <span class="tag" style="display:inline-block;margin-bottom:16px;background:var(--primary-light);color:var(--primary);border:1px solid rgba(255,45,120,.25)">POWER-UP</span>
+      <div class="card2 mb20" style="text-align:left;padding:14px">
+        <div class="lbl mb6">EFEK</div>
+        <p class="b-md">${card.effect}</p>
+      </div>
+      <button class="btn btn-p mb12" onclick="confirmUsePowerUpFromInventory(${idx})">GUNAKAN ✓</button>
+      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+function confirmUsePowerUpFromInventory(idx){
+  document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(p => p.remove());
+
+  const cur = G.order[G.currentIdx];
+  const charId = cur.char.id;
+  const inventory = G.inventory[charId] || [];
+
+  if(idx < 0 || idx >= inventory.length) return;
+  const card = inventory[idx].card;
+
+  // Remove from inventory
+  G.inventory[charId].splice(idx, 1);
+
+  // Execute card effect inside the power-up scan area
+  const area = $('pu-scan-area');
+  if(card.type === 'power-up'){
+    onPowerUpScanned(card);
+  } else {
+    executeCardEffect(card, area, () => { goto('s-main'); });
+  }
 }
 
 function onPowerUpScanned(card){
@@ -2707,10 +3049,7 @@ function renderScenario(){
   // Populate options
   $('scenario-opts').innerHTML = sc.opts.map((opt, i) =>
     `<button class="vote-opt" id="sc-opt-${i}" onclick="selectScenarioOpt(${i})">
-      <div class="row" style="justify-content:space-between">
-        <span class="b-md" style="flex:1;font-weight:500">${opt.label}</span>
-        <span class="b-sm c-muted" style="white-space:nowrap;margin-left:8px">${opt.val > 0 ? '+' : ''}${opt.val} FM</span>
-      </div>
+      <span class="b-md" style="font-weight:500">${opt.label}</span>
     </button>`
   ).join('');
 }
@@ -2763,10 +3102,6 @@ function renderInventory(){
   $('inv-cur-emoji').textContent = cur.char.emoji;
   $('inv-cur-name').textContent = cur.char.name;
   $('inv-cur-count').textContent = `${inventory.length} kartu`;
-  
-  // Update main screen inventory count
-  const invSub = $('act-inventory-sub');
-  if(invSub) invSub.textContent = `${inventory.length} kartu tersedia`;
   
   const list = $('inv-list');
   const empty = $('inv-empty');
@@ -2843,11 +3178,14 @@ function confirmUseCard(idx){
   // Remove from inventory
   G.inventory[charId].splice(idx, 1);
   
-  // Execute card effect
-  goto('s-inventory');
-  executeCardEffect(card, $('inv-list'), () => {
-    goto('s-main');
-  });
+  // Execute card effect inside power-up screen
+  goto('s-powerup');
+  const area = $('pu-scan-area');
+  if(card.type === 'power-up'){
+    onPowerUpScanned(card);
+  } else {
+    executeCardEffect(card, area, () => { goto('s-main'); });
+  }
 }
 
 function setDrawListTypeFilter(type){
@@ -2957,13 +3295,11 @@ function addCardToInventory(cardName){
   const cur = G.order[G.currentIdx];
   const charId = cur.char.id;
   
-  // Initialize inventory untuk player ini jika belum ada
-  if(!G.inventory[charId]) G.inventory[charId] = [];
-  
-  // Handle berdasarkan tipe kartu
   if(card.type === 'item'){
-    // Item langsung masuk ke group task
-    inputItem(card.name, false);
+    // Item masuk ke itemInventory
+    if(!G.itemInventory[charId]) G.itemInventory[charId] = [];
+    G.itemInventory[charId].push({ card, sessionAdded: G.session });
+    showCardAddedPopup(card);
   } else if(card.type === 'instant'){
     // Instant card langsung dieksekusi
     goto('s-draw');
@@ -2971,13 +3307,9 @@ function addCardToInventory(cardName){
       goto('s-main');
     });
   } else if(card.type === 'action' || card.type === 'special'){
-    // Action/Special masuk inventory
-    G.inventory[charId].push({
-      card: card,
-      sessionAdded: G.session
-    });
-    
-    // Tampilkan notifikasi sukses
+    // Action/Special masuk inventory (Use Power-Up)
+    if(!G.inventory[charId]) G.inventory[charId] = [];
+    G.inventory[charId].push({ card, sessionAdded: G.session });
     showCardAddedPopup(card);
   }
 }
@@ -3768,7 +4100,7 @@ function spawnConfetti(){
 }
 
 // ── SPLASH ────────────────────────────────────────────────────────────────
-function splashStart(btn){
+window.splashStart = function(btn){
   // Ripple
   const rect=btn.getBoundingClientRect();
   const r=document.createElement('span');
@@ -3778,7 +4110,7 @@ function splashStart(btn){
   btn.appendChild(r);
   setTimeout(()=>r.remove(),600);
   setTimeout(()=>goto('s-setup'),220);
-}
+};
 
 function initSplashStars(){
   const container=document.getElementById('splash-stars');
@@ -3825,7 +4157,7 @@ function restartGame(){
     scenarioFromMidPhase:false,
     detectedCards:{},
     inventory:{},
-    lockedDecks:{},
+    itemInventory:{},
     lastUsedItem:null,
   };
   // Reset UI state
