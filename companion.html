@@ -635,16 +635,6 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <button class="btn btn-o btn-sm" onclick="goto('s-setup')" style="flex-shrink:0">← Kembali</button>
   </div>
 
-  <!-- search bar -->
-  <div class="card2 mb16" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-    <span style="font-size:18px">🔍</span>
-    <input type="text" id="card-list-search" placeholder="Cari kartu..." 
-      style="flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-b);font-size:14px"
-      oninput="renderCardList()"/>
-    <button class="btn btn-o btn-sm" onclick="document.getElementById('card-list-search').value='';renderCardList()" 
-      style="width:auto;padding:6px 12px;font-size:11px" id="card-list-clear" disabled>✕</button>
-  </div>
-
   <!-- stats bar -->
   <div class="card2 mb16" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
     <div class="b-sm">
@@ -660,8 +650,10 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <div style="position:relative;margin-bottom:12px">
     <input type="text" id="card-list-search" placeholder="Cari nama kartu, tipe, efek..."
       oninput="renderCardList()"
-      style="width:100%;padding:10px 14px 10px 36px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--text-primary);font-family:inherit;font-size:14px;outline:none;box-sizing:border-box"/>
+      style="width:100%;padding:10px 40px 10px 36px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--text-primary);font-family:inherit;font-size:14px;outline:none;box-sizing:border-box"/>
     <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none">🔍</span>
+    <button onclick="document.getElementById('card-list-search').value='';renderCardList()"
+      style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px 8px" id="card-list-clear">✕</button>
   </div>
 
   <!-- filter bar -->
@@ -919,8 +911,10 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
 
   <div class="lbl mb8" id="vote-tally-label" style="display:none">HASIL VOTE</div>
   <div class="stack mb20" id="vote-tally" style="display:none"></div>
-  <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none" onclick="confirmVote()">EKSEKUSI HASIL →</button>
-</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none;flex:1" onclick="confirmVote()">KONFIRMASI →</button>
+    <button class="btn btn-g mb10" id="btn-undo-vote" style="display:none;width:auto;padding:16px 20px" onclick="undoLastVote()" title="Hapus vote terakhir">↩</button>
+  </div>
 
 <!-- ══ ELIMINATION ═════════════════════════════════════════════════════ -->
 <div class="screen" id="s-elim" style="justify-content:center;text-align:center">
@@ -1178,17 +1172,22 @@ const pick    = a => a[Math.floor(Math.random()*a.length)];
 const $       = id => document.getElementById(id);
 const activePlayers = () => G.order.filter(p=>!p.eliminated);
 
+// Boundary-safe: explicit ranges, clamped values
 function meterClass(v){
-  if(v<=25) return 'm-low';
-  if(v<=50) return 'm-mid';
-  if(v<=75) return 'm-high';
-  return 'm-full';
+  const val=Math.max(0,Math.min(100,v)); // Clamp 0-100
+  if(val>=0&&val<20) return 'm-low';
+  if(val>=20&&val<40) return 'm-low';
+  if(val>=40&&val<60) return 'm-mid';
+  if(val>=60&&val<80) return 'm-high';
+  return 'm-full'; // 80-100
 }
 
 function meterColor(v){
-  if(v<=25) return 'var(--primary)';
-  if(v<=75) return 'var(--accent)';
-  return '#6B6FFF';
+  const val=Math.max(0,Math.min(100,v));
+  if(val<40) return 'var(--primary)';
+  if(val<60) return 'var(--accent)';
+  if(val<80) return 'var(--secondary)';
+  return 'var(--success)';
 }
 
 function updateMeter(){
@@ -1757,10 +1756,18 @@ function checkWinLose(){
   const fraudAlive=G.order.filter(p=>p.role==='fraud'&&!p.eliminated);
   const friendAlive=G.order.filter(p=>p.role==='friend'&&!p.eliminated);
   let winner=null;
+
+  // Normal win/lose conditions
   if(v<=0) winner='fraud';
   else if(v>=100){winner=fraudAlive.length>0?'fraud':'friend';}
   else if(fraudAlive.length===0) winner='friend';
   else if(friendAlive.length<=fraudAlive.length) winner='fraud';
+
+  // Session limit reached — Fraud wins by default (not caught)
+  if(!winner && G.session>=G.totalSessions){
+    winner='fraud';
+  }
+
   if(winner){showEndGame(winner);return true;}
   return false;
 }
@@ -2291,18 +2298,12 @@ function onScanSuccess(decodedText){
   setTimeout(()=>flash.classList.remove('pop'),180);
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
 
-  const id = decodedText.trim().toLowerCase();
-  const card = SCAN_CARDS[id];
+  const id=decodedText.trim().toLowerCase();
+  const card=SCAN_CARDS[id];
 
   if(!card){
-    $('scanner-not-found').style.display='block';
-    $('scanner-viewfinder').style.borderColor='var(--pink)';
-    setTimeout(()=>{
-      $('scanner-not-found').style.display='none';
-      $('scanner-viewfinder').style.borderColor='';
-      try{ scannerInstance.resume(); }catch(e){}
-      scannerActive=true;
-    },2500);
+    // QR not found in database — show error with manual input fallback
+    showScanErrorPopup('not_found', id, scannerMode);
     return;
   }
 
@@ -2310,6 +2311,83 @@ function onScanSuccess(decodedText){
   setTimeout(()=>$('scanner-viewfinder').classList.remove('pulse'),600);
   closeScanner();
   dispatchScanResult(card);
+}
+
+// QR Error States + Manual Fallback
+function showScanErrorPopup(errorType, rawData, mode){
+  const popupEl=document.createElement('div');
+  popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+
+  let icon='⚠️', title='QR Tidak Dikenali', message='QR code tidak ditemukan di database. Coba scan ulang atau input manual.';
+
+  if(errorType==='corrupt'){
+    icon='💔';
+    title='Data Corrupt';
+    message='QR code rusak atau tidak valid. Coba input manual.';
+  }
+
+  popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+    <div style="font-size:52px;margin-bottom:12px">${icon}</div>
+    <div class="d md mb4" style="color:var(--primary)">${title}</div>
+    <p class="b-sm c-muted mb16">${message}</p>
+    <div class="card2 mb16" style="text-align:left;padding:14px">
+      <div class="lbl mb6">INPUT MANUAL</div>
+      <input id="manual-card-input" type="text" placeholder="Ketik nama kartu..."
+        style="width:100%;padding:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text-primary);font-family:var(--font-b);font-size:14px;outline:none"/>
+      <button class="btn btn-p mt8" onclick="submitManualInput('${mode}')" style="padding:10px">SUBMIT</button>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-y btn-sm" onclick="this.closest('div[style*=fixed]').remove();closeScanner();retryScan()">📷 Scan Lagi</button>
+      <button class="btn btn-o btn-sm" onclick="this.closest('div[style*=fixed]').remove();closeScanner();back()">Batal</button>
+    </div>
+  </div>`;
+  document.body.appendChild(popupEl);
+
+  // Focus input after render
+  setTimeout(()=>{const inp=$('manual-card-input'); if(inp) inp.focus();}, 100);
+}
+
+function submitManualInput(mode){
+  const input=$('manual-card-input');
+  if(!input) return;
+  const name=input.value.trim();
+  if(!name) return;
+
+  // Find card in CARDS database by name (case-insensitive)
+  const card=Object.values(CARDS||{}).find(c=>c.name.toLowerCase()===name.toLowerCase());
+  if(!card){
+    input.style.borderColor='var(--primary)';
+    input.value='';
+    input.placeholder='Kartu tidak ditemukan. Coba lagi...';
+    return;
+  }
+
+  // Validate card type matches scanner mode
+  const modeTypeMap={item:'item',powerup:'power-up',draw:'all',action:'action',special:'special',instant:'instant'};
+  const expectedType=modeTypeMap[mode];
+
+  if(expectedType&&expectedType!=='all'&&card.type!==expectedType){
+    input.style.borderColor='var(--primary)';
+    input.value='';
+    input.placeholder=`Bukan kartu ${expectedType}. Coba lagi...`;
+    return;
+  }
+
+  // Valid card found — close popup and dispatch
+  const popup=document.querySelector('div[style*="1000"]:not(#fm-popup)');
+  if(popup) popup.remove();
+  closeScanner();
+  dispatchScanResult(card);
+}
+
+function retryScan(){
+  // Re-open scanner based on current mode
+  if(scannerMode==='item') openScannerForItem();
+  else if(scannerMode==='powerup') openScannerForPowerUp();
+  else if(scannerMode==='draw') openScannerForDraw();
+  else if(scannerMode==='action') openScannerForAction();
+  else if(scannerMode==='special') openScannerForSpecial();
+  else if(scannerMode==='instant') openScannerForInstant();
 }
 
 function dispatchScanResult(card){
@@ -2358,11 +2436,11 @@ function gotoCardViewer(){
 
 function gotoCardList(){
   goto('s-card-list');
-  // Reset search
+  // Reset search dan filters
   const searchInput = $('card-list-search');
   if(searchInput) searchInput.value = '';
-  const clearBtn = $('card-list-clear');
-  if(clearBtn) clearBtn.disabled = true;
+  cardListTypeFilter = 'all';
+  cardListLocFilter = 'all';
   renderCardList();
 }
 
@@ -2558,20 +2636,21 @@ function renderCardList(){
   const grid = $('card-list-grid');
   const empty = $('card-list-empty');
   const allCards = Object.values(CARDS || {});
-  
+
   // Get search query
-  const searchQuery = $('card-list-search').value.toLowerCase().trim();
-  
-  // Update clear button state
+  const searchInput = $('card-list-search');
+  const searchQuery = searchInput?.value?.toLowerCase().trim() || '';
+
+  // Update clear button visibility
   const clearBtn = $('card-list-clear');
-  if(clearBtn) clearBtn.disabled = searchQuery === '';
-  
+  if(clearBtn) clearBtn.style.display = searchQuery ? 'block' : 'none';
+
   // Filter cards
   const filtered = allCards.filter(card => {
     const typeMatch = cardListTypeFilter === 'all' || card.type === cardListTypeFilter;
     const locMatch = cardListLocFilter === 'all' || !card.loc || card.loc === cardListLocFilter;
-    const searchMatch = searchQuery === '' || 
-      card.name.toLowerCase().includes(searchQuery) || 
+    const searchMatch = searchQuery === '' ||
+      card.name.toLowerCase().includes(searchQuery) ||
       card.type.toLowerCase().includes(searchQuery) ||
       (card.loc && card.loc.toLowerCase().includes(searchQuery)) ||
       (card.effect && card.effect.toLowerCase().includes(searchQuery)) ||
@@ -3932,6 +4011,7 @@ function renderVoting(){
   $('vote-tally-label').style.display='none';
   $('vote-tally').style.display='none';
   $('btn-confirm-vote').style.display='none';
+  $('btn-undo-vote').style.display='none';
   const active=activePlayers();
   const totalVoters=active.length;
 
@@ -3986,6 +4066,55 @@ function toggleVote(targetId){
   if(newTotal>=totalVoters){
     $('btn-confirm-vote').style.display='block';
   }
+  // Show undo button if there are votes
+  if(newTotal>0){
+    $('btn-undo-vote').style.display='block';
+  }
+}
+
+function undoLastVote(){
+  const active=activePlayers();
+  const voteKeys=Object.keys(G.votes);
+  if(voteKeys.length===0) return; // nothing to undo
+
+  // Remove last vote
+  const lastKey=voteKeys[voteKeys.length-1];
+  delete G.votes[lastKey];
+
+  // Update count display
+  const tally={};
+  Object.values(G.votes).forEach(id=>{tally[id]=(tally[id]||0)+1;});
+  active.forEach(p=>{
+    const el=$('vcount-'+p.char.id);
+    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'var(--pink)':'var(--muted)';}
+  });
+
+  // Update total
+  const newTotal=voteKeys.length-1;
+  const countEl=$('vote-total-count');
+  if(countEl) countEl.textContent=newTotal;
+
+  // Hide confirm button if not all votes cast
+  if(newTotal<active.length){
+    $('btn-confirm-vote').style.display='none';
+  }
+
+  // Hide undo button if no votes left
+  if(newTotal===0){
+    $('btn-undo-vote').style.display='none';
+  }
+
+  // Reset border highlights on all candidates
+  active.forEach(p=>{
+    const btn=$('vopt-'+p.char.id);
+    if(btn) btn.style.borderColor='';
+  });
+
+  // Re-apply borders for remaining votes
+  Object.values(G.votes).forEach(id=>{
+    const btn=$('vopt-'+id);
+    if(btn) btn.style.borderColor='var(--primary-glow)';
+  });
 }
 
 function confirmVote(){
@@ -4006,6 +4135,8 @@ function confirmVote(){
     </div>`).join('');
   $('btn-confirm-vote').textContent='EKSEKUSI HASIL →';
   $('btn-confirm-vote').onclick=executeTally;
+  // Hide undo button after confirmation
+  $('btn-undo-vote').style.display='none';
 }
 
 function executeTally(){
@@ -4015,25 +4146,87 @@ function executeTally(){
 function tallyVotes(){
   const tally={};
   Object.values(G.votes).forEach(id=>{if(id) tally[id]=(tally[id]||0)+1;});
-  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
-  if(sorted.length===0){nextSession();return;}
-  const topId=sorted[0][0];
-  const target=G.order.find(p=>p.char.id===topId);
-  if(!target){nextSession();return;}
+  const active=activePlayers();
 
-  if(target.flagged){
-    // eliminate
-    target.eliminated=true;
-    target.flagged=false;
-    G.eliminatedPlayer=target;
-    showElimination(target);
+  // Convert to array with player objects
+  const voteArray=active.map(p=>({
+    charId:p.char.id,
+    player:p,
+    votes:tally[p.char.id]||0,
+  }));
+
+  // Sort by vote count DESC
+  voteArray.sort((a,b)=>b.votes-a.votes);
+
+  // No votes cast — skip
+  if(voteArray.length===0||voteArray.every(v=>v.votes===0)){nextSession();return;}
+
+  const topVote=voteArray[0].votes;
+  const tied=voteArray.filter(v=>v.votes===topVote);
+
+  let target;
+
+  if(tied.length===1){
+    // NO TIE — normal elimination
+    target=tied[0];
   } else {
-    // check if someone else is flagged
+    // TIE DETECTED — show notice and skip to next session
+    const tiedNames=tied.map(v=>v.player.char.name).join(' vs ');
+
+    // Check if this is the last session
+    const isLastSession=G.session>=G.totalSessions;
+
+    if(isLastSession){
+      // Final session tie → Fraud wins (not caught)
+      showEndGame('fraud');
+      return;
+    }
+
+    // Show tie-breaker notice popup
+    const tiedWithVotes=tied.map(v=>({...v.player, _tempVotes:v.votes}));
+    showTieBreakerPopup(tiedNames, tiedWithVotes);
+    return;
+  }
+
+  if(!target||!target.player){nextSession();return;}
+
+  // Normal elimination path
+  if(target.player.flagged){
+    target.player.eliminated=true;
+    target.player.flagged=false;
+    G.eliminatedPlayer=target.player;
+    showElimination(target.player);
+  } else {
     const currentlyFlagged=G.order.find(p=>p.flagged&&!p.eliminated);
     if(currentlyFlagged) currentlyFlagged.flagged=false;
-    target.flagged=true;
+    target.player.flagged=true;
     nextSession();
   }
+}
+
+function showTieBreakerPopup(tiedNames, tiedPlayers){
+  const voteCount=tiedPlayers[0]?._tempVotes||0;
+  const popupEl=document.createElement('div');
+  popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+    <div style="font-size:52px;margin-bottom:12px">⚖️</div>
+    <div class="d md mb4">TIE VOTE!</div>
+    <p class="b-sm c-muted mb8"><strong style="color:var(--accent)">${tiedNames}</strong></p>
+    <p class="b-sm c-muted mb4">Sama-sama dapat <strong style="color:var(--text-primary)">${voteCount}</strong> votes.</p>
+    <div class="card2 mb16" style="text-align:left;padding:14px">
+      <div class="lbl mb6" style="color:var(--yellow)">💡 HASIL</div>
+      <p class="b-sm" style="color:rgba(255,255,255,.8)">Tidak ada eliminasi. Vote impasse — lanjut ke session berikutnya.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px">
+      ${tiedPlayers.map(p=>`<div class="card2" style="padding:8px 14px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">${p.char.emoji}</span>
+        <span class="b-sm" style="font-weight:600">${p.char.name}</span>
+        <span class="tag tag-flag">${voteCount}</span>
+      </div>`).join('')}
+    </div>
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();nextSession()">LANJUT SESSION →</button>
+  </div>`;
+  document.body.appendChild(popupEl);
 }
 
 function showElimination(p){
