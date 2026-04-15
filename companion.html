@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -32,7 +32,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Prevent image drag globally */
-img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;-o-user-drag:none;user-drag:none;pointer-events:none;}
+img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;-o-user-drag:none;pointer-events:none;}
 :root{
   /* ── PRIMARY COLORS (Main Brand Colors) ────────────────────────────────── */
   --primary: #FF2D78;           /* Pink - Main action color */
@@ -93,6 +93,12 @@ img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;-o-user-dra
   --radius:18px;
   --radius-sm:12px;
   --radius-xs:8px;
+
+  /* ── ALIAS VARIABLES (compatibility) ─────────────────────────────────── */
+  --muted: var(--text-muted);
+  --yellow: var(--accent);
+  --pink: var(--primary);
+  --card3: var(--bg-card2);
 }
 html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-family:var(--font-b);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .app{max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden;background:var(--bg-dark)}
@@ -520,7 +526,7 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
       <div class="lbl" style="font-size:8px;margin-bottom:4px">SOCIAL BATTERY</div>
       <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
         <div style="display:flex;gap:2px" id="main-sb-pips"></div>
-        <span class="d" style="font-size:16px;color:#00C896" id="main-sb-val">10</span>
+        <span class="d" style="font-size:16px;color:#00C896" id="main-sb-val">5</span>
       </div>
     </div>
   </div>
@@ -911,10 +917,11 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
 
   <div class="lbl mb8" id="vote-tally-label" style="display:none">HASIL VOTE</div>
   <div class="stack mb20" id="vote-tally" style="display:none"></div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none;flex:1" onclick="confirmVote()">KONFIRMASI →</button>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+    <button class="btn btn-d mb10" id="btn-confirm-vote" style="display:none" onclick="confirmVote()">KONFIRMASI →</button>
     <button class="btn btn-g mb10" id="btn-undo-vote" style="display:none;width:auto;padding:16px 20px" onclick="undoLastVote()" title="Hapus vote terakhir">↩</button>
   </div>
+</div>
 
 <!-- ══ ELIMINATION ═════════════════════════════════════════════════════ -->
 <div class="screen" id="s-elim" style="justify-content:center;text-align:center">
@@ -941,13 +948,14 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <button class="btn btn-p" onclick="restartGame()">MAIN LAGI →</button>
 </div>
 
-<!-- ══ FM POPUP OVERLAY ═══════════════════════════════════════════════ -->
-<div id="fm-popup" style="display:none;position:fixed;inset:0;background:rgba(4,4,12,.82);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;padding:24px">
+</div><!-- .app -->
+
+<!-- ══ FM POPUP OVERLAY (MOVED OUTSIDE .app) ═══════════════════════ -->
+<div id="fm-popup" style="display:none;position:fixed;inset:0;background:rgba(4,4,12,.82);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:24px">
   <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
     <div style="font-size:52px;margin-bottom:12px" id="fm-popup-icon">😬</div>
     <div class="d md mb4" id="fm-popup-label">Friendship Meter</div>
     <div class="d lg mb16" id="fm-popup-delta" style="color:var(--yellow)">+10</div>
-
     <div style="margin:0 0 8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span class="lbl">SEBELUM</span>
@@ -967,7 +975,6 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
         </div>
       </div>
     </div>
-
     <div id="fm-popup-reason" style="display:none;margin-top:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;text-align:left">
       <div class="lbl mb6" style="color:var(--text-muted)">KENAPA BEGITU?</div>
       <p class="b-sm" id="fm-popup-reason-text" style="color:rgba(255,255,255,.75);line-height:1.6"></p>
@@ -975,8 +982,6 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <button class="btn btn-p mt16" onclick="closeFmPopup()">LANJUT →</button>
   </div>
 </div>
-
-</div><!-- .app -->
 
 <script>
 // ── DATA ─────────────────────────────────────────────────────────────────
@@ -1141,6 +1146,7 @@ const SCENARIOS = [
 let G = {
   players: [],
   order: [],
+  orderAssign: {},
   currentIdx: 0,
   session: 1,
   totalSessions: 8,
@@ -1164,13 +1170,122 @@ let G = {
   itemInventory: {},
   lockedDecks: {},
   lastUsedItem: null,
+  recentScenarios: [],
 };
 
 // ── UTILS ─────────────────────────────────────────────────────────────────
 const shuffle = a => [...a].sort(() => Math.random()-.5);
 const pick    = a => a[Math.floor(Math.random()*a.length)];
+
+// Pick scenario dengan cooldown — scenario yang baru muncul tidak akan keluar lagi
+// sampai semua scenario lain sudah muncul duluan (atau minimal 3 scenario gap)
+function pickScenario(){
+  const COOLDOWN = 3; // scenario yang sama tidak muncul dalam 3x pick
+  if(!G.recentScenarios) G.recentScenarios = [];
+
+  // Filter scenario yang sedang dalam cooldown
+  const available = SCENARIOS.filter((sc, idx) =>
+    !G.recentScenarios.includes(idx)
+  );
+
+  // Kalau semua sedang cooldown (edge case), reset dan ambil semua
+  const pool = available.length > 0 ? available : SCENARIOS;
+  const poolIndices = SCENARIOS
+    .map((sc, idx) => idx)
+    .filter(idx => pool.includes(SCENARIOS[idx]));
+
+  // Pick random dari pool yang tersedia
+  const chosenIdx = poolIndices[Math.floor(Math.random() * poolIndices.length)];
+  const chosen = SCENARIOS[chosenIdx];
+
+  // Update recent history
+  G.recentScenarios.push(chosenIdx);
+  if(G.recentScenarios.length > COOLDOWN){
+    G.recentScenarios.shift(); // hapus yang paling lama
+  }
+
+  return chosen;
+}
+
 const $       = id => document.getElementById(id);
 const activePlayers = () => G.order.filter(p=>!p.eliminated);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL ERROR HANDLER — Catch semua runtime error & interaction error
+// ═══════════════════════════════════════════════════════════════════════════
+
+// 1. Monkey-patch: override semua inline onclick agar wrapped try-catch
+(function wrapAllOnclicks(){
+  // Wait for DOM to be ready
+  function wrapElement(el){
+    if(el.onclick && !el._errorWrapped){
+      el._errorWrapped=true;
+      const orig=el.onclick;
+      el.onclick=function(ev){
+        try{ orig.call(this, ev); }
+        catch(err){
+          console.error(`\n%c[INTERACTION ERROR] ❌`, 'background:#FF2D78;color:#fff;font-weight:bold;font-size:13px;padding:4px 8px;border-radius:4px');
+          console.error(`%c  Element:`, 'color:#4754D6;font-weight:bold', `<${el.tagName.toLowerCase()} id="${el.id||'none'}" class="${el.className||''}">`);
+          if(el.getAttribute('onclick')) console.error(`%c  OnClick:`, 'color:#FFD600', el.getAttribute('onclick'));
+          console.error(`%c  Error:`, 'color:#FF2D78;font-weight:bold', `${err.name}: ${err.message}`);
+          console.error(`%c  Stack:`, 'color:#5A5A90', err.stack);
+          console.groupCollapsed('%c  Context', 'color:#888');
+          console.log('  Screen:', document.querySelector('.screen.active')?.id||'none');
+          console.log('  Session:', G.session);
+          console.log('  Players:', G.order?.length||0);
+          console.log('  Meter:', G.meter);
+          console.log('  Timestamp:', new Date().toISOString());
+          console.groupEnd();
+          throw err; // re-throw agar tetap terlihat di console
+        }
+      };
+    }
+  }
+
+  // Wrap existing elements with onclick
+  function wrapAll(){
+    document.querySelectorAll('[onclick]').forEach(wrapElement);
+  }
+
+  // Run after DOM mutations
+  const origAppendChild=Node.prototype.appendChild;
+  Node.prototype.appendChild=function(node){
+    const result=origAppendChild.call(this, node);
+    if(node && node.querySelectorAll) wrapAll();
+    return result;
+  };
+
+  const origInsertBefore=Node.prototype.insertBefore;
+  Node.prototype.insertBefore=function(node, ref){
+    const result=origInsertBefore.call(this, node, ref);
+    if(node && node.querySelectorAll) wrapAll();
+    return result;
+  };
+
+  // Initial wrap
+  wrapAll();
+  // Also wrap periodically (covers innerHTML assignments)
+  setInterval(wrapAll, 500);
+})();
+
+// 2. Window error handler — catch runtime errors
+window.addEventListener('error', function(e){
+  const t=e.target;
+  if(t && t.closest){
+    const btn=t.closest('[onclick], button, .btn, .act-btn, .vote-opt, .char-card, .count-btn, .card-list-item');
+    if(btn && !e.error) return; // already handled by onclick wrapper
+  }
+  // Default: log semua error lainnya
+  console.error(`\n%c[GLOBAL ERROR] ❌`, 'background:#FF2D78;color:#fff;font-weight:bold;font-size:13px;padding:4px 8px;border-radius:4px');
+  console.error(`%c  Error:`, 'color:#FF2D78;font-weight:bold', `${e.error?.name||'Error'}: ${e.message}`);
+  if(e.error?.stack) console.error(`%c  Stack:`, 'color:#5A5A90', e.error.stack);
+});
+
+// 3. Catch unhandled promise rejections
+window.addEventListener('unhandledrejection', function(e){
+  console.error(`\n%c[PROMISE REJECT] ❌`, 'background:#FF6B35;color:#fff;font-weight:bold;font-size:13px;padding:4px 8px;border-radius:4px');
+  console.error(`%c  Reason:`, 'color:#FF6B35;font-weight:bold', e.reason);
+});
 
 // Boundary-safe: explicit ranges, clamped values
 function meterClass(v){
@@ -1201,11 +1316,13 @@ function updateMeter(){
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────
 function goto(screenId){
+  const screenEl=$(screenId);
+  if(!screenEl){console.error(`[goto] Screen "${screenId}" not found`);return;}
   // Track previous screen for back() — only track game screens, not popups
   const cur=document.querySelector('.screen.active');
   if(cur) G.prevScreen=cur.id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  $(screenId).classList.add('active');
+  screenEl.classList.add('active');
   window.scrollTo(0,0);
   if(screenId==='s-main')    renderMain();
   if(screenId==='s-task')    renderTasks();
@@ -1268,7 +1385,7 @@ function setupDone(){
   const roles = shuffle([...Array(fraudCount).fill('fraud'),...Array(n-fraudCount).fill('friend')]);
   G.players = G.selectedChars.map((c,i)=>({
     char:c, role:roles[i], flagged:false, eliminated:false,
-    tasks:[], passiveCooldown:0, sb:10, burnout:false
+    tasks:[], passiveCooldown:0, sb:5, burnout:false
   }));
   G.session=1; G.totalSessions=n===4?8:12; G.meter=30;
   G.votes={}; G.currentIdx=0;
@@ -1312,8 +1429,8 @@ function renderRoleStep(){
       <div class="card2 mb20" style="text-align:left">
         <div class="lbl c-muted mb6">SOCIAL BATTERY AWAL</div>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="display:flex;gap:3px">${Array.from({length:10},(_,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${i<10?'#00C896':'rgba(255,255,255,.1)'}"></div>`).join('')}</div>
-          <span class="d sm" style="color:#00C896">10</span>
+          <div style="display:flex;gap:3px">${Array.from({length:5},(_,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${i<5?'#00C896':'rgba(255,255,255,.1)'}"></div>`).join('')}</div>
+          <span class="d sm" style="color:#00C896">5</span>
         </div>
         <p class="b-sm c-muted mt6" style="font-size:10px">Digunakan untuk memainkan Action Card</p>
       </div>
@@ -1514,28 +1631,32 @@ function renderMain(){
   const cur=G.order[G.currentIdx];
   if(!cur) return;
   const active=activePlayers();
-  $('main-session').textContent=`${G.session} / ${G.totalSessions}`;
-  $('main-active').textContent=active.length;
+
+  // Safe element access with null checks
+  const el=id=>{const e=$(id);if(!e)console.warn(`[renderMain] Element #${id} not found`);return e;};
+
+  const sMain=$('main-session');if(sMain)sMain.textContent=`${G.session} / ${G.totalSessions}`;
+  const sActive=$('main-active');if(sActive)sActive.textContent=active.length;
   updateMeter();
-  $('main-cur-emoji').textContent=cur.char.emoji;
+  const cEmoji=$('main-cur-emoji');if(cEmoji)cEmoji.textContent=cur.char.emoji;
   const displayName=cur.nickname?`${cur.char.name} · ${cur.nickname}`:cur.char.name;
-  $('main-cur-name').textContent=displayName;
+  const cName=$('main-cur-name');if(cName)cName.textContent=displayName;
 
   // Tags
   const tags=$('main-cur-tags');
-  tags.innerHTML='';
-  if(cur.flagged) tags.innerHTML+='<span class="tag tag-flag mt4" style="display:inline-block">⚑ Flagged</span>';
-  if(cur.burnout) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(255,107,53,.15);color:#FF6B35;border:1px solid rgba(255,107,53,.3);margin-left:4px">😵 Burnout</span>';
-  if(cur.fmDoubleActive) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(0,200,150,.15);color:var(--success);border:1px solid rgba(0,200,150,.3);margin-left:4px">📱 FM 2×</span>';
+  if(tags){
+    tags.innerHTML='';
+    if(cur.flagged) tags.innerHTML+='<span class="tag tag-flag mt4" style="display:inline-block">⚑ Flagged</span>';
+    if(cur.burnout) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(255,107,53,.15);color:#FF6B35;border:1px solid rgba(255,107,53,.3);margin-left:4px">😵 Burnout</span>';
+    if(cur.fmDoubleActive) tags.innerHTML+='<span class="tag mt4" style="display:inline-block;background:rgba(0,200,150,.15);color:var(--success);border:1px solid rgba(0,200,150,.3);margin-left:4px">📱 FM 2×</span>';
+  }
 
   // SB display
-  const sb=cur.sb??10;
-  $('main-sb-val').textContent=sb;
-  $('main-sb-val').style.color=sb<=3?'var(--primary)':sb<=6?'var(--accent)':'var(--success)';
-  $('main-sb-bar').style.width=(sb/10*100)+'%';
-  $('main-sb-bar').style.background=sb<=3?'var(--gradient-sb-low)':sb<=6?'var(--gradient-sb-mid)':'var(--gradient-sb-high)';
-  $('main-sb-pips').innerHTML=Array.from({length:10},(_,i)=>
-    `<div style="width:6px;height:6px;border-radius:50%;background:${i<sb?(sb<=3?'var(--primary)':sb<=6?'var(--accent)':'var(--success)'):'rgba(255,255,255,.12)'}"></div>`
+  const sb=cur.sb??5;
+  const sbVal=$('main-sb-val');if(sbVal){sbVal.textContent=sb;sbVal.style.color=sb<=1?'var(--primary)':sb<=3?'var(--accent)':'var(--success)';}
+  const sbBar=$('main-sb-bar');if(sbBar){sbBar.style.width=(sb/5*100)+'%';sbBar.style.background=sb<=3?'var(--gradient-sb-low)':sb<=6?'var(--gradient-sb-mid)':'var(--gradient-sb-high)';}
+  const sbPips=$('main-sb-pips');if(sbPips)sbPips.innerHTML=Array.from({length:5},(_,i)=>
+    `<div style="width:6px;height:6px;border-radius:50%;background:${i<sb?(sb<=1?'var(--primary)':sb<=3?'var(--accent)':'var(--success)'):'rgba(255,255,255,.12)'}"></div>`
   ).join('');
 
   // Action subtitles with SB cost hint
@@ -1596,7 +1717,7 @@ function renderMain(){
 
   // Players list
   $('main-players').innerHTML=G.order.map((p,i)=>{
-    const psb=p.sb??10;
+    const psb=p.sb??5;
     const pName=p.nickname?`${p.char.name} · ${p.nickname}`:p.char.name;
     
     // Find active tasks for this player (only confirmed ones)
@@ -1701,7 +1822,7 @@ function endPhase(){
     // 50% mid-phase scenario — only if no active scenario
     if(!G.scenarioActive && Math.random()<0.5){
       G.scenarioActive=true;
-      G.scenario=pick(SCENARIOS);
+      G.scenario=pickScenario();
       G.scenarioChoice=null;
       G.scenarioFromMidPhase=true;
       renderScenario();
@@ -1718,7 +1839,7 @@ function sessionEnd(){
   // Expire group tasks past deadline
   G.groupTasks=G.groupTasks.filter(gt=>{
     if(gt.completed) return false;
-    if((G.session-gt.sessionStart)>gt.deadline){
+    if((G.session-gt.sessionStart)>=gt.deadline){
       G.meter=Math.max(0,G.meter-8);
       return false;
     }
@@ -1726,7 +1847,7 @@ function sessionEnd(){
   });
   // SB recovery + burnout reset per session
   G.order.filter(p=>!p.eliminated).forEach(p=>{
-    p.sb=Math.min(10,(p.sb??10)+3);
+    p.sb=Math.min(5,(p.sb??5)+3);
     p.burnout=false;
     p.fmDoubleActive=false;
   });
@@ -1744,7 +1865,7 @@ function sessionEnd(){
   G.scenarioActive=true;
 
   if(checkWinLose()) return;
-  G.scenario=pick(SCENARIOS);
+  G.scenario=pickScenario();
   G.scenarioChoice=null;
   G.scenarioFromMidPhase=false;
   renderScenario();
@@ -1988,8 +2109,8 @@ function useItemFromInventory(idx){
   const charId=cur.char.id;
   const itemInv=G.itemInventory[charId]||[];
   if(idx<0||idx>=itemInv.length) return;
-  const item=itemInv[idx];
-  const card=item.card;
+  const card=itemInv[idx].card;
+  const isFraud=cur.role==='fraud';
 
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
@@ -1998,7 +2119,7 @@ function useItemFromInventory(idx){
       <div style="font-size:52px;margin-bottom:12px">${card.emoji||'📦'}</div>
       <div class="d md mb4">${card.name}</div>
       <span class="tag tag-item" style="display:inline-block;margin-bottom:16px">ITEM</span>
-      ${card.corrupt?'<div class="tag" style="display:inline-block;margin-bottom:12px;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">⚠ CORRUPT</div>':''}
+      ${isFraud?'<div class="tag" style="display:inline-block;margin-bottom:12px;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">⚠ CORRUPT</div>':''}
       <p class="b-sm c-muted mb20">${card.effect||''}</p>
       <button class="btn btn-p mb12" onclick="confirmUseItemFromInventory(${idx})">INPUT ITEM INI ✓</button>
       <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
@@ -2017,7 +2138,8 @@ function confirmUseItemFromInventory(idx){
   G.itemInventory[charId].splice(idx,1);
   // Execute as scanned item
   const isFraud=cur.role==='fraud';
-  const isCorrupt=card.corrupt&&isFraud;
+  // NEW RULE: Fraud pakai item → otomatis CORRUPT
+  const isCorrupt=isFraud;
   inputItem(card.name, isCorrupt);
   // Re-render the screen to reflect updated inventory
   renderItemScreen();
@@ -2071,18 +2193,8 @@ const CARDS = {
     desc:'"Bukan flexing, tapi gue tau segalanya."',
     effect:'Mendapatkan Ensiklopedia! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
   },
-  'perp_item_002': {
-    name:'Ensiklopedia', type:'item', emoji:'📚', loc:'perpustakaan', corrupt:true,
-    desc:'"Bukan flexing, tapi gue tau segalanya."',
-    effect:'Mendapatkan Ensiklopedia! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
-  },
   'perp_item_003': {
     name:'Novel', type:'item', emoji:'📖', loc:'perpustakaan',
-    desc:'"Hidup udah drama, bacaannya juga drama."',
-    effect:'Mendapatkan Novel! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
-  },
-  'perp_item_004': {
-    name:'Novel', type:'item', emoji:'📖', loc:'perpustakaan', corrupt:true,
     desc:'"Hidup udah drama, bacaannya juga drama."',
     effect:'Mendapatkan Novel! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di perpustakaan)'
   },
@@ -2118,16 +2230,8 @@ const CARDS = {
     name:'Americano', type:'item', emoji:'☕', loc:'cafe',
     effect:'Mendapatkan Americano! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
   },
-  'cafe_item_002': {
-    name:'Americano', type:'item', emoji:'☕', loc:'cafe', corrupt:true,
-    effect:'Mendapatkan Americano! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
-  },
   'cafe_item_003': {
     name:'Earl Grey Tea', type:'item', emoji:'🍵', loc:'cafe',
-    effect:'Mendapatkan Earl Grey Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
-  },
-  'cafe_item_004': {
-    name:'Earl Grey Tea', type:'item', emoji:'🍵', loc:'cafe', corrupt:true,
     effect:'Mendapatkan Earl Grey Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
   },
 
@@ -2161,16 +2265,8 @@ const CARDS = {
     name:'Laptop', type:'item', emoji:'💻', loc:'kelas',
     effect:'Mendapatkan Laptop! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
   },
-  'kelas_item_002': {
-    name:'Laptop', type:'item', emoji:'💻', loc:'kelas', corrupt:true,
-    effect:'Mendapatkan Laptop! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
-  },
   'kelas_item_003': {
     name:'Buku Tulis', type:'item', emoji:'📓', loc:'kelas',
-    effect:'Mendapatkan Buku Tulis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
-  },
-  'kelas_item_004': {
-    name:'Buku Tulis', type:'item', emoji:'📓', loc:'kelas', corrupt:true,
     effect:'Mendapatkan Buku Tulis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
   },
 
@@ -2204,16 +2300,8 @@ const CARDS = {
     name:'Ayam Bakar', type:'item', emoji:'🍗', loc:'kantin',
     effect:'Mendapatkan Ayam Bakar! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
   },
-  'kantin_item_002': {
-    name:'Ayam Bakar', type:'item', emoji:'🍗', loc:'kantin', corrupt:true,
-    effect:'Mendapatkan Ayam Bakar! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
-  },
   'kantin_item_003': {
     name:'Es Teh Manis', type:'item', emoji:'🧋', loc:'kantin',
-    effect:'Mendapatkan Es Teh Manis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
-  },
-  'kantin_item_004': {
-    name:'Es Teh Manis', type:'item', emoji:'🧋', loc:'kantin', corrupt:true,
     effect:'Mendapatkan Es Teh Manis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
   },
 
@@ -2271,6 +2359,13 @@ function openScanner(mode, title, hint){
 function startScannerCamera(){
   if(scannerStarting) return;
   scannerStarting=true;
+
+  // Check if library loaded
+  if(typeof Html5Qrcode==='undefined'){
+    scannerStarting=false;
+    alert('Library QR Code scanner tidak bisa dimuat. Pastikan koneksi internet aktif, lalu refresh halaman.');
+    return;
+  }
 
   if(scannerInstance){
     try{ scannerInstance.resume(); scannerActive=true; scannerStarting=false; return; }
@@ -2553,7 +2648,7 @@ function showCardDetail(cardName){
       ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
       ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
     </div>
-    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
     <div class="card2 mb20" style="text-align:left;padding:14px">
       <div class="lbl mb6">EFEK</div>
       <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
@@ -2718,6 +2813,12 @@ function showDrawCardDetail(cardName){
   const card = Object.values(CARDS).find(c => c.name === cardName);
   if(!card) return;
 
+  // ── DECK LOCK CHECK ──
+  if(isDeckLocked(card)){
+    showLockedDeckPopup(card);
+    return;
+  }
+
   // Create popup container
   const popupContainer = document.createElement('div');
   popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
@@ -2737,7 +2838,7 @@ function showDrawCardDetail(cardName){
       ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
       ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
     </div>
-    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
     <div class="card2 mb20" style="text-align:left;padding:14px">
       <div class="lbl mb6">EFEK</div>
       <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
@@ -2784,7 +2885,7 @@ function showCardListDetail(cardName){
       ${card.loc ? `<span class="tag" style="display:inline-block;background:rgba(255,255,255,.05)">${card.loc}</span>` : ''}
       ${card.corrupt ? `<span class="tag" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary)">CORRUPT</span>` : ''}
     </div>
-    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><div class="lbl mb6">FLAVOR TEXT</div><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
+    ${card.desc ? `<div class="card2 mb16" style="text-align:left;padding:14px"><p class="b-sm" style="font-style:italic;color:rgba(255,255,255,.7)">"${card.desc}"</p></div>` : ''}
     <div class="card2 mb20" style="text-align:left;padding:14px">
       <div class="lbl mb6">EFEK</div>
       <p class="b-md">${card.effect || 'Tidak ada efek'}</p>
@@ -2829,13 +2930,20 @@ function onItemScanned(card){
       <button class="btn btn-y" style="width:auto;padding:12px 24px" onclick="openScannerForItem()">📷 Scan Lagi</button>`;
     return;
   }
-  const cur = G.order[G.currentIdx];
-  const isFraud = cur.role === 'fraud';
-  // Corrupt item: kalau Fraud yang scan → tandai sebagai corrupt (tapi tampilan sama)
-  // Kalau Friend yang scan corrupt → tetap valid
-  const isCorrupt = card.corrupt && isFraud;
 
-  // Tampilan selalu sama — Fraud ga tau ketahuan
+   // ── DECK LOCK CHECK ──
+  if(isDeckLocked(card)){
+    showLockedDeckPopup(card);
+    return;
+  }
+
+  const cur=G.order[G.currentIdx];
+  const isFraud=cur.role==='fraud';
+
+  // NEW RULE: Jika Fraud scan item → otomatis CORRUPT (semua item, tanpa terkecuali)
+  const isCorrupt=isFraud;
+
+  // Tampilan selalu sama — Fraud ga tau kalau item-nya jadi corrupt
   area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
     <div class="d sm mb4">${card.name}</div>
     <span class="tag" style="background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.3);display:inline-block;margin-bottom:8px">ITEM</span>
@@ -2849,28 +2957,56 @@ function inputItem(itemName, isCorrupt=false){
   const cur=G.order[G.currentIdx];
   let meterDelta=0;
   let itemUsedInTask=false;
-  // Track last used item for Artist passive
+  let corruptDetected=null; // Will hold {taskName, corruptItems: [{name, submitterName}]}
+
+  // Track last used item for Artist passive (only clean items)
   if(!isCorrupt) G.lastUsedItem=itemName;
   initGroupTasks();
+
   G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id)).forEach(gt=>{
     const allNeeded=gt.taskDef.items;
+    // Check if this item is still needed
     const allCollected=Object.values(gt.collected).flat().map(i=>i.name||i);
     const stillNeeded=[...allNeeded];
     allCollected.forEach(it=>{const i=stillNeeded.indexOf(it);if(i>=0)stillNeeded.splice(i,1);});
     if(!stillNeeded.includes(itemName)) return;
+
+    // Store item (corrupt items look identical to clean items)
     if(!gt.collected[cur.char.id]) gt.collected[cur.char.id]=[];
     gt.collected[cur.char.id].push({name:itemName, corrupt:isCorrupt, by:cur.char.id});
     itemUsedInTask=true;
-    const validCollected=Object.values(gt.collected).flat()
-      .filter(i=>!i.corrupt)
-      .map(i=>i.name||i);
-    const checkNeeded=[...allNeeded];
-    validCollected.forEach(it=>{const i=checkNeeded.indexOf(it);if(i>=0)checkNeeded.splice(i,1);});
-    if(checkNeeded.length===0){
-      gt.completed=true;
-      // Apply influencer FM double if active
-      const reward=cur.fmDoubleActive?gt.taskDef.reward*2:gt.taskDef.reward;
-      meterDelta+=reward;
+
+    // ── CORRUPT CHECK: Only when ALL required item slots are filled ──
+    const totalCollected=Object.values(gt.collected).flat().length;
+    if(totalCollected>=allNeeded.length){
+      // All slots filled — scan for corrupt items
+      const allItems=Object.values(gt.collected).flat();
+      const corruptItems=allItems.filter(i=>i.corrupt);
+
+      if(corruptItems.length>0){
+        // CORRUPT DETECTED!
+        // Get character names for submitters
+        const corruptDetails=corruptItems.map(ci=>{
+          const submitter=G.order.find(p=>p.char.id===ci.by);
+          return {name:ci.name, submitterName:submitter?submitter.char.name:'?'};
+        });
+
+        // Remove corrupt items from collected (only the corrupt entries)
+        Object.keys(gt.collected).forEach(charId=>{
+          gt.collected[charId]=gt.collected[charId].filter(i=>!i.corrupt);
+        });
+
+        corruptDetected={
+          taskName:gt.taskDef.name,
+          corruptItems:corruptDetails
+        };
+        // DO NOT complete task — task stays active
+      } else {
+        // No corrupt items — task completed normally
+        gt.completed=true;
+        const reward=cur.fmDoubleActive?gt.taskDef.reward*2:gt.taskDef.reward;
+        meterDelta+=reward;
+      }
     }
   });
 
@@ -2880,12 +3016,56 @@ function inputItem(itemName, isCorrupt=false){
     return;
   }
 
+  // Jika corrupt terdeteksi, tampilkan popup khusus
+  if(corruptDetected){
+    showCorruptItemPopup(corruptDetected, ()=>{
+      // After popup dismissed, re-render and end phase
+      endPhase();
+    });
+    return;
+  }
+
   if(meterDelta!==0){
     G.meter=Math.max(0,Math.min(100,G.meter+meterDelta));
     showFmPopup(meterDelta, G.meter, ()=>endPhase());
   } else {
     endPhase();
   }
+}
+
+// ── POPUP: CORRUPT ITEM TERDETEKSI ──────────────────────────────────────
+function showCorruptItemPopup(details, onDismiss){
+  const popupEl=document.createElement('div');
+  popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.92);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
+
+  const corruptList=details.corruptItems.map(ci=>
+    `<div class="card2" style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.2)">
+      <span style="font-size:16px">🔴</span>
+      <span class="b-sm" style="font-weight:600;flex:1">${ci.name}</span>
+      <span class="b-sm c-muted">oleh ${ci.submitterName}</span>
+    </div>`
+  ).join('');
+
+  popupEl.innerHTML=`<div class="card" style="width:100%;max-width:360px;text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);border:2px solid rgba(255,45,120,.3)">
+    <div style="font-size:56px;margin-bottom:12px;animation:pop .5s ease">⚠️</div>
+    <div class="d md mb4" style="color:var(--primary);font-size:28px">CORRUPT ITEM TERDETEKSI!</div>
+    <p class="b-sm c-muted mb16">Task <strong style="color:var(--accent)">${details.taskName}</strong> mengandung item corrupt!</p>
+
+    <div class="card2 mb16" style="text-align:left;padding:14px;background:rgba(255,45,120,.05);border:1px solid rgba(255,45,120,.15)">
+      <div class="lbl mb8" style="color:var(--primary)">ITEM YANG CORRUPT</div>
+      ${corruptList}
+    </div>
+
+    <div class="card2 mb16" style="text-align:left;padding:14px">
+      <div class="lbl mb6" style="color:var(--yellow)">AKIBAT</div>
+      <p class="b-sm" style="color:rgba(255,255,255,.8);line-height:1.6">Item corrupt telah <strong>dihapus</strong>. Task kembali belum selesai — pemain harus submit ulang item yang hilang.</p>
+    </div>
+
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();window._corruptDismiss()">MENGERTI →</button>
+  </div>`;
+
+  document.body.appendChild(popupEl);
+  window._corruptDismiss=onDismiss;
 }
 
 // ── POPUP: ITEM TIDAK DIGUNAKAN DI TASK ──────────────────────────────────
@@ -3134,6 +3314,7 @@ function renderScenario(){
 }
 
 function selectScenarioOpt(idx){
+  console.log(`[SCENARIO] selectScenarioOpt called — idx: ${idx}, label: "${G.scenario.opts[idx]?.label}"`);
   // Clear previous selection
   const opts = G.scenario.opts;
   opts.forEach((_, i) => {
@@ -3144,23 +3325,50 @@ function selectScenarioOpt(idx){
   G.scenarioChoice = idx;
   const sel = document.getElementById('sc-opt-' + idx);
   if(sel) sel.className = 'vote-opt sel-a';
+  console.log(`[SCENARIO] ✓ Selection set, confirm button shown`);
   $('btn-scenario-confirm').style.display = 'block';
 }
 
 // ── SCENARIO CONFIRM ─────────────────────────────────────────────────
 function scenarioConfirm(){
+  console.log(`%c[SCENARIO] ═══ scenarioConfirm() CALLED ═══`, 'background:#4754D6;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold');
+  console.log(`[SCENARIO] G.scenario:`, G.scenario ? '✓ exists' : '✗ NULL');
+  console.log(`[SCENARIO] G.scenarioChoice:`, G.scenarioChoice);
+
   const sc=G.scenario;
+  if(!sc){console.error(`[SCENARIO] ✗ ERROR: G.scenario is null!`); return;}
+  if(G.scenarioChoice===null || G.scenarioChoice===undefined){console.error(`[SCENARIO] ✗ ERROR: No option selected (G.scenarioChoice is null)`); return;}
+
   const chosen=sc.opts[G.scenarioChoice];
+  console.log(`[SCENARIO] Chosen option: idx=${G.scenarioChoice}, label="${chosen.label}", val=${chosen.val}`);
+
   const delta=chosen.val;
   const reason=chosen.reason||null;
+
+  console.log(`[SCENARIO] Before FM change: meter=${G.meter}, delta=${delta}`);
   G.meter=Math.max(0,Math.min(100,G.meter+delta));
+  console.log(`[SCENARIO] After FM change: meter=${G.meter}`);
+
   G.scenarioActive=false;
+  console.log(`[SCENARIO] G.scenarioActive set to false`);
+  console.log(`[SCENARIO] G.scenarioFromMidPhase:`, G.scenarioFromMidPhase);
+
+  // Check win/lose first
+  if(checkWinLose()){
+    console.log(`[SCENARIO] checkWinLose() returned TRUE — game ended`);
+    return;
+  }
+
+  console.log(`[SCENARIO] checkWinLose() returned FALSE — proceeding to next screen`);
+
   showFmPopup(delta, G.meter, function(){
-    if(checkWinLose()) return;
+    console.log(`[SCENARIO] FM popup callback triggered`);
     if(G.scenarioFromMidPhase){
       G.scenarioFromMidPhase=false;
+      console.log(`[SCENARIO] → goto('s-main')`);
       goto('s-main');
     } else {
+      console.log(`[SCENARIO] → goto('s-meeting')`);
       goto('s-meeting');
     }
   }, reason);
@@ -3370,10 +3578,20 @@ function renderDrawCardList(){
 function addCardToInventory(cardName){
   const card = CARDS[Object.keys(CARDS).find(key => CARDS[key].name === cardName)];
   if(!card) return;
-  
+
   const cur = G.order[G.currentIdx];
   const charId = cur.char.id;
-  
+
+  // Prevent duplicate items in inventory
+  const existingItems = G.itemInventory[charId] || [];
+  const alreadyHas = existingItems.some(item => item.card.name === cardName);
+  if(alreadyHas && card.type === 'item'){
+    console.warn(`[addCardToInventory] Item "${cardName}" already in inventory — skipped`);
+    // Still show popup but indicate already owned
+    showCardAddedPopup(card, true);
+    return;
+  }
+
   if(card.type === 'item'){
     // Item masuk ke itemInventory
     if(!G.itemInventory[charId]) G.itemInventory[charId] = [];
@@ -3383,7 +3601,7 @@ function addCardToInventory(cardName){
     // Instant card langsung dieksekusi
     goto('s-draw');
     executeCardEffect(card, $('draw-scan-area'), () => {
-      goto('s-main');
+      endPhase();
     });
   } else if(card.type === 'action' || card.type === 'special'){
     // Action/Special masuk inventory (Use Power-Up)
@@ -3393,12 +3611,24 @@ function addCardToInventory(cardName){
   }
 }
 
-function showCardAddedPopup(card){
+function showCardAddedPopup(card, alreadyOwned=false){
   // Create popup container
   const popupContainer = document.createElement('div');
   popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-  
-  popupContainer.innerHTML = `
+
+  if(alreadyOwned){
+    popupContainer.innerHTML = `
+    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,214,0,.3)">
+      <div style="font-size:52px;margin-bottom:12px">⚠️</div>
+      <div class="d md mb4">Item Sudah Dimiliki!</div>
+      <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
+      <div class="d sm mb4">${card.name}</div>
+      <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">Kamu sudah punya item ini di inventory.</p>
+      <button class="btn btn-y" onclick="this.closest('div[style*=fixed]').remove()">OK</button>
+    </div>
+  `;
+  } else {
+    popupContainer.innerHTML = `
     <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
       <div style="font-size:52px;margin-bottom:12px">✅</div>
       <div class="d md mb4">Kartu Disimpan!</div>
@@ -3409,6 +3639,7 @@ function showCardAddedPopup(card){
       <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">LANJUT →</button>
     </div>
   `;
+  }
   
   document.body.appendChild(popupContainer);
 }
@@ -3491,7 +3722,7 @@ function executeCardEffect(card, area, onDone){
     const hints=fraudPlayers.length===0
       ? '<p class="b-sm c-muted mb12">Tidak ada informasi yang bisa didapat.</p>'
       : fraudPlayers.map(f=>{
-          const sb=f.sb??10; const col=sb>=5?'var(--success)':'var(--primary)';
+          const sb=f.sb??5; const col=sb>=5?'var(--success)':'var(--primary)';
           return `<div class="card2 mb8" style="text-align:left"><div class="row" style="justify-content:space-between;align-items:center"><span class="b-sm c-muted">Ada seseorang di circle ini...</span><span class="d sm" style="color:${col}">SB ${sb>=5?'BANYAK':'DIKIT'}</span></div></div>`;
         }).join('');
     plainResult('👀', card.name,
@@ -3511,7 +3742,7 @@ function executeCardEffect(card, area, onDone){
 
   // ── PRESENTASI KELOMPOK ──────────────────────────────────────────────────
   if(card.name==='Presentasi Kelompok'){
-    activePlayers().forEach(p=>{ p.sb=Math.max(0,(p.sb??10)-2); if(p.sb===0) p.burnout=true; });
+    activePlayers().forEach(p=>{ p.sb=Math.max(0,(p.sb??5)-1); if(p.sb===0) p.burnout=true; });
     G.meter=Math.min(100,G.meter+15);
     fmResult(card.emoji, card.name, 15, '<p class="b-sm c-muted mt4">Semua pemain -2 SB.</p>');
     return;
@@ -3528,8 +3759,9 @@ function executeCardEffect(card, area, onDone){
   // ── BESOK UJIAN ──────────────────────────────────────────────────────────
   if(card.name==='Besok Ujian'){
     const sbCost=card.sb||4;
-    if((cur.sb??10)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
-    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+    if((cur.sb??5)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
+    cur.sb=Math.max(0,(cur.sb??5)-sbCost);
+    if(cur.sb === 0) cur.burnout = true;
     const gain=G.meter>=60?20:15;
     G.meter=Math.min(100,G.meter+gain);
     fmResult(card.emoji, card.name, gain, `<p class="b-sm c-muted mt4">-${sbCost} SB dipakai.</p>`);
@@ -3538,18 +3770,23 @@ function executeCardEffect(card, area, onDone){
 
   // ── FOKUS BELAJAR ────────────────────────────────────────────────────────
   if(card.name==='Fokus Belajar'){
-    cur.sb=Math.max(0,(cur.sb??10)-(card.sb||1));
-    cur.sb=Math.min(10,(cur.sb??10)+3);
+    const sbCost=card.sb||1;
+    if((cur.sb??5)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
+    const oldSb=cur.sb??5;
+    cur.sb=Math.max(0,oldSb-sbCost);
+    if(cur.sb === 0) cur.burnout = true;
+    cur.sb=Math.min(5,(cur.sb??0)+3);
     plainResult(card.emoji, card.name,
-      `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm mb4"><span class="c-green">+3 SB</span> dipulihkan</div><div class="b-sm c-muted">Ambil 1 kartu Ensiklopedia atau Novel dari deck Perpustakaan secara fisik.</div></div>`);
+      `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm mb4"><span style="color:var(--primary)">-${sbCost} SB</span> dipakai, <span class="c-green">+3 SB</span> dipulihkan</div><div class="b-sm c-muted">Ambil 1 kartu Ensiklopedia atau Novel dari deck Perpustakaan secara fisik.</div></div>`);
     return;
   }
 
   // ── SHARING IS CARING ────────────────────────────────────────────────────
   if(card.name==='Sharing is Caring'){
     const sbCost=card.sb||2;
-    if((cur.sb??10)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
-    cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+    if((cur.sb??5)<sbCost){ plainResult('😓',card.name,`<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`); return; }
+    cur.sb=Math.max(0,(cur.sb??5)-sbCost);
+    if(cur.sb === 0) cur.burnout = true;
     plainResult(card.emoji, card.name,
       `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Es Teh Manis dari deck Kantin secara fisik.</div><div class="b-sm mt8" style="color:var(--primary)">-${sbCost} SB dipakai</div></div>`);
     return;
@@ -3573,11 +3810,12 @@ function executeCardEffect(card, area, onDone){
   }
 
   // ── KETIDURAN DI KELAS ───────────────────────────────────────────────────
-  if(card.name==='Ketiduran di Kelas'){
-    const fmDelta=card.fm||-10;
-    G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
-    cur.sb=Math.min(10,(cur.sb??10)+1);
-    fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">+1 SB karena istirahat.</p>');
+    if(card.name==='Ketiduran di Kelas'){
+    const fmDelta = card.fm || -10;
+    G.meter = Math.max(0, Math.min(100, G.meter + fmDelta));
+    cur.sb = Math.min(5, (cur.sb ?? 5) + 1); // +1 SB, max 5
+    if(cur.sb === 0) cur.burnout = true;
+    fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">+1 SB karena tidur.</p>');
     return;
   }
 
@@ -3585,7 +3823,8 @@ function executeCardEffect(card, area, onDone){
   if(card.name==='Awas Jatoh!'){
     const fmDelta=card.fm||-10;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
-    cur.sb=Math.max(0,(cur.sb??10)-1);
+    cur.sb=Math.max(0,(cur.sb??5)-1);
+    if(cur.sb === 0) cur.burnout = true;
     fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">-1 SB karena insiden.</p>');
     return;
   }
@@ -3594,7 +3833,8 @@ function executeCardEffect(card, area, onDone){
   if(card.name==='Bisa diem gak?'){
     const fmDelta=card.fm||-10;
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
-    cur.sb=Math.max(0,(cur.sb??10)-1);
+    cur.sb=Math.max(0,(cur.sb??5)-1);
+    if(cur.sb === 0) cur.burnout = true;
     fmResult(card.emoji, card.name, fmDelta, '<p class="b-sm c-muted mt4">-1 SB untuk pemain aktif.</p>');
     return;
   }
@@ -3603,16 +3843,19 @@ function executeCardEffect(card, area, onDone){
   const sbCost=card.sb||0;
   const fmDelta=typeof card.fm==='number'?card.fm:0;
 
-  if(sbCost>0 && (cur.sb??10)<sbCost){
+  if(sbCost>0 && (cur.sb??5)<sbCost){
     plainResult('😓', card.name, `<p class="b-sm" style="color:var(--primary);margin-bottom:12px">Social Battery tidak cukup! Butuh ${sbCost} SB.</p>`);
     return;
   }
-  if(sbCost>0) cur.sb=Math.max(0,(cur.sb??10)-sbCost);
+  if(sbCost>0){
+    cur.sb=Math.max(0,(cur.sb??5)-sbCost);
+    if(cur.sb === 0) cur.burnout = true;
+  }
 
   if(fmDelta!==0){
     G.meter=Math.max(0,Math.min(100,G.meter+fmDelta));
     const sbBonus = card.name==='Nongki Ges'?3 : ['Nugas Bareng','Sesi Curhat','Traktir Seblak'].includes(card.name)?1 : 0;
-    if(sbBonus>0) activePlayers().forEach(p=>{ p.sb=Math.min(10,(p.sb??10)+sbBonus); });
+    if(sbBonus>0) activePlayers().forEach(p=>{ p.sb=Math.min(5,(p.sb??5)+sbBonus); });
     const extra = [
       sbBonus>0?`<div class="b-sm mt4 c-green">+${sbBonus} SB untuk semua pemain</div>`:'',
       sbCost>0?`<div class="b-sm mt4" style="color:var(--primary)">-${sbCost} SB dipakai</div>`:''
@@ -3626,7 +3869,7 @@ function executeCardEffect(card, area, onDone){
 }
 
 function triggerScenarioFromCard(){
-  G.scenario=pick(SCENARIOS);
+  G.scenario=pickScenario();
   G.scenarioChoice=null;
   G.scenarioFromMidPhase=true;
   renderScenario();
@@ -3691,14 +3934,47 @@ function openScannerForDraw(){
   openScanner('draw','SCAN KARTU','Arahkan ke QR code kartu yang diambil dari deck');
 }
 
+// ── DECK LOCK HELPERS ─────────────────────────────────────────────────────
+function isDeckLocked(card){
+  if(!card.loc) return false;
+  if(!G.lockedDecks) return false;
+  const unlockAt = G.lockedDecks[card.loc];
+  return unlockAt !== undefined && G.session < unlockAt;
+}
+
+function showLockedDeckPopup(card){
+  const locLabel = card.loc ? card.loc.charAt(0).toUpperCase() + card.loc.slice(1) : 'Deck';
+  const unlockAt = G.lockedDecks[card.loc];
+  const sessLeft = unlockAt - G.session;
+  const popupEl = document.createElement('div');
+  popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.92);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
+  popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);border:2px solid rgba(255,45,120,.3)">
+    <div style="font-size:56px;margin-bottom:12px">🔒</div>
+    <div class="d md mb4" style="color:var(--primary)">DECK TERKUNCI!</div>
+    <p class="b-sm c-muted mb16">Deck <strong style="color:var(--accent)">${locLabel}</strong> sedang dikunci dan tidak bisa diambil.</p>
+    <div class="card2 mb16" style="text-align:left;padding:14px">
+      <div class="lbl mb6" style="color:var(--yellow)">INFO KUNCI</div>
+      <p class="b-sm" style="color:rgba(255,255,255,.8);line-height:1.6">Deck ini terbuka kembali dalam <strong>${sessLeft} session</strong> lagi.</p>
+    </div>
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">MENGERTI →</button>
+  </div>`;
+  document.body.appendChild(popupEl);
+}
+
 function onDrawScanned(card){
   const area=$('draw-scan-area');
+
+  // ── DECK LOCK CHECK ──
+  if(isDeckLocked(card)){
+    showLockedDeckPopup(card);
+    return;
+  }
 
   // Item cards — route ke item input flow
   if(card.type==='item'){
     const cur=G.order[G.currentIdx];
     const isFraud=cur.role==='fraud';
-    const isCorrupt=card.corrupt&&isFraud;
+    const isCorrupt = isFraud;
     area.innerHTML=`<div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">${card.emoji}</div>
       <div class="d sm mb4">${card.name}</div>
       <span class="tag" style="background:rgba(59,60,200,.15);color:#8B8FFF;border:1px solid rgba(59,60,200,.3);display:inline-block;margin-bottom:8px">ITEM</span>
@@ -3754,12 +4030,14 @@ function renderPassive(){
 
 function usePassive(){
   const cur=G.order[G.currentIdx];
+  if((cur.passiveCooldown || 0) < 2) return;
   cur.passiveCooldown=0;
   const id=cur.char.id;
 
   // ── ARTIST: ambil ulang item terakhir yang dipakai ────────────────────────
   if(id==='artist'){
     const lastItem=G.lastUsedItem||null;
+    G.lastUsedItem = null;
     if(lastItem){
       // Tampilkan popup konfirmasi item yang diambil ulang
       const popupEl=document.createElement('div');
@@ -3792,7 +4070,7 @@ function usePassive(){
 
   // ── BUSY BEE: inisiasi Emergency Meeting langsung ────────────────────────
   if(id==='busybee'){
-    G.scenario=pick(SCENARIOS);
+    G.scenario=pickScenario();
     G.scenarioChoice=null;
     G.scenarioFromMidPhase=false;
     goto('s-meeting');
@@ -3913,16 +4191,38 @@ function doFashionistaTrade(targetCharId){
 // ── FM POPUP ──────────────────────────────────────────────────────────────
 let fmPopupCallback=null;
 function showFmPopup(delta, newVal, callback, reason){
+  console.log(`[FM_POPUP] showFmPopup called — delta=${delta}, newVal=${newVal}, reason=${reason?'✓':'✗'}`);
   fmPopupCallback=callback;
   const isPos=delta>0;
   const oldVal=newVal-delta;
   const clampOld=Math.max(0,Math.min(100,oldVal));
   const clampNew=Math.max(0,Math.min(100,newVal));
 
-  $('fm-popup-icon').textContent=delta===0?'😐':isPos?'🎉':'💔';
-  $('fm-popup-label').textContent=isPos?'Friendship Meter naik!':'Friendship Meter turun...';
-  $('fm-popup-delta').textContent=(isPos?'+':'')+delta+' FM';
-  $('fm-popup-delta').style.color=isPos?'var(--success)':'var(--primary)';
+  // Check if popup elements exist
+  const popupEl=$('fm-popup');
+  if(!popupEl){
+    console.error(`[FM_POPUP] ✗ ERROR: 'fm-popup' element not found in DOM!`);
+    console.error(`[FM_POPUP] Current screen:`, document.querySelector('.screen.active')?.id);
+    // Fallback: just call callback
+    if(callback) callback();
+    return;
+  }
+  console.log(`[FM_POPUP] ✓ fm-popup element found`);
+
+  const iconEl=$('fm-popup-icon');
+  const labelEl=$('fm-popup-label');
+  const deltaEl=$('fm-popup-delta');
+  const barFill=$('fm-bar-fill');
+  if(!iconEl||!labelEl||!deltaEl||!barFill){
+    console.error(`[FM_POPUP] ✗ ERROR: Missing child elements — icon:${!!iconEl}, label:${!!labelEl}, delta:${!!deltaEl}, barFill:${!!barFill}`);
+    if(callback) callback();
+    return;
+  }
+
+  iconEl.textContent=delta===0?'😐':isPos?'🎉':'💔';
+  labelEl.textContent=isPos?'Friendship Meter naik!':'Friendship Meter turun...';
+  deltaEl.textContent=(isPos?'+':'')+delta+' FM';
+  deltaEl.style.color=isPos?'var(--success)':'var(--primary)';
 
   const barColor=clampNew<=25?'var(--gradient-meter-low)':
                  clampNew<=50?'var(--gradient-meter-mid)':
@@ -3936,27 +4236,38 @@ function showFmPopup(delta, newVal, callback, reason){
   $('fm-bar-tick').style.left='calc('+clampOld+'% - 1px)';
   $('fm-bar-tick').style.display=clampOld>0&&clampOld<100?'block':'none';
 
-  const fill=$('fm-bar-fill');
-  fill.style.transition='none';
-  fill.style.background=barColor;
-  fill.style.width=clampOld+'%';
+  barFill.style.transition='none';
+  barFill.style.background=barColor;
+  barFill.style.width=clampOld+'%';
 
   // Reason box
   const reasonBox=$('fm-popup-reason');
   if(reasonBox){
     if(reason){
       $('fm-popup-reason-text').textContent=reason;
-      reasonBox.style.display='none';
+      reasonBox.style.display='block';
     } else {
       reasonBox.style.display='none';
     }
   }
 
-  $('fm-popup').style.display='flex';
+  popupEl.style.display='flex';
+  console.log(`[FM_POPUP] ✓ Popup display set to 'flex'`);
+
+  // Debug: check computed styles
+  const computed = window.getComputedStyle(popupEl);
+  console.log(`[FM_POPUP] Computed styles — z-index: ${computed.zIndex}, opacity: ${computed.opacity}, visibility: ${computed.visibility}, display: ${computed.display}`);
+  console.log(`[FM_POPUP] Popup parent:`, popupEl.parentNode?.id || popupEl.parentNode?.tagName);
+  console.log(`[FM_POPUP] Active screen:`, document.querySelector('.screen.active')?.id);
+  if(popupEl.closest('.screen')){
+    console.warn(`[FM_POPUP] ⚠ WARNING: Popup is INSIDE a screen! It should be outside all screens.`);
+  } else {
+    console.log(`[FM_POPUP] ✓ Popup is outside any screen (good)`);
+  }
 
   setTimeout(()=>{
-    fill.style.transition='width 1.2s cubic-bezier(.34,1.2,.64,1)';
-    fill.style.width=clampNew+'%';
+    barFill.style.transition='width 1.2s cubic-bezier(.34,1.2,.64,1)';
+    barFill.style.width=clampNew+'%';
     if(reason && reasonBox){
       setTimeout(()=>{ reasonBox.style.display='block'; }, 1300);
     }
@@ -4011,6 +4322,7 @@ function renderVoting(){
   $('vote-tally-label').style.display='none';
   $('vote-tally').style.display='none';
   $('btn-confirm-vote').style.display='none';
+  $('btn-confirm-vote').style.gridColumn='1 / -1';
   $('btn-undo-vote').style.display='none';
   const active=activePlayers();
   const totalVoters=active.length;
@@ -4051,7 +4363,7 @@ function toggleVote(targetId){
   Object.values(G.votes).forEach(id=>{tally[id]=(tally[id]||0)+1;});
   active.forEach(p=>{
     const el=$('vcount-'+p.char.id);
-    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'var(--pink)':'var(--muted)';}
+    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'#FF2D78':'#5A5A90';}
   });
   // Update total
   const newTotal=Object.keys(G.votes).length;
@@ -4065,10 +4377,12 @@ function toggleVote(targetId){
   // Enable confirm when all votes cast
   if(newTotal>=totalVoters){
     $('btn-confirm-vote').style.display='block';
+    $('btn-confirm-vote').style.gridColumn=$('btn-undo-vote').style.display==='block'?'1':'1 / -1';
   }
   // Show undo button if there are votes
   if(newTotal>0){
     $('btn-undo-vote').style.display='block';
+    $('btn-confirm-vote').style.gridColumn='1';
   }
 }
 
@@ -4086,7 +4400,7 @@ function undoLastVote(){
   Object.values(G.votes).forEach(id=>{tally[id]=(tally[id]||0)+1;});
   active.forEach(p=>{
     const el=$('vcount-'+p.char.id);
-    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'var(--pink)':'var(--muted)';}
+    if(el){ el.textContent=tally[p.char.id]||0; el.style.color=(tally[p.char.id]||0)>0?'#FF2D78':'#5A5A90';}
   });
 
   // Update total
@@ -4102,6 +4416,7 @@ function undoLastVote(){
   // Hide undo button if no votes left
   if(newTotal===0){
     $('btn-undo-vote').style.display='none';
+    $('btn-confirm-vote').style.gridColumn='1 / -1';
   }
 
   // Reset border highlights on all candidates
@@ -4118,32 +4433,20 @@ function undoLastVote(){
 }
 
 function confirmVote(){
-  // Tally
-  const tally={};
-  Object.values(G.votes).forEach(id=>{if(id)tally[id]=(tally[id]||0)+1;});
-  const active=activePlayers();
-  // Show tally result
-  const sorted=active.map(p=>({p,count:tally[p.char.id]||0})).sort((a,b)=>b.count-a.count);
-  $('vote-tally-label').style.display='block';
-  $('vote-tally').style.display='flex';
-  $('vote-tally').innerHTML=sorted.map(({p,count})=>`
-    <div class="card2" style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:20px">${p.char.emoji}</span>
-      <span class="b-md" style="font-weight:600;flex:1">${p.char.name}</span>
-      ${p.flagged?'<span class="tag tag-flag">⚑</span>':''}
-      <div class="d sm" style="color:${count>0?'var(--primary)':'var(--text-muted)'}">${count} vote</div>
-    </div>`).join('');
-  $('btn-confirm-vote').textContent='EKSEKUSI HASIL →';
-  $('btn-confirm-vote').onclick=executeTally;
-  // Hide undo button after confirmation
+  // Hide both buttons — vote is locked
+  $('btn-confirm-vote').style.display='none';
   $('btn-undo-vote').style.display='none';
-}
 
-function executeTally(){
+  // Directly execute elimination
   tallyVotes();
 }
 
+function executeTally(){ tallyVotes(); }
+
 function tallyVotes(){
+  // Hide undo button — votes are now final
+  $('btn-undo-vote').style.display='none';
+  $('btn-confirm-vote').style.gridColumn='1 / -1';
   const tally={};
   Object.values(G.votes).forEach(id=>{if(id) tally[id]=(tally[id]||0)+1;});
   const active=activePlayers();
@@ -4194,6 +4497,17 @@ function tallyVotes(){
   if(target.player.flagged){
     target.player.eliminated=true;
     target.player.flagged=false;
+
+    // ── CLEANUP: Hapus task yang semua participant-nya sudah eliminated ──
+    G.groupTasks = G.groupTasks.filter(gt => {
+      if(gt.completed) return true;
+      const anyAlive = gt.participants.some(id => {
+        const p = G.order.find(x => x.char.id === id);
+        return p && !p.eliminated;
+      });
+      return anyAlive;
+    });
+
     G.eliminatedPlayer=target.player;
     showElimination(target.player);
   } else {
@@ -4224,7 +4538,7 @@ function showTieBreakerPopup(tiedNames, tiedPlayers){
         <span class="tag tag-flag">${voteCount}</span>
       </div>`).join('')}
     </div>
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();nextSession()">LANJUT SESSION →</button>
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();$('btn-undo-vote').style.display='none';$('btn-confirm-vote').style.gridColumn='1 / -1';nextSession()">LANJUT SESSION →</button>
   </div>`;
   document.body.appendChild(popupEl);
 }
@@ -4245,12 +4559,41 @@ function afterElimination(){
 }
 
 function nextSession(){
+  // Jalankan semua cleanup yang biasanya ada di sessionEnd()
   G.session++;
-  const active=activePlayers();
-  if(active.length===0){checkWinLose();return;}
-  // Find next starting player — skip to first active in order
-  const firstActive=G.order.find(p=>!p.eliminated);
-  G.currentIdx=G.order.indexOf(firstActive);
+  initGroupTasks();
+
+  // Expire tasks yang sudah lewat deadline
+  G.groupTasks = G.groupTasks.filter(gt => {
+    if(gt.completed) return false;
+    if((G.session - gt.sessionStart) >= gt.deadline){
+      G.meter = Math.max(0, G.meter - 8);
+      return false;
+    }
+    return true;
+  });
+
+  // SB recovery + burnout reset
+  G.order.filter(p => !p.eliminated).forEach(p => {
+    p.sb = Math.min(5, (p.sb ?? 5) + 2);
+    p.burnout = false;
+    p.fmDoubleActive = false;
+  });
+
+  // Clear expired deck locks
+  if(G.lockedDecks){
+    Object.keys(G.lockedDecks).forEach(loc => {
+      if(G.lockedDecks[loc] <= G.session) delete G.lockedDecks[loc];
+    });
+  }
+
+  const active = activePlayers();
+  if(active.length === 0){ checkWinLose(); return; }
+
+  const firstActive = G.order.find(p => !p.eliminated);
+  G.currentIdx = G.order.indexOf(firstActive);
+  G.phaseEnded = false;
+
   if(checkWinLose()) return;
   goto('s-main');
 }
@@ -4352,6 +4695,8 @@ function restartGame(){
     inventory:{},
     itemInventory:{},
     lastUsedItem:null,
+    recentScenarios: [],
+    lockedDecks:{},
   };
   // Reset UI state
   $('btn4').classList.remove('sel');
