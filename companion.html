@@ -539,7 +539,7 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
   <div class="stack mb20">
     <button class="act-btn" id="act-task" onclick="gotoTakeTask()">
       <div class="act-icon" style="background:rgba(71,84,214,.18)">📋</div>
-      <div style="flex:1"><div class="b-md" style="font-weight:600">Take Limited Task</div><div class="b-sm c-muted" id="act-task-sub">0/3 task aktif</div></div>
+      <div style="flex:1"><div class="b-md" style="font-weight:600">Take Limited Task</div><div class="b-sm c-muted" id="act-task-sub">0/2 task aktif</div></div>
       <div style="color:var(--muted);font-size:18px">›</div>
     </button>
     <button class="act-btn" id="act-item" onclick="goto('s-item')">
@@ -608,7 +608,6 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <button class="tag tag-item" onclick="setCardFilter('item')" id="filter-item" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ITEM</button>
     <button class="tag tag-flag" onclick="setCardFilter('action')" id="filter-action" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">ACTION</button>
     <button class="tag tag-fraud" onclick="setCardFilter('special')" id="filter-special" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SPECIAL</button>
-    <button class="tag tag-elim" onclick="setCardFilter('power-up')" id="filter-powerup" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">POWER-UP</button>
   </div>
 
   <!-- location filters -->
@@ -671,7 +670,6 @@ html,body{height:100%;background:var(--bg-dark);color:var(--text-primary);font-f
     <button class="tag tag-fraud" onclick="setCardListTypeFilter('special')" id="clf-special" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">SPECIAL</button>
     <button class="tag tag-elim" onclick="setCardListTypeFilter('instant')" id="clf-instant" style="cursor:pointer;border:none;padding:8px 14px;font-size:11px">INSTANT</button>
     <button class="tag" onclick="setCardListTypeFilter('archetype')" id="clf-archetype" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">ARCHETYPE</button>
-    <button class="tag" onclick="setCardListTypeFilter('power-up')" id="clf-powerup" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--text-muted);padding:8px 14px;font-size:11px;border-radius:6px">POWER-UP</button>
   </div>
 
   <!-- location filter -->
@@ -1661,7 +1659,7 @@ function renderMain(){
 
   // Action subtitles with SB cost hint
   const curTasks=G.groupTasks?G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id)):[];
-  $('act-task-sub').textContent=`${curTasks.length}/3 task aktif`;
+  $('act-task-sub').textContent=`${curTasks.length}/2 task aktif`;
   const drawSub=$('act-draw-sub');
   if(drawSub){
     const locked=G.lockedDecks&&Object.keys(G.lockedDecks).length>0;
@@ -1697,9 +1695,18 @@ function renderMain(){
   } else {
     const banner=$('burnout-banner');
     if(banner) banner.remove();
-    ['act-task','act-item','act-powerup','act-draw'].forEach(id=>{
+    ['act-item','act-powerup','act-draw'].forEach(id=>{
       const el=$(id); if(el) el.className='act-btn';
     });
+    // Disable Take Task if already at 2/2 limit
+    const taskBtn=$('act-task');
+    if(taskBtn){
+      if(curTasks.length>=2){
+        taskBtn.className='act-btn disabled';
+      } else {
+        taskBtn.className='act-btn';
+      }
+    }
   }
 
   // Passive button
@@ -1907,11 +1914,18 @@ function assignRandomTask(){
   initGroupTasks();
   const cur=G.order[G.currentIdx];
   const active=activePlayers();
-  if(active.length<2){ renderTaskResult(null,'Butuh minimal 2 pemain untuk task!'); return; }
+  if(active.length<1){ renderTaskResult(null,'Butuh minimal 1 pemain untuk task!'); return; }
 
   // Cek apakah current player eliminated/burnout — jika ya, tidak bisa ambil task
   if(cur.eliminated||cur.burnout){
     renderTaskResult(null,'Kamu tidak bisa mengambil task saat ini!');
+    return;
+  }
+
+  // Cek apakah current player sudah 2/2 task — jika ya, tidak bisa ambil task lagi
+  const curTaskCount=G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(cur.char.id)).length;
+  if(curTaskCount>=2){
+    renderTaskResult(null,'Slot task kamu sudah penuh (2/2)!');
     return;
   }
 
@@ -1928,14 +1942,35 @@ function assignRandomTask(){
   if(pool.length===0){ renderTaskResult(null,'Semua task sedang aktif!'); return; }
   const taskDef=pick(pool);
 
-  // Current player SELALU jadi partisipan!
-  const others=active.filter(p=>p.char.id!==cur.char.id);
-  // Random 1-3 players lain (total 2-4 dengan current player)
-  const minOthers=1;
-  const maxOthers=Math.min(3,others.length);
-  const numOthers=minOthers+Math.floor(Math.random()*(maxOthers-minOthers+1));
-  const randomOthers=shuffle(others).slice(0,numOthers);
-  const participants=[cur,...randomOthers];
+  // Filter other players who already have 2/2 tasks (full)
+  const othersWithSlot=active.filter(p=>{
+    if(p.char.id===cur.char.id) return true; // current player always included
+    const pTasks=G.groupTasks.filter(gt=>gt.confirmed&&!gt.completed&&gt.participants.includes(p.char.id));
+    return pTasks.length<2;
+  });
+
+  // Determine task type: solo or group
+  let participants;
+  const SOLO_CHANCE = 0.2; // 20% chance for solo task
+
+  if(othersWithSlot.length===1){
+    // Only current player has slot → solo task
+    participants=[cur];
+  } else {
+    // Multiple players have slot
+    if(Math.random()<SOLO_CHANCE){
+      // Solo task (20% chance)
+      participants=[cur];
+    } else {
+      // Group task (80% chance) - random 2 to all available players
+      const others=othersWithSlot.filter(p=>p.char.id!==cur.char.id);
+      const minOthers=1; // min total = 2 (cur + 1 other)
+      const maxOthers=others.length; // could be 2, 3, or 4 players total
+      const numOthers=minOthers+Math.floor(Math.random()*(maxOthers-minOthers+1));
+      const randomOthers=shuffle(others).slice(0,numOthers);
+      participants=[cur,...randomOthers];
+    }
+  }
 
   // Deadline based on task weight
   const deadline=taskDef.deadline;
@@ -2332,13 +2367,7 @@ const CARDS = {
   },
 
   // ── POWER-UP CARDS (Legacy support) ─────────────────────────────────────
-  'powerup_001': { name:'Traktir Seblak', type:'power-up', emoji:'🍲', effect:'Pulihkan 10 poin Friendship Meter', fm:10 },
-  'powerup_002': { name:'Group Chat Bocor', type:'power-up', emoji:'💬', effect:'Lihat Scenario berikutnya lebih awal' },
-  'powerup_003': { name:'BEM Turun Tangan', type:'power-up', emoji:'🏫', effect:'Hapus status Flagged dari 1 pemain' },
-  'powerup_004': { name:'Nebeng Bestie', type:'power-up', emoji:'🚗', effect:'Teleport ke posisi pemain lain pilihanmu' },
-  'powerup_005': { name:'Titip Absen', type:'power-up', emoji:'📝', effect:'Tukar posisi dengan pemain lain secara instan' },
-  'powerup_006': { name:'Dosen Killer', type:'power-up', emoji:'👨‍🏫', effect:'Kunci 1 pemain selama 1 ronde, tidak bisa aksi' },
-  'powerup_007': { name:'Awas Ada Razia', type:'power-up', emoji:'🚨', effect:'Blok 1 pemain dari mengambil kartu selama 1 ronde' },
+  // REMOVED: Power-up cards are no longer used in the game
 };
 
 // Legacy alias for backward compatibility
@@ -2542,7 +2571,7 @@ function gotoCardList(){
 function setCardFilter(type){
   cardViewerFilter = type;
   // Update filter buttons
-  ['all','item','action','special','power-up'].forEach(f=>{
+  ['all','item','action','special'].forEach(f=>{
     const btn = $(`filter-${f}`);
     if(btn){
       if(f === type){
@@ -2670,7 +2699,7 @@ let cardListLocFilter = 'all';
 function setCardListTypeFilter(type){
   cardListTypeFilter = type;
   // Update filter buttons
-  ['all','item','action','special','instant','archetype','power-up'].forEach(f=>{
+  ['all','item','action','special','instant','archetype'].forEach(f=>{
     const btn = $(`clf-${f}`);
     if(btn){
       if(f === type){
@@ -2694,7 +2723,7 @@ function setCardListTypeFilter(type){
           btn.style.color = 'var(--text-primary)';
         }
       } else {
-        if(['archetype','power-up'].includes(f)){
+        if(['archetype'].includes(f)){
           btn.style.background = 'rgba(255,255,255,.05)';
           btn.style.color = 'var(--text-muted)';
         } else {
@@ -3368,6 +3397,7 @@ function scenarioConfirm(){
       console.log(`[SCENARIO] → goto('s-main')`);
       goto('s-main');
     } else {
+      // Always go to meeting after session scenario
       console.log(`[SCENARIO] → goto('s-meeting')`);
       goto('s-meeting');
     }
@@ -4472,6 +4502,7 @@ function tallyVotes(){
   if(tied.length===1){
     // NO TIE — normal elimination
     target=tied[0];
+    window._pendingVoteTarget = target;
   } else {
     // TIE DETECTED — show notice and skip to next session
     const tiedNames=tied.map(v=>v.player.char.name).join(' vs ');
@@ -4493,12 +4524,46 @@ function tallyVotes(){
 
   if(!target||!target.player){nextSession();return;}
 
-  // Normal elimination path
+  // Show vote result popup first
+  showVoteResultPopup(target);
+}
+
+function showVoteResultPopup(target){
+  const isEliminated = target.player.flagged;
+  const popupEl=document.createElement('div');
+  popupEl.style.cssText='position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
+  popupEl.innerHTML=`<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+    <div style="font-size:52px;margin-bottom:12px">${isEliminated ? '🔨' : '🚩'}</div>
+    <div class="d md mb4">${isEliminated ? 'ELIMINATED!' : 'FLAGGED!'}</div>
+    <p class="b-sm c-muted mb16"><strong style="color:var(--accent)">${target.player.char.name}</strong> ${isEliminated ? 'telah dieliminasi!' : 'sekarang ter-flag!'}</p>
+    <div class="card2 mb16" style="text-align:center;padding:14px">
+      <span style="font-size:40px">${target.player.char.emoji}</span>
+      <div class="b-sm c-muted mt4">${target.votes} vote${target.votes>1?'s':''}</div>
+    </div>
+    ${isEliminated ? `
+      <div class="card2 mb16" style="text-align:left;padding:14px">
+        <div class="lbl mb6" style="color:${target.player.role==='fraud'?'var(--success)':'var(--primary)'}">💡 HASIL</div>
+        <p class="b-sm" style="color:rgba(255,255,255,.8)">${target.player.role==='fraud'?'Fraud berhasil diungkap! Circle aman.' : 'Bukan fraud... seorang friend dieliminasi!'}</p>
+      </div>
+    ` : `
+      <div class="card2 mb16" style="text-align:left;padding:14px">
+        <div class="lbl mb6" style="color:var(--yellow)">💡 INFO</div>
+        <p class="b-sm" style="color:rgba(255,255,255,.8)">Player ter-flag. Jika voted lagi di meeting berikutnya, akan dieliminasi!</p>
+      </div>
+    `}
+    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();executeVoteResult()">LANJUT →</button>
+  </div>`;
+  document.body.appendChild(popupEl);
+}
+
+function executeVoteResult(){
+  const target = window._pendingVoteTarget;
+  if(!target || !target.player){nextSession();return;}
+
   if(target.player.flagged){
     target.player.eliminated=true;
     target.player.flagged=false;
 
-    // ── CLEANUP: Hapus task yang semua participant-nya sudah eliminated ──
     G.groupTasks = G.groupTasks.filter(gt => {
       if(gt.completed) return true;
       const anyAlive = gt.participants.some(id => {
@@ -4560,7 +4625,7 @@ function afterElimination(){
 
 function nextSession(){
   // Jalankan semua cleanup yang biasanya ada di sessionEnd()
-  G.session++;
+  // G.session++ sudah dilakukan di sessionEnd() sebelumnya
   initGroupTasks();
 
   // Expire tasks yang sudah lewat deadline
