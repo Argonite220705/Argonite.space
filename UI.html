@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend or Fraud</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .phone {
+    width: 100%;
+    max-width: 406px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* === SCREENS === */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* === HEADER === */
+  .header {
+    background: #FF5691;
+    padding-top: 30px;
+    padding-right: 18px;
+    padding-bottom: 12px;
+    padding-left: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .session-group { display: flex; flex-direction: column; gap: 2px; }
+  .session-label {
+    font-size: 11px; font-weight: 900;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  .session-num {
+    font-family: 'Bungee', sans-serif;
+    font-size: 28px; color: #fff; line-height: 1;
+  }
+  .logo-img { width: 120px; height: auto; }
+
+  @keyframes checkerboardDiagonal{
+    0%{background-position:0 0,22px 22px}
+    100%{background-position:44px 44px,66px 66px}
+  }
+
+  /* === BODY === */
+  .body {
+    background-color: #4A3FA0;
+    background-image:
+      linear-gradient(45deg, #3D3399 25%, transparent 25%, transparent 75%, #3D3399 75%),
+      linear-gradient(45deg, #3D3399 25%, transparent 25%, transparent 75%, #3D3399 75%);
+    background-size: 44px 44px;
+    background-position: 0 0, 22px 22px;
+    animation: checkerboardDiagonal 4s linear infinite;
+    padding: 14px 14px 0;
+  }
+
+  /* === FRIENDSHIP METER === */
+  .meter-wrap { margin-bottom: 0px; }
+  .meter-top {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+  }
+  .meter-label {
+    font-size: 11px; font-weight: 900; color: #fff;
+    text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  .meter-pct {
+    font-family: 'Bungee', sans-serif; font-size: 26px;
+    color: #FFD600; text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  }
+  .meter-track {
+    height: 16px;
+    background: #6B5BBF;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .meter-fill {
+    height: 100%;
+    width: 80%;
+    background: linear-gradient(90deg, #2B4BEA 0%, #FF3FA4 40%, #FF9D3E 100%);
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+  .meter-friendly {
+    font-size: 10px; font-weight: 900; color: #FFD600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: right; margin-top: 6px;
+  }
+
+  /* === SECTION HEADER === */
+  .sec-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    margin-right: 0;
+    margin-bottom: 16px;
+    margin-left: 0;
+  }
+  .sec-bar { width: 4px; height: 18px; background: #FFD600; border-radius: 2px; flex-shrink: 0; }
+  .sec-title { font-family: 'Bungee', sans-serif; font-size: 13px; color: #FFD600; letter-spacing: 0.05em; }
+
+  /* === STATUS CARD === */
+  .status-card {
+    background: #FF5691;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 4px;
+  }
+  .avatar-wrap {
+    width: 52px; height: 52px;
+    border-radius: 8px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; overflow: hidden;
+  }
+  .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .status-right { flex: 1; }
+  .status-name {
+    font-family: 'Bungee', sans-serif; font-size: 14px;
+    color: #fff; margin-bottom: 6px; letter-spacing: 0.03em;
+  }
+  .battery-row { display: flex; gap: 2px; flex-wrap: wrap; }
+  .batt { font-size: 15px; line-height: 1; }
+
+  /* === TASK CARD === */
+  .task-card {
+    background-image: url('Resources/task.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .task-header {
+    padding: 8px 12px 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .task-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 11px; color: #fff; letter-spacing: 0.05em;
+  }
+  .task-badge {
+    background: #FFD600; color: #5a3d00;
+    font-size: 9px; font-weight: 900;
+    padding: 3px 9px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .task-badge.zero { background: #555; color: #ccc; }
+  .task-body { padding: 6px 12px 12px; }
+  .chips-row { display: flex; gap: 5px; margin-bottom: 8px; }
+  .chip {
+    flex: 1; padding: 5px 0; text-align: center;
+    border-radius: 5px;
+    font-size: 9px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .chip-done { background: #2B4BEA; border: 1.5px solid #5577FF; color: #fff; }
+  .chip-todo { background: #0d0a40; border: 1.5px solid #3a3580; color: #6666aa; }
+  .chip-disabled { background: #222; border: 1.5px solid #333; color: #444; }
+  .prog-label {
+    font-size: 10px; font-weight: 900; color: #fff;
+    text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.05em;
+  }
+  .prog-label.dim { color: #555; }
+  .prog-track {
+    height: 8px; background: #0d0a40;
+    border-radius: 4px; overflow: hidden;
+    border: 1px solid #3a3580;
+  }
+  .prog-track.dim { border-color: #222; background: #111; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, #2B4BEA, #FF5691); border-radius: 3px; transition: width 0.5s ease; }
+  .prog-dot { height: 100%; width: 6px; background: #FFD600; border-radius: 3px; }
+  .task-card.disabled { opacity: 0.6; }
+
+  /* === BOTTOM SHEET (action section) === */
+  .action-section {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 14px 0 28px;
+    margin: 18px -14px 0;
+    transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+                border-radius 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Sheet expanded state */
+  .action-section.sheet-open {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 0;
+    z-index: 500;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Scrim overlay */
+  .sheet-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 400;
+    opacity: 0;
+    transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .sheet-scrim.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Sub-screen content inside sheet */
+  .sheet-content {
+    display: none;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+                opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .sheet-content.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Hide main action buttons when sheet is open */
+  .action-section.sheet-open .action-main { display: none; }
+  .action-sec-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 0px; padding: 0 14px; }
+  .action-sec-bar { width: 4px; height: 18px; background: #FFD600; border-radius: 2px; flex-shrink: 0; }
+  .action-sec-title { font-family: 'Bungee', sans-serif; font-size: 13px; color: #FFD600; letter-spacing: 0.05em; }
+
+  .action-row1 {
+    display: flex;
+    margin-bottom: 8px;
+    padding-top: 14px;
+    padding-right: 28px;
+    padding-bottom: 0px;
+    padding-left: 25px;
+    overflow: hidden;
+  }
+  .action-row1 .abtn { flex: 1; margin: 0 -14px; min-width: 0; }
+  .action-row1 .abtn:nth-child(2) { flex: 1.8; }
+
+  .action-row2 {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 14px;
+    overflow: hidden;
+  }
+  .action-row2 .abtn { flex: 1; margin: 0 -3px; min-width: 0; }
+
+  .abtn {
+    background: no-repeat center/100% 100%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    transition: transform 0.1s, filter 0.1s;
+    min-height: 80px;
+  }
+  .abtn:hover { filter: brightness(1.1); transform: scale(1.03); }
+  .abtn:active { transform: scale(0.97); filter: brightness(0.9); }
+
+  /* ═══ ACTION BUTTONS ═══ */
+  /* MAPPING FOR COMPANION:
+     .abtn-1 → Use Power-Up
+     .abtn-2 → Draw a Card
+     .abtn-3 → Passive Ability
+     .abtn-4 → Take Limited Task
+     .abtn-5 → Input Item
+  */
+  .abtn-1 { background-image: url('Resources/Button/button1.png'); min-height: 80px; }
+  .abtn-2 { background-image: url('Resources/Button/button2.png'); min-height: 80px; }
+  .abtn-3 { background-image: url('Resources/Button/button3.png'); min-height: 80px; }
+  .abtn-4 { background-image: url('Resources/Button/button4.png'); min-height: 80px; }
+  .abtn-5 { background-image: url('Resources/Button/button5.png'); min-height: 80px; }
+
+  .char-center {
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .char-silhouette { width: 70px; height: 65px; }
+
+  /* === SUB-SCREENS (inside phone, same style as main) === */
+  .sub-screen {
+    display: none;
+  }
+  .sub-screen.active { display: block; }
+
+  .sub-header {
+    background: #FF5691;
+    padding-top: 30px;
+    padding-right: 18px;
+    padding-bottom: 12px;
+    padding-left: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sub-back-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    transition: background 0.15s;
+  }
+  .sub-back-btn:hover { background: rgba(255,255,255,0.25); }
+  .sub-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .sub-body {
+    background-color: #4A3FA0;
+    background-image:
+      linear-gradient(45deg, #3D3399 25%, transparent 25%, transparent 75%, #3D3399 75%),
+      linear-gradient(45deg, #3D3399 25%, transparent 25%, transparent 75%, #3D3399 75%);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+    padding: 14px 14px 28px;
+  }
+
+  /* === POPUP / MODAL === */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,46,0.9);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .popup-overlay.active { display: flex; }
+
+  .popup-card {
+    background: #FF5691;
+    border: 2.5px solid #fff;
+    border-radius: 14px;
+    padding: 24px 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    animation: popupPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: auto;
+  }
+
+  /* Large popup for task assignment */
+  .popup-card.popup-large {
+    max-width: 360px;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* Power-up popup: pink wrapper with white border */
+  .popup-card.popup-powerup {
+    max-width: 380px;
+    padding: 0 !important;
+    background: #FF5691 !important;
+    border: 3px solid #fff !important;
+    border-radius: 18px !important;
+    animation: popupPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .popup-card.popup-powerup .popup-icon,
+  .popup-card.popup-powerup .popup-title,
+  .popup-card.popup-powerup .popup-text,
+  .popup-card.popup-powerup .popup-inner-card,
+  .popup-card.popup-powerup .popup-btn {
+    display: none !important;
+  }
+  .pu-inner { display: block !important; }
+
+  /* Power-up sections */
+  .pu-title-bar {
+    padding: 18px 20px 12px;
+    text-align: center;
+  }
+  .pu-title-bar .title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pu-dark-section {
+    background: #2a2a2a;
+    border-radius: 14px;
+    margin: 0 14px 16px;
+    padding: 22px 18px;
+    text-align: center;
+  }
+  .pu-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .pu-qr-frame {
+    width: 140px;
+    height: 140px;
+    border: 3px solid #FFD600;
+    border-radius: 14px;
+    margin: 0 auto 18px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pu-qr-frame .icon { font-size: 48px; opacity: 0.4; }
+  .pu-scan-row { display: flex; gap: 8px; align-items: center; }
+  .pu-btn-scan {
+    flex: 1;
+    padding: 14px 16px;
+    background: #FFD600;
+    color: #333;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: transform 0.1s;
+  }
+  .pu-btn-scan:active { transform: scale(0.96); }
+  .pu-btn-refresh {
+    width: 46px;
+    height: 46px;
+    border: 2px solid #FFD600;
+    border-radius: 10px;
+    background: transparent;
+    color: #FFD600;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .pu-btn-refresh:hover { transform: rotate(180deg); }
+  .pu-inv-subtitle {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .pu-empty-inv {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    padding: 10px;
+  }
+  .pu-card-grid {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .pu-card-thumb {
+    width: 80px;
+    height: 110px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 2px solid #fff;
+    position: relative;
+  }
+  .pu-card-thumb:active { transform: scale(0.93); }
+  .pu-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .pu-card-thumb .card-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.8);
+    font-size: 6px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 2px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @keyframes popupPop {
+    0% { transform: scale(0.82); opacity: 0; }
+    75% { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .popup-icon { font-size: 52px; margin-bottom: 12px; }
+  .popup-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .popup-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .popup-card .popup-text strong { color: #FFD600; }
+
+  .popup-inner-card {
+    background: rgba(0,0,0,0.15);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .popup-inner-card .lbl {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .popup-inner-card .txt {
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.4;
+  }
+
+  .popup-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: transform 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .popup-btn:active { transform: scale(0.96); }
+  .popup-btn-primary {
+    background: #FFD600;
+    color: #5a3d00;
+    border-color: #FFD600;
+  }
+  .popup-btn-secondary {
+    background: #2B4BEA;
+    color: #fff;
+    border-color: #2B4BEA;
+  }
+  .popup-btn-outline {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  /* === TASK ASSIGNMENT SCREEN === */
+  .task-header-bar {
+    background: #FF5691;
+    border-radius: 14px 14px 0 0;
+    padding: 14px 18px;
+    text-align: center;
+  }
+  .task-header-bar .title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .task-main-card {
+    background: #2a2a2a;
+    border: 3px solid #FF5691;
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    padding: 20px 18px 18px;
+    margin-bottom: 14px;
+  }
+  .task-name-big {
+    font-family: 'Bungee', sans-serif;
+    font-size: 20px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+  .task-fm-badge {
+    background: #FFD600;
+    color: #333;
+    font-family: 'Bungee', sans-serif;
+    font-size: 11px;
+    padding: 5px 16px;
+    border-radius: 6px;
+    display: inline-block;
+    margin: 0 auto 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .task-section-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .task-items-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .task-item-chip {
+    background: #2B4BEA;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 5px 14px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .task-participant-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .task-participant-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+  }
+  .task-participant-card.me {
+    background: #2B4BEA;
+  }
+  .task-participant-card.other {
+    background: #1a1a2e;
+  }
+  .task-participant-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .task-participant-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 8px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  .task-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    margin: 14px 0;
+  }
+  .task-deadline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .task-deadline-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .task-deadline-value {
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    color: #FFD600;
+  }
+
+  /* Task buttons */
+  .task-btn-accept {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: #FFD600;
+    color: #333;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: transform 0.1s;
+  }
+  .task-btn-accept:active { transform: scale(0.97); }
+
+  .task-btn-decline {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #333;
+    border: 2.5px solid #2B4BEA;
+    border-radius: 12px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: transform 0.1s;
+  }
+  .task-btn-decline:active { transform: scale(0.97); }
+
+  /* === INVENTORY / ITEM LIST === */
+  .inv-item {
+    background: #FF5691;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .inv-item:active { transform: scale(0.97); }
+  .inv-item-emoji { font-size: 32px; flex-shrink: 0; }
+  .inv-item-info { flex: 1; min-width: 0; }
+  .inv-item-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .inv-item-desc {
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inv-item-arrow { color: rgba(255,255,255,0.5); font-size: 18px; flex-shrink: 0; }
+  .inv-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+  }
+
+  /* === PASSIVE ABILITY SCREEN === */
+  .passive-icon { font-size: 60px; text-align: center; margin-bottom: 16px; }
+  .passive-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .passive-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    color: #FFD600;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .passive-card {
+    background: #FF5691;
+    border: 2.5px solid #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .passive-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .passive-desc {
+    font-size: 14px;
+    color: #fff;
+    line-height: 1.5;
+  }
+
+  /* === DRAW CARD SCREEN === */
+  .draw-center { text-align: center; }
+  .draw-icon { font-size: 60px; margin-bottom: 16px; }
+  .draw-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .draw-subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .draw-card-instructions {
+    background: #FF5691;
+    border: 2.5px solid #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .draw-instruction-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #fff;
+    line-height: 1.4;
+  }
+  .draw-instruction-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* === RESULT AREA (scan result) === */
+  .scan-result {
+    background: #FF5691;
+    border: 2.5px solid #fff;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .scan-result-icon { font-size: 48px; margin-bottom: 12px; }
+  .scan-result-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .scan-result-tag {
+    display: inline-block;
+    background: #2B4BEA;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .scan-result-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .scan-result-fm {
+    background: rgba(0,0,0,0.15);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+  }
+  .scan-result-fm.positive { color: #FFD600; }
+  .scan-result-fm.negative { color: #fff; }
+
+  /* === TRADE SELECTOR === */
+  .trade-option {
+    background: #FF5691;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .trade-option:active { transform: scale(0.97); }
+  .trade-option-emoji { font-size: 28px; flex-shrink: 0; }
+  .trade-option-info { flex: 1; }
+  .trade-option-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    color: #fff;
+  }
+  .trade-option-count {
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* === ITEM PICKER === */
+  .item-picker-option {
+    background: #FF5691;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .item-picker-option:active { transform: scale(0.97); }
+  .item-picker-emoji { font-size: 28px; }
+  .item-picker-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    color: #fff;
+  }
+
+  /* === OR TEXT === */
+  .or-divider {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin: 14px 0;
+    letter-spacing: 0.1em;
+  }
+
+  /* === TASK GROUP DISPLAY (on item screen) === */
+  .task-group-card {
+    background: #FF5691;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .task-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .task-group-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 12px;
+    color: #fff;
+  }
+  .task-group-sessions {
+    background: rgba(255,214,0,0.2);
+    color: #FFD600;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .task-group-progress-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+  }
+  .task-group-progress-bar {
+    height: 6px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .task-group-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2B4BEA, #FF5691);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .task-group-players-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+  }
+  .task-group-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .task-group-player-tag {
+    background: rgba(43,75,234,0.2);
+    color: #7B9FFF;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .task-group-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .task-group-item-done {
+    background: rgba(0,200,150,0.2);
+    color: #00C896;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .task-group-item-pending {
+    background: rgba(43,75,234,0.15);
+    color: #7B9FFF;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .task-group-item-complete {
+    background: rgba(0,200,150,0.2);
+    color: #00C896;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .task-group-warning {
+    font-size: 10px;
+    color: #FF5691;
+    font-weight: 900;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- ═══ MAIN SCREEN ═══ -->
+  <div class="screen active" id="s-main">
+    <div class="header">
+      <div class="session-group">
+        <span class="session-label">SESSION</span>
+        <span class="session-num" id="session-display">1/8</span>
+      </div>
+      <img class="logo-img" src="Resources/fof.png" alt="Friend or Fraud">
+    </div>
+
+    <div class="body">
+      <!-- FRIENDSHIP METER -->
+      <div class="meter-wrap">
+        <div class="meter-top">
+          <span class="meter-label">Friendship Meter</span>
+          <span class="meter-pct" id="fm-display">80%</span>
+        </div>
+        <div class="meter-track"><div class="meter-fill" id="fm-bar" style="width:80%"></div></div>
+        <div class="meter-friendly" id="fm-status">Friendly Environment</div>
+      </div>
+
+      <!-- STATUS -->
+      <div class="sec-hdr">
+        <div class="sec-bar"></div>
+        <span class="sec-title">Status</span>
+      </div>
+      <div class="status-card">
+        <div class="avatar-wrap" id="status-avatar">
+          <img src="Resources/icon/fashionista_icon.png" alt="">
+        </div>
+        <div class="status-right">
+          <div class="status-name" id="status-name">THE FASHIONISTA</div>
+          <div class="battery-row" id="sb-pips"></div>
+        </div>
+      </div>
+
+      <!-- LIMITED TASK -->
+      <div class="sec-hdr">
+        <div class="sec-bar"></div>
+        <span class="sec-title">Limited Task</span>
+      </div>
+      <div id="task-cards-area"></div>
+
+      <!-- ACTION SECTION -->
+      <div class="action-section">
+        <div class="action-sec-hdr">
+          <div class="action-sec-bar"></div>
+          <span class="action-sec-title">Choose an Action</span>
+        </div>
+        <div class="action-row1">
+          <div class="abtn abtn-1" onclick="gotoPowerUp()"></div>
+          <div class="abtn abtn-2" onclick="gotoDraw()"></div>
+          <div class="abtn abtn-3" onclick="gotoPassive()"></div>
+        </div>
+        <div class="action-row2">
+          <div class="abtn abtn-4" onclick="gotoTakeTask()"></div>
+          <div class="char-center">
+            <img class="char-silhouette" id="main-silhouette" src="Resources/icon/fashionista_silhouette.png" alt="">
+          </div>
+          <div class="abtn abtn-5" onclick="gotoItem()"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAKE TASK SCREEN ═══ -->
+  <div class="sub-screen" id="s-task">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">TAKE LIMITED TASK</span>
+    </div>
+    <div class="sub-body" id="task-assign-content"></div>
+  </div>
+
+  <!-- ═══ DRAW CARD SCREEN ═══ -->
+  <div class="sub-screen" id="s-draw">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">DRAW A CARD</span>
+    </div>
+    <div class="sub-body">
+      <div class="draw-center">
+        <div class="draw-icon">🃏</div>
+        <div class="draw-title">DRAW A CARD</div>
+        <div class="draw-subtitle">Ambil 1 kartu fisik dari deck, lalu scan QR code-nya</div>
+      </div>
+      <div class="draw-card-instructions">
+        <div class="draw-instruction-item">
+          <div class="draw-instruction-num">1</div>
+          <span>Ambil kartu paling atas dari deck aktif</span>
+        </div>
+        <div class="draw-instruction-item">
+          <div class="draw-instruction-num">2</div>
+          <span>Scan QR code di kartu tersebut</span>
+        </div>
+        <div class="draw-instruction-item">
+          <div class="draw-instruction-num">3</div>
+          <span>Efek kartu akan ditampilkan di sini</span>
+        </div>
+      </div>
+
+      <!-- Scan result area -->
+      <div id="draw-result-area"></div>
+
+      <div class="or-divider">— ATAU —</div>
+
+      <div id="draw-db-area"></div>
+    </div>
+  </div>
+
+  <!-- ═══ POWER-UP SCREEN ═══ -->
+  <div class="sub-screen" id="s-powerup">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">USE POWER-UP</span>
+    </div>
+    <div class="sub-body" id="powerup-body">
+      <div class="sec-hdr"><div class="sec-bar"></div><span class="sec-title">Inventory</span></div>
+      <div id="powerup-inventory"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PASSIVE ABILITY SCREEN ═══ -->
+  <div class="sub-screen" id="s-passive">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">PASSIVE ABILITY</span>
+    </div>
+    <div class="sub-body">
+      <div class="passive-icon">✨</div>
+      <div class="passive-title">PASSIVE ABILITY</div>
+      <div class="passive-name" id="passive-char-name">The Fashionista</div>
+      <div class="passive-card">
+        <div class="passive-label">EFEK PASSIVE</div>
+        <div class="passive-desc" id="passive-desc">Main Character Energy: Social Battery tidak akan berkurang saat digunakan pada session ini.</div>
+      </div>
+      <div id="passive-action-area"></div>
+    </div>
+  </div>
+
+  <!-- ═══ INPUT ITEM SCREEN ═══ -->
+  <div class="sub-screen" id="s-item">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">INPUT ITEM</span>
+    </div>
+    <div class="sub-body" id="item-body">
+      <div class="sec-hdr"><div class="sec-bar"></div><span class="sec-title">Your Items</span></div>
+      <div id="item-inventory"></div>
+
+      <div class="sec-hdr" style="margin-top:20px"><div class="sec-bar"></div><span class="sec-title">Your Group Tasks</span></div>
+      <div id="item-tasks"></div>
+    </div>
+  </div>
+
+  <!-- ═══ INVENTORY SCREEN (from Power-Up) ═══ -->
+  <div class="sub-screen" id="s-inventory">
+    <div class="sub-header">
+      <button class="sub-back-btn" onclick="back()">←</button>
+      <span class="sub-title">MY CARDS</span>
+    </div>
+    <div class="sub-body">
+      <div id="inv-header-card" style="background:#FF5691;border:2px solid #fff;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:32px" id="inv-cur-emoji">💄</span>
+        <div>
+          <div style="font-family:'Bungee',sans-serif;font-size:12px;color:#fff" id="inv-cur-name">The Fashionista</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6)" id="inv-cur-count">0 cards</div>
+        </div>
+      </div>
+      <div id="inv-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ POPUP OVERLAY ═══ -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup-card" id="popup-card"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// GAME DATA — Characters, Cards, Tasks
+// ═══════════════════════════════════════════════════════════════════════
+
+const CHARACTERS = [
+  { id:'artist',    name:'The Artist',      emoji:'🖌️', icon:'artist_icon.png',         silhouette:'artist_silhouette.png',    passive:'Atelier: Bebas ambil 1 kartu item langsung dari paling atas deck.' },
+  { id:'influencer',name:'The Influencer',  emoji:'📱', icon:'influencer_icon.png',     silhouette:'influencer_silhouette.png', passive:'Going Viral: Nilai FM yang diperoleh pada session ini ×2.' },
+  { id:'nerd',      name:'The Nerd',        emoji:'📚', icon:'nerd_icon.png',           silhouette:'nerd_silhouette.png',       passive:'Ahead of Syllabus: Dapat langsung menyelesaikan 1 side task.' },
+  { id:'fashion',   name:'The Fashionista', emoji:'💄', icon:'fashionista_icon.png',    silhouette:'fashionista_silhouette.png', passive:'Main Character Energy: SB tidak berkurang saat digunakan.' },
+  { id:'busybee',   name:'The Busy Bee',    emoji:'☕', icon:'busybee_icon.png',        silhouette:'busybee_silhouette.png',    passive:'SOS Meeting: Dapat menginisiasi Emergency Meeting langsung.' },
+  { id:'phantom',   name:'The Phantom',     emoji:'👻', icon:'phantom_icon.png',        silhouette:'phantom_silhouette.png',    passive:'Now You See Me: Main 2 phase berturut-turut.' },
+];
+
+const TASKS = [
+  { id:'t1', name:'Bikin Mural Kelas',     items:['Cat','Kuas','Kanvas'],   reward:15, deadline:3 },
+  { id:'t2', name:'Organisir Acara Kampus', items:['Speaker','Mic','Banner'], reward:20, deadline:4 },
+  { id:'t3', name:'Buka Stand Makanan',     items:['Meja','Payung','Menu'],  reward:12, deadline:3 },
+  { id:'t4', name:'Podcast Bareng',         items:['Mic','Laptop','Headset'], reward:18, deadline:4 },
+  { id:'t5', name:'Foto Studio Mini',       items:['Camera','Lighting','Backdrop'], reward:22, deadline:5 },
+];
+
+const CARD_NAMES = [
+  // Items
+  { name:'Ensiklopedia', emoji:'📚', type:'item', effect:'Item dari Perpustakaan — bisa dipakai untuk Task.' },
+  { name:'Novel',        emoji:'📖', type:'item', effect:'Item dari Perpustakaan — bisa dipakai untuk Task.' },
+  { name:'Americano',    emoji:'☕', type:'item', effect:'Item dari Cafe — bisa dipakai untuk Task.' },
+  { name:'Earl Grey Tea', emoji:'🍵', type:'item', effect:'Item dari Cafe — bisa dipakai untuk Task.' },
+  { name:'Laptop',       emoji:'💻', type:'item', effect:'Item dari Kelas — bisa dipakai untuk Task.' },
+  { name:'Buku Tulis',   emoji:'📓', type:'item', effect:'Item dari Kelas — bisa dipakai untuk Task.' },
+  { name:'Ayam Bakar',   emoji:'🍗', type:'item', effect:'Item dari Kantin — bisa dipakai untuk Task.' },
+  { name:'Es Teh Manis', emoji:'🧋', type:'item', effect:'Item dari Kantin — bisa dipakai untuk Task.' },
+  // Actions
+  { name:'Nugas Bareng', emoji:'📝', type:'action', effect:'Pulihkan 15 FM dan +1 SB untuk semua pemain.', fm:15, sbCost:0 },
+  { name:'Besok Ujian',  emoji:'📚', type:'action', effect:'Pulihkan 15-20 FM berdasarkan meter. Cost 4 SB.', fm:15, sbCost:4 },
+  { name:'Fokus Belajar', emoji:'🎯', type:'action', effect:'Pulihkan 3 SB. Ambil 1 kartu dari deck.', sbCost:1 },
+  { name:'Sesi Curhat',  emoji:'💬', type:'action', effect:'Pulihkan 15 FM dan +1 SB semua pemain.', fm:15 },
+  { name:'Sharing is Caring', emoji:'🤝', type:'action', effect:'Ambil 1 kartu dari deck. Cost 2 SB.', sbCost:2 },
+  { name:'Traktir Seblak', emoji:'🍲', type:'action', effect:'Pulihkan 10 FM dan +1 SB semua pemain.', fm:10 },
+  { name:'Nongki Ges',   emoji:'🎉', type:'action', effect:'Pulihkan 20 FM dan +3 SB semua pemain.', fm:20 },
+  { name:'Titip Absen',  emoji:'📝', type:'action', effect:'Flip coin: +15 atau -15 FM. Cost 2 SB.', fm:15, sbCost:2, flipCoin:true },
+  // Power-ups
+  { name:'Group Chat Bocor', emoji:'💬', type:'powerup', effect:'Lihat Scenario berikutnya lebih awal.' },
+  { name:'BEM Turun Tangan', emoji:'🏫', type:'powerup', effect:'Hapus status Flagged dari 1 pemain.' },
+  { name:'Nebeng Bestie',  emoji:'🚗', type:'powerup', effect:'Teleport ke posisi pemain lain.' },
+  { name:'Dosen Killer',   emoji:'👨‍', type:'powerup', effect:'Kunci 1 pemain selama 1 ronde.' },
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════════════════
+
+const G = {
+  session: 1,
+  totalSessions: 8,
+  meter: 80,
+  order: [],           // [{ char, role, sb, flagged, eliminated, ... }]
+  currentIdx: 0,
+  inventory: {},       // charId → [{ card, sessionAdded }]
+  itemInventory: {},   // charId → [{ card, sessionAdded, corrupt }]
+  groupTasks: [],
+  lastUsedItem: null,
+  detectedCards: {},
+  screenHistory: [],
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// INITIALIZATION — Setup a demo game with 6 players
+// ═══════════════════════════════════════════════════════════════════════
+
+function initGame() {
+  const shuffled = [...CHARACTERS].sort(() => Math.random() - 0.5).slice(0, 6);
+  const roles = ['fraud','friend','friend','friend','friend','friend'].sort(() => Math.random() - 0.5);
+
+  G.order = shuffled.map((ch, i) => ({
+    char: ch,
+    role: roles[i],
+    sb: 10,
+    flagged: false,
+    eliminated: false,
+    passiveCooldown: 2,
+    fmDoubleActive: false,
+    phantomExtraPhase: false,
+    burnout: false,
+  }));
+
+  G.order.forEach(p => {
+    G.inventory[p.char.id] = [];
+    G.itemInventory[p.char.id] = [];
+  });
+
+  G.session = 1;
+  G.meter = 80;
+  G.currentIdx = 0;
+  G.groupTasks = [];
+  G.lastUsedItem = null;
+  G.screenHistory = [];
+
+  initGroupTasks();
+  // NO demo task — initial state shows "No Active Task"
+  renderMainScreen();
+}
+
+function initGroupTasks() {
+  if (!G.groupTasks) G.groupTasks = [];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen, .sub-screen').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function goto(id) {
+  const cur = document.querySelector('.screen.active, .sub-screen.active');
+  if (cur) G.screenHistory.push(cur.id);
+  showScreen(id);
+  // Call render hook
+  const renderFn = window['render_' + id.replace('s-', '')];
+  if (renderFn) renderFn();
+}
+
+function back() {
+  closePopup();
+  const prev = G.screenHistory.pop();
+  if (prev) {
+    showScreen(prev);
+  } else {
+    showScreen('s-main');
+    renderMainScreen();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN SCREEN RENDER
+// ═══════════════════════════════════════════════════════════════════════
+
+function renderMainScreen() {
+  const cur = G.order[G.currentIdx];
+  if (!cur) return;
+
+  // Session
+  document.getElementById('session-display').textContent = G.session + '/' + G.totalSessions;
+
+  // Friendship Meter
+  document.getElementById('fm-display').textContent = G.meter + '%';
+  document.getElementById('fm-bar').style.width = G.meter + '%';
+  const status = G.meter <= 25 ? '✦ Hostile Environment' : G.meter <= 50 ? '✦ Neutral Environment' : G.meter <= 75 ? '✦ Friendly Environment' : '✦ Best Friends Forever';
+  document.getElementById('fm-status').textContent = status;
+
+  // Status card
+  document.getElementById('status-avatar').querySelector('img').src = 'Resources/icon/' + cur.char.icon;
+  document.getElementById('status-avatar').querySelector('img').alt = cur.char.name;
+  document.getElementById('status-name').textContent = cur.char.name.toUpperCase();
+
+  // Social Battery pips
+  const sbPips = document.getElementById('sb-pips');
+  const sb = Math.min(10, Math.max(0, cur.sb));
+  sbPips.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const span = document.createElement('span');
+    span.className = 'batt';
+    span.textContent = i < sb ? '😊' : '😞';
+    sbPips.appendChild(span);
+  }
+
+  // Silhouette
+  document.getElementById('main-silhouette').src = 'Resources/icon/' + cur.char.silhouette;
+
+  // Task cards
+  renderTaskCards();
+}
+
+function renderTaskCards() {
+  const area = document.getElementById('task-cards-area');
+  const cur = G.order[G.currentIdx];
+  const myTasks = G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id));
+
+  let html = '';
+
+  // Card 1: Active task (or placeholder)
+  if (myTasks.length > 0) {
+    const gt = myTasks[0];
+    const totalItems = gt.taskDef.items.length;
+    const allCollected = Object.values(gt.collected).flat().map(i => i.name || i);
+    const needed = [...gt.taskDef.items];
+    const got = [];
+    allCollected.forEach(it => { const i = needed.indexOf(it); if (i >= 0) { needed.splice(i, 1); got.push(it); } });
+    const progressPct = totalItems > 0 ? Math.round((got.length / totalItems) * 100) : 0;
+    const sessionsLeft = gt.deadline - (G.session - gt.sessionStart);
+
+    let chipsHtml = '';
+    gt.taskDef.items.forEach((item) => {
+      const isDone = got.includes(item);
+      chipsHtml += `<div class="chip ${isDone ? 'chip-done' : 'chip-todo'}">${item}</div>`;
+    });
+    const remaining = 4 - gt.taskDef.items.length;
+    for (let i = 0; i < remaining; i++) chipsHtml += `<div class="chip chip-disabled">—</div>`;
+
+    html += `
+      <div class="task-card">
+        <div class="task-header">
+          <span class="task-name">${gt.taskDef.name}</span>
+          <span class="task-badge">${sessionsLeft} Session Left</span>
+        </div>
+        <div class="task-body">
+          <div class="chips-row">${chipsHtml}</div>
+          <div class="prog-label">Progress: ${got.length}/${totalItems} (${progressPct}%)</div>
+          <div class="prog-track"><div class="prog-fill" style="width:${progressPct}%"></div></div>
+        </div>
+      </div>`;
+  } else {
+    html += `
+      <div class="task-card" style="opacity:0.6">
+        <div class="task-header">
+          <span class="task-name">No Active Task</span>
+          <span class="task-badge zero">0 Session Left</span>
+        </div>
+        <div class="task-body">
+          <div class="chips-row">
+            <div class="chip chip-disabled">—</div><div class="chip chip-disabled">—</div>
+            <div class="chip chip-disabled">—</div><div class="chip chip-disabled">—</div>
+          </div>
+          <div class="prog-label dim">No active group tasks</div>
+          <div class="prog-track dim"><div class="prog-dot"></div></div>
+        </div>
+      </div>`;
+  }
+
+  // Card 2: Always disabled placeholder
+  html += `
+    <div class="task-card disabled">
+      <div class="task-header">
+        <span class="task-name">No Task Available</span>
+        <span class="task-badge zero">0 Session Left</span>
+      </div>
+      <div class="task-body">
+        <div class="chips-row">
+          <div class="chip chip-disabled">Item 1</div><div class="chip chip-disabled">Item 2</div>
+          <div class="chip chip-disabled">Item 3</div><div class="chip chip-disabled">Item 4</div>
+        </div>
+        <div class="prog-label dim">Progress: 0/0 (0%)</div>
+        <div class="prog-track dim"><div class="prog-dot"></div></div>
+      </div>
+    </div>`;
+
+  area.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 1. USE POWER-UP → Popup (exactly like screenshot)
+// ═══════════════════════════════════════════════════════════════════════
+
+function gotoPowerUp() {
+  showPowerUpPopup();
+}
+
+function showPowerUpPopup() {
+  const cur = G.order[G.currentIdx];
+  const inventory = G.inventory[cur.char.id] || [];
+
+  const cardHtml = inventory.length === 0
+    ? '<div class="pu-empty-inv">Belum ada kartu di inventory</div>'
+    : inventory.map((item, idx) => `
+        <div class="pu-card-thumb" onclick="usePowerUpCard(${idx})">
+          <img src="Resources/card_database/template.png" alt="${item.card.name}">
+          <div class="card-label">${item.card.name}</div>
+        </div>
+      `).join('');
+
+  showPopup(`
+    <div class="popup-card popup-powerup">
+      <div class="pu-title-bar">
+        <div class="title">USE ACTION CARD!</div>
+      </div>
+      <div class="pu-dark-section">
+        <div class="pu-label">POINT YOUR CAMERA<br>AT YOUR CARD'S QR CODE.</div>
+        <div class="pu-qr-frame">
+          <div class="icon">📷</div>
+        </div>
+        <div class="pu-scan-row">
+          <button class="pu-btn-scan" onclick="scanQRCode()">SCAN QR CODE</button>
+          <button class="pu-btn-refresh" onclick="showPowerUpPopup()" title="Refresh">↻</button>
+        </div>
+      </div>
+      <div class="pu-title-bar" style="padding-bottom:14px">
+        <div class="title">CHOOSE FROM INVENTORY</div>
+      </div>
+      <div class="pu-dark-section" style="margin-bottom:0">
+        <div class="pu-inv-subtitle">CHOOSE ONE OF THE CARD YOU'D WISH TO USE</div>
+        <div class="pu-card-grid">
+          ${cardHtml}
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+function scanQRCode() {
+  closePopup();
+  showPopup(`
+    <div class="popup-icon">📷</div>
+    <div class="popup-title">SCAN QR CODE</div>
+    <div class="popup-text">Arahkan kamera ke QR code kartu.</div>
+    <button class="popup-btn popup-btn-outline" onclick="closePopup()">BATAL</button>
+  `);
+}
+
+function usePowerUpCard(idx) {
+  const cur = G.order[G.currentIdx];
+  const inventory = G.inventory[cur.char.id] || [];
+  if (idx < 0 || idx >= inventory.length) return;
+  const card = inventory[idx].card;
+
+  showPopup(`
+    <div class="popup-icon">${card.emoji}</div>
+    <div class="popup-title">${card.name}</div>
+    <div class="popup-inner-card">
+      <div class="lbl">EFEK</div>
+      <div class="txt">${card.effect}</div>
+    </div>
+    <button class="popup-btn popup-btn-primary" onclick="confirmUsePowerUp(${idx})">GUNAKAN ✓</button>
+    <button class="popup-btn popup-btn-outline" onclick="closePopup();showPowerUpPopup()">BATAL</button>
+  `);
+}
+
+function confirmUsePowerUp(idx) {
+  const cur = G.order[G.currentIdx];
+  const inventory = G.inventory[cur.char.id] || [];
+  if (idx < 0 || idx >= inventory.length) return;
+  const card = inventory[idx].card;
+
+  // Remove from inventory
+  G.inventory[cur.char.id].splice(idx, 1);
+  closePopup();
+
+  // Execute card effect
+  executeCardEffect(card);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 2. DRAW CARD → Draw Card Screen
+// ═══════════════════════════════════════════════════════════════════════
+
+function gotoDraw() {
+  goto('s-draw');
+  document.getElementById('draw-result-area').innerHTML = '';
+  renderDrawDB();
+}
+
+function renderDrawDB() {
+  const area = document.getElementById('draw-db-area');
+  area.innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-family:'Bungee',sans-serif;font-size:12px;color:#FFD600;margin-bottom:4px">DATABASE KARTU</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5)">Pilih kartu untuk menambahkannya ke inventory</div>
+    </div>
+    ${CARD_NAMES.map((c, i) => `
+      <div class="inv-item" onclick="drawCardFromDB(${i})">
+        <div class="inv-item-emoji">${c.emoji}</div>
+        <div class="inv-item-info">
+          <div class="inv-item-name">${c.name}</div>
+          <div class="inv-item-desc">${c.type.toUpperCase()} — ${c.effect}</div>
+        </div>
+        <div class="inv-item-arrow">›</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function drawCardFromDB(idx) {
+  const cardDef = CARD_NAMES[idx];
+  const card = { ...cardDef };
+  const cur = G.order[G.currentIdx];
+
+  if (card.type === 'item') {
+    // Item → go to item screen flow
+    showPopup(`
+      <div class="popup-icon">${card.emoji}</div>
+      <div class="popup-title">${card.name}</div>
+      <div class="popup-inner-card">
+        <div class="lbl">EFEK</div>
+        <div class="txt">${card.effect}</div>
+      </div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();inputItem('${card.name}',false)">INPUT ITEM INI ✓</button>
+      <button class="popup-btn popup-btn-outline" onclick="closePopup()">BATAL</button>
+    `);
+  } else if (card.type === 'action' || card.type === 'powerup') {
+    // Action/Power-up → add to inventory
+    if (!G.inventory[cur.char.id]) G.inventory[cur.char.id] = [];
+    G.inventory[cur.char.id].push({ card, sessionAdded: G.session });
+
+    showPopup(`
+      <div class="popup-icon">✅</div>
+      <div class="popup-title">Kartu Disimpan!</div>
+      <div style="font-size:42px;margin-bottom:8px">${card.emoji}</div>
+      <div class="popup-title" style="font-size:14px">${card.name}</div>
+      <div class="popup-inner-card" style="margin-top:12px">
+        <div class="lbl">EFEK</div>
+        <div class="txt">${card.effect}</div>
+      </div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+    `);
+  } else {
+    // Other types → execute effect
+    executeCardEffect(card);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 3. PASSIVE ABILITY → Passive Screen
+// ═══════════════════════════════════════════════════════════════════════
+
+function gotoPassive() {
+  goto('s-passive');
+  renderPassiveScreen();
+}
+
+function renderPassiveScreen() {
+  const cur = G.order[G.currentIdx];
+  document.getElementById('passive-char-name').textContent = cur.char.name;
+  document.getElementById('passive-desc').textContent = cur.char.passive;
+
+  const area = document.getElementById('passive-action-area');
+  area.innerHTML = `
+    <button class="popup-btn popup-btn-primary" onclick="usePassive()" style="font-size:14px">AKTIFKAN PASSIVE ✓</button>
+    <button class="popup-btn popup-btn-outline" onclick="back()" style="font-size:14px">KEMBALI</button>
+  `;
+}
+
+function usePassive() {
+  const cur = G.order[G.currentIdx];
+  const id = cur.char.id;
+  cur.passiveCooldown = 0;
+
+  // ── ARTIST ──
+  if (id === 'artist') {
+    const lastItem = G.lastUsedItem || null;
+    if (lastItem) {
+      showPopup(`
+        <div class="popup-icon">🖌️</div>
+        <div class="popup-title">ATELIER</div>
+        <div class="popup-text">Kamu mengambil ulang item terakhir dari deck aktif.</div>
+        <div class="popup-inner-card">
+          <div style="font-family:'Bungee',sans-serif;font-size:14px;color:#fff;text-align:center">${lastItem}</div>
+        </div>
+        <button class="popup-btn popup-btn-primary" onclick="closePopup();inputItem('${lastItem}',false)">AMBIL ITEM ✓</button>
+        <button class="popup-btn popup-btn-outline" onclick="closePopup();back()">TUTUP</button>
+      `);
+    } else {
+      showPopup(`
+        <div class="popup-icon">🖌️</div>
+        <div class="popup-title">ATELIER</div>
+        <div class="popup-text">Belum ada item yang pernah digunakan di game ini.</div>
+        <button class="popup-btn popup-btn-outline" onclick="closePopup();back()">TUTUP</button>
+      `);
+    }
+    return;
+  }
+
+  // ── FASHIONISTA: trade 1 card ──
+  if (id === 'fashion') {
+    const others = G.order.filter(p => !p.eliminated && p.char.id !== cur.char.id);
+    const curInv = G.inventory[cur.char.id] || [];
+    if (curInv.length === 0 || others.length === 0) {
+      showPopup(`
+        <div class="popup-icon">💄</div>
+        <div class="popup-title">MAIN CHARACTER ENERGY</div>
+        <div class="popup-text">${curInv.length === 0 ? 'Kamu tidak punya kartu di inventory untuk di-trade.' : 'Tidak ada pemain lain yang bisa diajak trade.'}</div>
+        <button class="popup-btn popup-btn-outline" onclick="closePopup();back()">TUTUP</button>
+      `);
+      return;
+    }
+    const tradeOptions = others.map(p => `
+      <div class="trade-option" onclick="doFashionistaTrade('${p.char.id}')">
+        <div class="trade-option-emoji">${p.char.emoji}</div>
+        <div class="trade-option-info">
+          <div class="trade-option-name">${p.char.name}</div>
+          <div class="trade-option-count">${(G.inventory[p.char.id]||[]).length} kartu</div>
+        </div>
+      </div>
+    `).join('');
+
+    showPopup(`
+      <div class="popup-icon">💄</div>
+      <div class="popup-title">TRADE KARTU</div>
+      <div class="popup-text">Pilih pemain untuk diajak trade 1 kartu.</div>
+      ${tradeOptions}
+      <button class="popup-btn popup-btn-outline" onclick="closePopup();back()" style="margin-top:8px">BATAL</button>
+    `);
+    return;
+  }
+
+  // ── NERD: pick item ──
+  if (id === 'nerd') {
+    const itemChoices = [
+      { name:'Ensiklopedia', emoji:'📚' },
+      { name:'Novel', emoji:'📖' },
+    ];
+    const options = itemChoices.map(item => `
+      <div class="item-picker-option" onclick="closePopup();inputItem('${item.name}',false)">
+        <div class="item-picker-emoji">${item.emoji}</div>
+        <div class="item-picker-name">${item.name}</div>
+      </div>
+    `).join('');
+
+    showPopup(`
+      <div class="popup-icon">📚</div>
+      <div class="popup-title">AHEAD OF SYLLABUS</div>
+      <div class="popup-text">Pilih item yang mau diambil.</div>
+      ${options}
+      <button class="popup-btn popup-btn-outline" onclick="closePopup();back()" style="margin-top:8px">BATAL</button>
+    `);
+    return;
+  }
+
+  // ── INFLUENCER: FM double ──
+  if (id === 'influencer') {
+    cur.fmDoubleActive = true;
+    showPopup(`
+      <div class="popup-icon">📱</div>
+      <div class="popup-title">GOING VIRAL</div>
+      <div class="popup-text">Semua FM gain kamu di session ini akan <strong>2×</strong>!</div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">AKTIFKAN ✓</button>
+    `);
+    return;
+  }
+
+  // ── PHANTOM: extra phase ──
+  if (id === 'phantom') {
+    cur.phantomExtraPhase = true;
+    showPopup(`
+      <div class="popup-icon">👻</div>
+      <div class="popup-title">NOW YOU SEE ME</div>
+      <div class="popup-text">Kamu akan main 2 phase berturut-turut!</div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">AKTIFKAN ✓</button>
+    `);
+    return;
+  }
+
+  // ── BUSY BEE: emergency meeting ──
+  if (id === 'busybee') {
+    showPopup(`
+      <div class="popup-icon">☕</div>
+      <div class="popup-title">SOS MEETING</div>
+      <div class="popup-text">Emergency Meeting dimulai! (Demo: langsung ke session berikutnya)</div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();nextSession()">LANJUT SESSION →</button>
+    `);
+    return;
+  }
+
+  // Default
+  back();
+}
+
+function doFashionistaTrade(targetCharId) {
+  const cur = G.order[G.currentIdx];
+  const target = G.order.find(p => p.char.id === targetCharId);
+  if (!target) { closePopup(); back(); return; }
+
+  const curInv = G.inventory[cur.char.id] || [];
+  const tarInv = G.inventory[targetCharId] || [];
+
+  if (curInv.length === 0) { closePopup(); back(); return; }
+
+  const curCard = curInv[0];
+  const tarCard = tarInv[0] || null;
+
+  G.inventory[cur.char.id] = curInv.slice(1);
+  if (tarCard) {
+    G.inventory[targetCharId] = tarInv.slice(1);
+    G.inventory[cur.char.id].push(tarCard);
+    G.inventory[targetCharId].push(curCard);
+  } else {
+    G.inventory[targetCharId] = [curCard];
+  }
+
+  closePopup();
+  showPopup(`
+    <div class="popup-icon">🤝</div>
+    <div class="popup-title">TRADE BERHASIL!</div>
+    <div class="popup-text">${cur.char.name} menukar kartu dengan ${target.char.name}.</div>
+    <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 4. TAKE LIMITED TASK → Task Assignment Screen
+// ═══════════════════════════════════════════════════════════════════════
+
+function gotoTakeTask() {
+  initGroupTasks();
+  assignRandomTask();
+}
+
+function showTaskPopup(gt, errMsg) {
+  if (errMsg) {
+    showPopup(`
+      <div class="popup-icon">⚠️</div>
+      <div class="popup-title">GAGAL</div>
+      <div class="popup-text">${errMsg}</div>
+      <button class="popup-btn popup-btn-outline" onclick="closePopup()">TUTUP</button>
+    `);
+    return;
+  }
+
+  const cur = G.order[G.currentIdx];
+  const participantsHtml = gt.participants.map((id) => {
+    const p = G.order.find(x => x.char.id === id);
+    if (!p) return '';
+    const isMe = p.char.id === cur.char.id;
+    return `
+      <div class="task-participant-card ${isMe ? 'me' : 'other'}">
+        <div class="task-participant-icon">${p.char.emoji}</div>
+        <div class="task-participant-name">${p.char.name}</div>
+      </div>`;
+  }).join('');
+
+  const itemsHtml = gt.taskDef.items.map(item =>
+    `<span class="task-item-chip">${item}</span>`
+  ).join('');
+
+  showPopup(`
+    <div class="popup-card popup-large">
+      <div class="task-header-bar">
+        <div class="title">TAKE A LIMITED TASK!</div>
+      </div>
+      <div class="task-main-card">
+        <div class="task-name-big">${gt.taskDef.name}</div>
+        <div class="task-fm-badge">+${gt.taskDef.reward} FRIENDSHIP METER</div>
+
+        <div class="task-section-label">ITEM REQUIRED:</div>
+        <div class="task-items-row">${itemsHtml}</div>
+
+        <div class="task-section-label">PARTICIPANT:</div>
+        <div class="task-participant-grid">${participantsHtml}</div>
+
+        <hr class="task-divider">
+
+        <div class="task-deadline-row">
+          <span class="task-deadline-label">DEADLINE</span>
+          <span class="task-deadline-value">${gt.deadline} SESSION</span>
+        </div>
+      </div>
+
+      <button class="task-btn-accept" onclick="confirmTaskPopup()">ACCEPT TASK</button>
+      <button class="task-btn-decline" onclick="declineTaskPopup()">DECLINE TASK</button>
+    </div>
+  `);
+}
+
+function confirmTaskPopup() {
+  const cur = G.order[G.currentIdx];
+  const pendingTasks = G.groupTasks.filter(gt => !gt.completed && !gt.confirmed && gt.participants.includes(cur.char.id));
+  pendingTasks.forEach(gt => { gt.confirmed = true; });
+  closePopup();
+  renderMainScreen();
+}
+
+function declineTaskPopup() {
+  const cur = G.order[G.currentIdx];
+  G.groupTasks = G.groupTasks.filter(gt => gt.confirmed || !gt.participants.includes(cur.char.id));
+  closePopup();
+}
+
+function assignRandomTask() {
+  initGroupTasks();
+  const cur = G.order[G.currentIdx];
+  const active = G.order.filter(p => !p.eliminated);
+
+  if (active.length < 2) {
+    showTaskPopup(null, 'Butuh minimal 2 pemain untuk task!');
+    return;
+  }
+
+  if (cur.eliminated || cur.burnout) {
+    showTaskPopup(null, 'Kamu tidak bisa mengambil task saat ini!');
+    return;
+  }
+
+  // Check if already has pending task
+  const existingPending = G.groupTasks.find(gt => !gt.completed && !gt.confirmed && gt.participants.includes(cur.char.id));
+  if (existingPending) {
+    showTaskPopup(existingPending, null);
+    return;
+  }
+
+  // Pick random task
+  const activeTIds = G.groupTasks.filter(t => t.confirmed).map(t => t.taskDef.id);
+  const pool = TASKS.filter(t => !activeTIds.includes(t.id));
+  if (pool.length === 0) {
+    showTaskPopup(null, 'Semua task sedang aktif!');
+    return;
+  }
+  const taskDef = pool[Math.floor(Math.random() * pool.length)];
+
+  const others = active.filter(p => p.char.id !== cur.char.id);
+  const numOthers = 1 + Math.floor(Math.random() * Math.min(3, others.length));
+  const shuffled = [...others].sort(() => Math.random() - 0.5);
+  const participants = [cur, ...shuffled.slice(0, numOthers)];
+
+  const gt = {
+    taskDef,
+    participants: participants.map(p => p.char.id),
+    collected: {},
+    sessionStart: G.session,
+    deadline: taskDef.deadline,
+    completed: false,
+    confirmed: false,
+  };
+  participants.forEach(p => { gt.collected[p.char.id] = []; });
+  G.groupTasks.push(gt);
+
+  showTaskPopup(gt, null);
+}
+
+function renderTaskResult(gt, errMsg) {
+  const el = document.getElementById('task-assign-content');
+  if (errMsg) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:30px 20px">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <div style="font-family:'Bungee',sans-serif;font-size:18px;color:#fff;margin-bottom:8px">GAGAL</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:24px">${errMsg}</div>
+        <button class="popup-btn popup-btn-outline" onclick="back()" style="max-width:200px;margin:0 auto">KEMBALI</button>
+      </div>`;
+    return;
+  }
+
+  const cur = G.order[G.currentIdx];
+  const participantsHtml = gt.participants.map((id, idx) => {
+    const p = G.order.find(x => x.char.id === id);
+    if (!p) return '';
+    const isMe = p.char.id === cur.char.id;
+    return `
+      <div class="task-participant-card ${isMe ? 'me' : 'other'}">
+        <div class="task-participant-icon">${p.char.emoji}</div>
+        <div class="task-participant-name">${p.char.name}</div>
+      </div>`;
+  }).join('');
+
+  const itemsHtml = gt.taskDef.items.map(item =>
+    `<span class="task-item-chip">${item}</span>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="task-header-bar">
+      <div class="title">TAKE A LIMITED TASK!</div>
+    </div>
+    <div class="task-main-card">
+      <div class="task-name-big">${gt.taskDef.name}</div>
+      <div class="task-fm-badge">+${gt.taskDef.reward} FRIENDSHIP METER</div>
+
+      <div class="task-section-label">ITEM REQUIRED:</div>
+      <div class="task-items-row">${itemsHtml}</div>
+
+      <div class="task-section-label">PARTICIPANT:</div>
+      <div class="task-participant-grid">${participantsHtml}</div>
+
+      <hr class="task-divider">
+
+      <div class="task-deadline-row">
+        <span class="task-deadline-label">DEADLINE</span>
+        <span class="task-deadline-value">${gt.deadline} SESSION</span>
+      </div>
+    </div>
+
+    <button class="task-btn-accept" onclick="confirmTask()">ACCEPT TASK</button>
+    <button class="task-btn-decline" onclick="declineTask()">DECLINE TASK</button>
+  `;
+}
+
+function confirmTask() {
+  const cur = G.order[G.currentIdx];
+  const pendingTasks = G.groupTasks.filter(gt => !gt.completed && !gt.confirmed && gt.participants.includes(cur.char.id));
+  pendingTasks.forEach(gt => { gt.confirmed = true; });
+  back();
+  renderMainScreen();
+}
+
+function declineTask() {
+  // Remove the unconfirmed task
+  const cur = G.order[G.currentIdx];
+  G.groupTasks = G.groupTasks.filter(gt => gt.confirmed || !gt.participants.includes(cur.char.id));
+  back();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 5. INPUT ITEM → Item Screen
+// ═══════════════════════════════════════════════════════════════════════
+
+function gotoItem() {
+  goto('s-item');
+  renderItemScreen();
+}
+
+function renderItemScreen() {
+  const cur = G.order[G.currentIdx];
+  initGroupTasks();
+
+  // Render item inventory
+  const itemInv = G.itemInventory[cur.char.id] || [];
+  const list = document.getElementById('item-inventory');
+
+  if (itemInv.length === 0) {
+    list.innerHTML = '<div class="inv-empty">Tidak ada item di inventory.<br>Draw item card untuk menambahkannya.</div>';
+  } else {
+    list.innerHTML = itemInv.map((item, idx) => `
+      <div class="inv-item" onclick="useItemFromInventory(${idx})">
+        <div class="inv-item-emoji">${item.card.emoji}</div>
+        <div class="inv-item-info">
+          <div class="inv-item-name">${item.card.name}</div>
+          <div class="inv-item-desc">${item.card.effect}</div>
+        </div>
+        <div class="inv-item-arrow">›</div>
+      </div>
+    `).join('');
+  }
+
+  // Render group tasks
+  const myTasks = G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id));
+  const tasksArea = document.getElementById('item-tasks');
+
+  if (myTasks.length === 0) {
+    tasksArea.innerHTML = '<div class="inv-empty" style="margin-top:10px">Kamu tidak punya group task aktif.</div>';
+  } else {
+    tasksArea.innerHTML = myTasks.map(gt => {
+      const allNeeded = gt.taskDef.items;
+      const allCollected = Object.values(gt.collected).flat();
+      const needed = [...allNeeded];
+      const got = [];
+      allCollected.forEach(it => { const i = needed.indexOf(it.name || it); if (i >= 0) { needed.splice(i, 1); got.push(it); } });
+      const progressPct = allNeeded.length > 0 ? Math.round((got.length / allNeeded.length) * 100) : 0;
+      const sessLeft = gt.deadline - (G.session - gt.sessionStart);
+      const participantNames = gt.participants.map(id => {
+        const p = G.order.find(x => x.char.id === id);
+        return p ? `${p.char.emoji} ${p.char.name}` : '?';
+      });
+
+      return `
+        <div class="task-group-card">
+          <div class="task-group-header">
+            <div class="task-group-name">${gt.taskDef.name}</div>
+            <span class="task-group-sessions">${sessLeft}s lagi</span>
+          </div>
+          <div class="task-group-progress-label">Progress: ${got.length}/${allNeeded.length} items (${progressPct}%)</div>
+          <div class="task-group-progress-bar"><div class="task-group-progress-fill" style="width:${progressPct}%"></div></div>
+          <div class="task-group-players-label">PEMAIN TERLIBAT</div>
+          <div class="task-group-players">
+            ${participantNames.map(name => `<span class="task-group-player-tag">${name}</span>`).join('')}
+          </div>
+          <div class="task-group-items">
+            ${got.map(it => `<span class="task-group-item-done">✓ ${it.name||it}</span>`).join('')}
+            ${needed.map(it => `<span class="task-group-item-pending">⌛ ${it}</span>`).join('')}
+            ${needed.length === 0 && got.length > 0 ? '<span class="task-group-item-complete">✓ COMPLETE</span>' : ''}
+          </div>
+          ${sessLeft <= 2 ? '<div class="task-group-warning">⚠️ Deadline mendekat!</div>' : ''}
+        </div>`;
+    }).join('');
+  }
+}
+
+function useItemFromInventory(idx) {
+  const cur = G.order[G.currentIdx];
+  const itemInv = G.itemInventory[cur.char.id] || [];
+  if (idx < 0 || idx >= itemInv.length) return;
+  const card = itemInv[idx].card;
+
+  showPopup(`
+    <div class="popup-icon">${card.emoji}</div>
+    <div class="popup-title">${card.name}</div>
+    <div class="popup-inner-card">
+      <div class="lbl">EFEK</div>
+      <div class="txt">${card.effect}</div>
+    </div>
+    <button class="popup-btn popup-btn-primary" onclick="confirmUseItem(${idx})">INPUT ITEM INI ✓</button>
+    <button class="popup-btn popup-btn-outline" onclick="closePopup()">BATAL</button>
+  `);
+}
+
+function confirmUseItem(idx) {
+  const cur = G.order[G.currentIdx];
+  const itemInv = G.itemInventory[cur.char.id] || [];
+  if (idx < 0 || idx >= itemInv.length) return;
+  const card = itemInv[idx].card;
+
+  G.itemInventory[cur.char.id].splice(idx, 1);
+  closePopup();
+  inputItem(card.name, false);
+  renderItemScreen();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ITEM INPUT ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+
+function inputItem(itemName, isCorrupt) {
+  const cur = G.order[G.currentIdx];
+  let meterDelta = 0;
+  let itemUsedInTask = false;
+
+  if (!isCorrupt) G.lastUsedItem = itemName;
+
+  initGroupTasks();
+  G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id)).forEach(gt => {
+    const allNeeded = gt.taskDef.items;
+    const allCollected = Object.values(gt.collected).flat().map(i => i.name || i);
+    const stillNeeded = [...allNeeded];
+    allCollected.forEach(it => { const i = stillNeeded.indexOf(it); if (i >= 0) stillNeeded.splice(i, 1); });
+    if (!stillNeeded.includes(itemName)) return;
+
+    if (!gt.collected[cur.char.id]) gt.collected[cur.char.id] = [];
+    gt.collected[cur.char.id].push({ name: itemName, corrupt: isCorrupt, by: cur.char.id });
+    itemUsedInTask = true;
+
+    const validCollected = Object.values(gt.collected).flat().filter(i => !i.corrupt).map(i => i.name || i);
+    const checkNeeded = [...allNeeded];
+    validCollected.forEach(it => { const i = checkNeeded.indexOf(it); if (i >= 0) checkNeeded.splice(i, 1); });
+
+    if (checkNeeded.length === 0) {
+      gt.completed = true;
+      const reward = cur.fmDoubleActive ? gt.taskDef.reward * 2 : gt.taskDef.reward;
+      meterDelta += reward;
+    }
+  });
+
+  if (!itemUsedInTask) {
+    showPopup(`
+      <div class="popup-icon">⚠️</div>
+      <div class="popup-title">ITEM TIDAK DIGUNAKAN</div>
+      <div class="popup-text">Tidak ada Group Task aktif yang membutuhkan <strong>${itemName}</strong> untuk pemain ini.</div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">MENGERTI →</button>
+    `);
+    return;
+  }
+
+  if (meterDelta !== 0) {
+    G.meter = Math.max(0, Math.min(100, G.meter + meterDelta));
+    showFmPopupResult(meterDelta);
+  } else {
+    back();
+    renderMainScreen();
+  }
+}
+
+function showFmPopupResult(delta) {
+  const isPos = delta > 0;
+  showPopup(`
+    <div class="popup-icon">${isPos ? '🎉' : '💔'}</div>
+    <div class="popup-title">${isPos ? 'Friendship Meter naik!' : 'Friendship Meter turun...'}</div>
+    <div class="scan-result-fm ${isPos ? 'positive' : 'negative'}" style="font-size:24px;padding:16px;margin-bottom:16px">
+      ${isPos ? '+' : ''}${delta} FM
+    </div>
+    <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CARD EFFECT ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+
+function executeCardEffect(card) {
+  const cur = G.order[G.currentIdx];
+  const sbCost = card.sbCost || 0;
+  const fmDelta = typeof card.fm === 'number' ? card.fm : 0;
+
+  // Check SB cost
+  if (sbCost > 0 && cur.sb < sbCost) {
+    showPopup(`
+      <div class="popup-icon">😓</div>
+      <div class="popup-title">${card.name}</div>
+      <div class="popup-text">Social Battery tidak cukup! Butuh ${sbCost} SB.</div>
+      <button class="popup-btn popup-btn-outline" onclick="closePopup();back()">TUTUP</button>
+    `);
+    return;
+  }
+
+  // Apply SB cost
+  if (sbCost > 0) cur.sb = Math.max(0, cur.sb - sbCost);
+
+  // Flip Coin
+  if (card.flipCoin) {
+    const heads = Math.random() < 0.5;
+    const delta = heads ? fmDelta : -fmDelta;
+    G.meter = Math.max(0, Math.min(100, G.meter + delta));
+    showPopup(`
+      <div class="popup-icon">${heads ? '😄' : '😬'}</div>
+      <div class="popup-title">${card.name}</div>
+      <div class="scan-result-fm ${heads ? 'positive' : 'negative'}" style="font-size:22px;padding:14px;margin-bottom:14px">
+        ${heads ? '👑 HEADS' : '💀 TAILS'}<br>${heads ? '+' : ''}${delta} FM
+      </div>
+      <div class="popup-text">${heads ? 'Keberuntungan berpihak padamu!' : 'Nasib berkata lain...'}</div>
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+    `);
+    return;
+  }
+
+  // Apply FM
+  if (fmDelta !== 0) {
+    G.meter = Math.max(0, Math.min(100, G.meter + fmDelta));
+
+    // Nongki Ges: +3 SB all
+    const sbBonus = card.name === 'Nongki Ges' ? 3 : ['Nugas Bareng','Sesi Curhat','Traktir Seblak'].includes(card.name) ? 1 : 0;
+    if (sbBonus > 0) G.order.filter(p => !p.eliminated).forEach(p => { p.sb = Math.min(10, p.sb + sbBonus); });
+
+    showPopup(`
+      <div class="popup-icon">${card.emoji}</div>
+      <div class="popup-title">${card.name}</div>
+      <div class="popup-inner-card">
+        <div class="lbl">EFEK</div>
+        <div class="txt">${card.effect}</div>
+      </div>
+      <div class="scan-result-fm ${fmDelta > 0 ? 'positive' : 'negative'}" style="font-size:20px;padding:12px;margin-bottom:14px">
+        ${fmDelta > 0 ? '+' : ''}${fmDelta} FM
+      </div>
+      ${sbBonus > 0 ? '<div style="font-size:12px;color:#00C896;margin-bottom:14px;font-weight:900">+${sbBonus} SB untuk semua pemain</div>' : ''}
+      ${sbCost > 0 ? '<div style="font-size:12px;color:#FF5691;margin-bottom:14px;font-weight:900">-' + sbCost + ' SB dipakai</div>' : ''}
+      <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+    `);
+    return;
+  }
+
+  // No FM, no special — just show effect
+  showPopup(`
+    <div class="popup-icon">${card.emoji}</div>
+    <div class="popup-title">${card.name}</div>
+    <div class="popup-inner-card">
+      <div class="lbl">EFEK</div>
+      <div class="txt">${card.effect || 'Tidak ada efek otomatis.'}</div>
+    </div>
+    <button class="popup-btn popup-btn-primary" onclick="closePopup();back()">LANJUT →</button>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NEXT SESSION
+// ═══════════════════════════════════════════════════════════════════════
+
+function nextSession() {
+  G.session++;
+  if (G.session > G.totalSessions) {
+    showEndGame('fraud');
+    return;
+  }
+
+  // SB recovery
+  G.order.filter(p => !p.eliminated).forEach(p => {
+    p.sb = Math.min(10, p.sb + 3);
+    p.burnout = false;
+    p.fmDoubleActive = false;
+  });
+
+  // Find next active player
+  const firstActive = G.order.find(p => !p.eliminated);
+  if (!firstActive) { showEndGame('fraud'); return; }
+  G.currentIdx = G.order.indexOf(firstActive);
+
+  renderMainScreen();
+}
+
+function showEndGame(winner) {
+  const isFraudWin = winner === 'fraud';
+  showPopup(`
+    <div class="popup-icon">${isFraudWin ? '😈' : '🎉'}</div>
+    <div class="popup-title">${isFraudWin ? 'FRAUD MENANG!' : 'FRIEND MENANG!'}</div>
+    <div class="popup-text">${isFraudWin ? 'Friendship Meter menyentuh 0 atau Fraud bertahan hingga akhir.' : 'Semua Fraud berhasil diungkap. Circle aman!'}</div>
+    <div class="popup-inner-card">
+      <div class="lbl">FINAL SCORE</div>
+      <div class="txt" style="font-family:'Bungee',sans-serif;font-size:20px;text-align:center;color:#FFD600">FM: ${G.meter} | Session: ${G.session}/${G.totalSessions}</div>
+    </div>
+    <button class="popup-btn popup-btn-primary" onclick="closePopup();initGame()">MAIN LAGI 🔄</button>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// POPUP SYSTEM
+// ═══════════════════════════════════════════════════════════════════════
+
+function showPopup(html) {
+  document.getElementById('popup-card').innerHTML = html;
+  document.getElementById('popup-overlay').classList.add('active');
+}
+
+function closePopup() {
+  document.getElementById('popup-overlay').classList.remove('active');
+}
+
+// Close popup on overlay click
+document.getElementById('popup-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>
