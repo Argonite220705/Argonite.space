@@ -1826,17 +1826,7 @@ function endPhase(){
     G.currentIdx=G.order.indexOf(nextActive);
     G.phaseEnded=false;
     if(checkWinLose()) return;
-    // 50% mid-phase scenario — only if no active scenario
-    if(!G.scenarioActive && Math.random()<0.5){
-      G.scenarioActive=true;
-      G.scenario=pickScenario();
-      G.scenarioChoice=null;
-      G.scenarioFromMidPhase=true;
-      renderScenario();
-      goto('s-scenario');
-    } else {
-      goto('s-main');
-    }
+    goto('s-main');
   }
 }
 
@@ -3397,9 +3387,15 @@ function scenarioConfirm(){
       console.log(`[SCENARIO] → goto('s-main')`);
       goto('s-main');
     } else {
-      // Always go to meeting after session scenario
-      console.log(`[SCENARIO] → goto('s-meeting')`);
-      goto('s-meeting');
+      // Only go to meeting if the session that just ended was even.
+      // Since G.session was incremented in sessionEnd(), the session that just ended is (G.session - 1).
+      if ((G.session - 1) % 2 === 0 && (G.session - 1) > 0) {
+        console.log(`[SCENARIO] → goto('s-meeting')`);
+        goto('s-meeting');
+      } else {
+        console.log(`[SCENARIO] → goto('s-main')`);
+        goto('s-main');
+      }
     }
   }, reason);
 }
