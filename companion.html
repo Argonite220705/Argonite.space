@@ -2451,8 +2451,7 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       screenEl.classList.add('active');
       window.scrollTo(0, 0);
-      // Stop timers on navigation (they'll be re-started by their own render functions)
-      stopPhaseTimer();
+      // Stop scenario timer only when leaving s-scenario
       if (screenId !== 's-scenario') stopScenarioTimer();
       if (screenId === 's-main') renderMain();
       if (screenId === 's-task') renderTasks();
@@ -2928,6 +2927,7 @@
       // Guard against double-calls (e.g. from FM popup callback + LANJUTKAN button)
       if (G.phaseEnded) return;
       G.phaseEnded = true;
+      stopPhaseTimer(); // stop current player's timer — next player gets fresh 60s
 
       const cur = G.order[G.currentIdx];
       if (!cur) { G.phaseEnded = false; return; }
@@ -5556,9 +5556,13 @@
     }
 
     // ── PHASE ACTION TIMER (60s) ──────────────────────────────────────────────
-    let phaseTimer = null, phaseTime = 60;
+    let phaseTimer = null, phaseTime = 60, phaseTimerTurnIdx = -1;
 
     function startPhaseTimer() {
+      // If timer already running for THIS player's turn, keep it going — don't reset
+      if (phaseTimer !== null && phaseTimerTurnIdx === G.currentIdx) return;
+      // New player's turn (or first run) — start fresh
+      phaseTimerTurnIdx = G.currentIdx;
       phaseTime = 60;
       if (phaseTimer) clearInterval(phaseTimer);
       updatePhaseTimerDisplay();
@@ -5575,6 +5579,7 @@
 
     function stopPhaseTimer() {
       if (phaseTimer) { clearInterval(phaseTimer); phaseTimer = null; }
+      phaseTimerTurnIdx = -1; // force reset on next startPhaseTimer call
     }
 
     function updatePhaseTimerDisplay() {
