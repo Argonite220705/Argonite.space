@@ -1218,6 +1218,111 @@
       box-shadow: 0 0 0 2px var(--accent-glow)
     }
 
+/* ── PATCH NOTES POPUP ── */
+/* ── DANGER OVERLAY ── */
+   .timer-danger-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(200,20,40,.28) 100%);
+      opacity: 0;
+      transition: opacity 1.2s ease
+    }
+   .timer-danger-overlay.active {
+      opacity: 1
+    }
+  .patchnotes-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      animation: fadeIn .2s ease
+    }
+    .patchnotes-sheet {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-medium);
+      width: 100%;
+      max-width: 400px;
+      max-height: 72vh;
+      display: flex;
+      flex-direction: column;
+      animation: pop .3s cubic-bezier(.34,1.56,.64,1)
+    }
+    .patchnotes-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0
+    }
+    .patchnotes-body {
+      overflow-y: auto;
+      padding: 16px 20px 32px;
+      flex: 1
+    }
+    .patchnotes-body::-webkit-scrollbar { width: 4px }
+    .patchnotes-body::-webkit-scrollbar-track { background: transparent }
+    .patchnotes-body::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px }
+    .patch-entry { margin-bottom: 20px }
+    .patch-entry:last-child { margin-bottom: 0 }
+    .patch-version-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--secondary-light);
+      border: 1px solid var(--secondary);
+      color: var(--secondary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      padding: 3px 9px;
+      border-radius: 99px;
+      margin-bottom: 8px
+    }
+    .patch-latest .patch-version-tag {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary)
+    }
+    .patch-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px
+    }
+    .patch-changes { list-style: none; padding: 0 }
+    .patch-changes li {
+      font-size: 13px;
+      color: rgba(238,238,255,.8);
+      padding: 5px 0;
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.45;
+      border-bottom: 1px solid var(--border-light)
+    }
+    .patch-changes li:last-child { border-bottom: none }
+    .patch-changes li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted2)
+    }
+    .patch-changes li.add::before { background: var(--success) }
+    .patch-changes li.fix::before { background: var(--accent) }
+    .patch-changes li.change::before { background: var(--secondary) }
+    .patch-changes li.remove::before { background: var(--primary) }
+
     /* ── SCANNER OVERLAY ── */
     .scanner-overlay {
       position: fixed;
@@ -1374,14 +1479,27 @@
         <button class="btn btn-p" id="btn-setup-next" style="display:none" onclick="setupDone()">LANJUT →</button>
       </div>
 
-      <!-- Card List Button -->
-      <div class="mt24 mb16">
+<!-- Card List Button -->
+      <div class="mt16 mb16">
         <div class="lbl mb8">DATABASE</div>
         <button class="btn btn-o" onclick="gotoCardList()" style="display:flex;align-items:center;gap:12px">
           <span style="font-size:24px">📋</span>
           <div style="text-align:left">
             <div class="b-md" style="font-weight:600">Card List</div>
             <div class="b-sm c-muted">Lihat semua kartu dalam database</div>
+          </div>
+          <span style="margin-left:auto;font-size:18px">›</span>
+        </button>
+      </div>
+
+      <!-- Version Info & Patch Notes -->
+      <div class="mt4 mb8">
+        <div class="lbl mb8">APP INFO</div>
+        <button class="btn btn-o" onclick="showPatchNotes()" style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:24px">📝</span>
+          <div style="text-align:left">
+            <div class="b-md" style="font-weight:600">Patch Notes</div>
+            <div class="b-sm c-muted">v<span id="app-version">1.0.0</span> — lihat changelog</div>
           </div>
           <span style="margin-left:auto;font-size:18px">›</span>
         </button>
@@ -1457,7 +1575,7 @@
       <!-- current player -->
       <div class="sec-lbl mb8"><span class="lbl">GILIRAN SEKARANG</span></div>
       <div class="player-ind mb8">
-        <span style="font-size:34px" id="main-cur-emoji">🎨</span>
+        <span id="main-cur-emoji" style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center"></span>
         <div style="flex:1;min-width:0">
           <div class="b-md" style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
             id="main-cur-name">The Artist</div>
@@ -2032,13 +2150,19 @@
 
   <script>
     // ── DATA ─────────────────────────────────────────────────────────────────
+        function charIcon(char, size) {
+      if (char.icon) return `<img src="${char.icon}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%" draggable="false">`;
+      return `<span style="font-size:${size * 0.7}px">${char.emoji}</span>`;
+    }
+    const ICON_PATH = 'Resources/icon/'; // ← sesuaikan relative path ke folder icon lo
+
     const CHARS = [
-      { id: 'artist', name: 'The Artist', emoji: '🖌️', passive: 'Ambil lagi item terakhir yang kamu gunakan dari deck aktif' },
-      { id: 'busybee', name: 'The Busy Bee', emoji: '☕', passive: 'Inisiasi Emergency Meeting di luar jadwal' },
-      { id: 'fashion', name: 'The Fashionista', emoji: '💄', passive: 'Trade 1 kartu dengan pemain lain pilihanmu' },
-      { id: 'nerd', name: 'The Nerd', emoji: '📚', passive: 'Ambil Ensiklopedia atau Novel dari deck aktif' },
-      { id: 'influencer', name: 'The Influencer', emoji: '📱', passive: 'Friendship Meter gain 2× pada session ini' },
-      { id: 'phantom', name: 'The Phantom', emoji: '👻', passive: 'Jalankan Phase 2× berturut-turut pada giliranmu' },
+      { id: 'artist',     name: 'The Artist',      emoji: '🖌️', icon: ICON_PATH + 'The artist icon.png',      passive: 'Ambil lagi item terakhir yang kamu gunakan dari deck aktif' },
+      { id: 'busybee',    name: 'The Busy Bee',     emoji: '☕',  icon: ICON_PATH + 'The busy bee icon.png',    passive: 'Inisiasi Emergency Meeting di luar jadwal' },
+      { id: 'fashion',    name: 'The Fashionista',  emoji: '💄', icon: ICON_PATH + 'The fashionista icon.png', passive: 'Trade 1 kartu dengan pemain lain pilihanmu' },
+      { id: 'nerd',       name: 'The Nerd',         emoji: '📚', icon: ICON_PATH + 'The nerd icon.png',        passive: 'Ambil Ensiklopedia atau Novel dari deck aktif' },
+      { id: 'influencer', name: 'The Influencer',   emoji: '📱', icon: ICON_PATH + 'The influencer icon.png',  passive: 'Friendship Meter gain 2× pada session ini' },
+      { id: 'phantom',    name: 'The Phantom',      emoji: '👻', icon: ICON_PATH + 'The ghost icon.png',       passive: 'Jalankan Phase 2× berturut-turut pada giliranmu' },
     ];
 
     const TASKS = [
@@ -2486,7 +2610,7 @@
         const sel = G.selectedChars.find(s => s.id === c.id);
         const dis = !sel && G.selectedChars.length >= n;
         return `<div class="char-card ${sel ? 'sel' : ''} ${dis ? 'dis' : ''}" onclick="toggleChar('${c.id}')">
-      <span class="char-emoji">${c.emoji}</span>
+      <span class="char-emoji">${c.icon ? `<img src="${c.icon}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" draggable="false">` : c.emoji}</span> 
       <span class="b-sm" style="font-weight:600;font-size:11px">${c.name.replace('The ', '')}</span>
     </div>`;
       }).join('');
@@ -2541,7 +2665,7 @@
       if (roleStep === 0) {
         // Step 0: Handoff screen — siapa yang pegang HP
         html = `<div class="role-card">
-      <div style="font-size:48px">${p.char.emoji}</div>
+      <div style="width:72px;height:72px;margin:0 auto">${charIcon(p.char, 72)}</div>
       <div class="d md" style="margin:12px 0 4px">${p.char.name}</div>
       <p class="b-sm c-muted mb20">Pastikan hanya <b style="color:var(--yellow)">${p.char.name}</b> yang melihat layar ini</p>
       <button class="btn btn-p" onclick="nextRoleStep()">LIHAT ROLE KU</button>
@@ -2551,7 +2675,7 @@
         // Step 1: Tampil role
         const isFraud = p.role === 'fraud';
         html = `<div class="role-card">
-      <div style="font-size:48px">${p.char.emoji}</div>
+      <div style="width:72px;height:72px;margin:0 auto">${charIcon(p.char, 72)}</div>
       <div class="d md" style="margin:12px 0 4px">${p.char.name}</div>
       <div class="role-badge ${isFraud ? 'rb-fraud' : 'rb-friend'}" style="margin:8px auto 12px">${isFraud ? '😈 FRAUD' : '✅ FRIEND'}</div>
       <p class="b-sm mb20" style="color:rgba(255,255,255,.6)">${isFraud ? 'Gerus Friendship Meter ke 0. Jangan ketahuan!' : 'Kerja sama, ungkap Fraud, dan capai Friendship Meter 100!'}</p>
@@ -2639,7 +2763,7 @@
         const dot = document.createElement('div');
         dot.className = 'touch-dot' + (chwaziWinner && chwaziWinner.player.char.id === t.player.char.id ? ' winner' : '');
         dot.style.left = t.x + 'px'; dot.style.top = t.y + 'px';
-        dot.textContent = t.player.char.emoji;
+        dot.innerHTML = charIcon(t.player.char, 32);
         area.appendChild(dot);
       });
     }
@@ -2673,7 +2797,7 @@
       const res = $('chwazi-result');
       res.style.display = 'block';
       res.innerHTML = `<div style="text-align:center">
-    <div style="font-size:40px;margin-bottom:8px">${chwaziWinner.player.char.emoji}</div>
+    <div style="width:56px;height:56px;margin:0 auto 8px">${charIcon(chwaziWinner.player.char, 56)}</div>
     <div class="d md">${chwaziWinner.player.char.name}</div>
     <p class="b-sm c-muted mt4 mb16">JALAN DULUAN!</p>
     <button class="btn btn-p" onclick="chwaziDone()">LANJUT →</button>
@@ -2706,7 +2830,7 @@
       G.orderAssign = {};
       // First player always gets number 1
       G.orderAssign[fp.char.id] = 1;
-      $('order-first').innerHTML = `<div style="font-size:40px">${fp.char.emoji}</div>
+      $('order-first').innerHTML = `<div style="width:56px;height:56px;margin:0 auto">${charIcon(fp.char, 56)}</div>
     <div class="d sm mt8">${fp.char.name}</div>
     <span class="tag tag-flag mt8" style="display:inline-block"># 1 — Jalan Pertama</span>`;
       renderOrderList();
@@ -2718,7 +2842,7 @@
       $('order-list').innerHTML = others.map(p => {
         const assigned = G.orderAssign[p.char.id] || '';
         return `<div class="card2" style="display:flex;align-items:center;gap:12px;padding:12px 16px">
-      <span style="font-size:24px">${p.char.emoji}</span>
+      <span style="width:32px;height:32px;display:inline-flex">${charIcon(p.char, 32)}</span>
       <span class="b-md" style="font-weight:600;flex:1">${p.char.name}</span>
       <div style="display:flex;align-items:center;gap:6px">
         <button onclick="assignOrder('${p.char.id}',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:var(--bg-card);color:var(--text-primary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
@@ -2769,7 +2893,7 @@
       const sMain = $('main-session'); if (sMain) sMain.textContent = `${G.session} / ${G.totalSessions}`;
       const sActive = $('main-active'); if (sActive) sActive.textContent = active.length;
       updateMeter();
-      const cEmoji = $('main-cur-emoji'); if (cEmoji) cEmoji.textContent = cur.char.emoji;
+      const cEmoji = $('main-cur-emoji'); if (cEmoji) cEmoji.innerHTML = charIcon(cur.char, 40);
       const displayName = cur.nickname ? `${cur.char.name} · ${cur.nickname}` : cur.char.name;
       const cName = $('main-cur-name'); if (cName) cName.textContent = displayName;
 
@@ -2869,7 +2993,7 @@
         return `<div class="card2" style="opacity:${p.eliminated ? 0.4 : 1};border-left:3px solid ${i === G.currentIdx ? 'var(--primary)' : 'transparent'}">
       <div class="row" style="justify-content:space-between">
         <div class="row" style="gap:8px">
-          <span style="font-size:20px">${p.char.emoji}</span>
+          <span style="width:28px;height:28px;display:inline-flex">${charIcon(p.char, 28)}</span>
           <span class="b-md" style="font-weight:600">${pName}</span>
           ${p.flagged && !p.eliminated ? '<span class="tag tag-flag">⚑</span>' : ''}
           ${p.eliminated ? '<span class="tag tag-elim">Eliminated</span>' : ''}
@@ -5328,7 +5452,7 @@
       <p class="b-sm c-muted mb16">Pilih pemain untuk diajak trade 1 kartu dari inventory.</p>
       <div class="stack mb16">
         ${others.map(p => `<button class="act-btn" onclick="doFashionistaTrade('${p.char.id}');this.closest('div[style*=fixed]').remove()">
-          <span style="font-size:24px">${p.char.emoji}</span>
+          <span style="width:32px;height:32px;display:inline-flex">${charIcon(p.char, 32)}</span>
           <span class="b-md" style="font-weight:600">${p.char.name}</span>
           <span class="b-sm c-muted">${(G.inventory[p.char.id] || []).length} kartu</span>
         </button>`).join('')}
@@ -5556,6 +5680,22 @@
     }
 
     // ── PHASE ACTION TIMER (60s) ──────────────────────────────────────────────
+    // ── DANGER OVERLAY ────────────────────────────────────────────────────────
+    function getDangerOverlay() {
+      let el = document.getElementById('timer-danger-overlay');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'timer-danger-overlay';
+        el.className = 'timer-danger-overlay';
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+    function setDangerOverlay(active) {
+      const el = getDangerOverlay();
+      if (active) el.classList.add('active');
+      else el.classList.remove('active');
+    }
     let phaseTimer = null, phaseTime = 60, phaseTimerTurnIdx = -1;
 
     function startPhaseTimer() {
@@ -5577,9 +5717,10 @@
       }, 1000);
     }
 
-    function stopPhaseTimer() {
+     function stopPhaseTimer() {
       if (phaseTimer) { clearInterval(phaseTimer); phaseTimer = null; }
-      phaseTimerTurnIdx = -1; // force reset on next startPhaseTimer call
+      phaseTimerTurnIdx = -1;
+      setDangerOverlay(false);
     }
 
     function updatePhaseTimerDisplay() {
@@ -5587,9 +5728,10 @@
       if (!el) return;
       const m = Math.floor(phaseTime / 60), s = phaseTime % 60;
       el.textContent = `${m}:${String(s).padStart(2, '0')}`;
-      if (phaseTime <= 10) { el.style.color = 'var(--primary)'; el.style.fontWeight = '700'; }
+     if (phaseTime <= 10) { el.style.color = 'var(--primary)'; el.style.fontWeight = '700'; }
       else if (phaseTime <= 20) { el.style.color = '#FF6B35'; el.style.fontWeight = '700'; }
       else { el.style.color = 'var(--yellow)'; el.style.fontWeight = ''; }
+      setDangerOverlay(phaseTime <= 15);
     }
 
     function showPhaseTimeoutPopup() {
@@ -5626,6 +5768,7 @@
 
     function stopScenarioTimer() {
       if (scenarioTimer) { clearInterval(scenarioTimer); scenarioTimer = null; }
+      setDangerOverlay(false);
     }
 
     function updateScenarioTimerDisplay() {
@@ -5644,6 +5787,7 @@
         el.style.color = 'var(--yellow)'; el.style.fontWeight = '';
         if (wrap) wrap.style.borderColor = 'rgba(255,255,255,.08)';
       }
+      setDangerOverlay(scenarioTime <= 15);
     }
 
     function showScenarioTimeoutPopup() {
@@ -5930,7 +6074,7 @@
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px">
       ${tiedPlayers.map(p => `<div class="card2" style="padding:8px 14px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:20px">${p.char.emoji}</span>
+        <span style="width:28px;height:28px;display:inline-flex">${charIcon(p.char, 28)}</span>
         <span class="b-sm" style="font-weight:600">${p.char.name}</span>
         <span class="tag tag-flag">${voteCount}</span>
       </div>`).join('')}
@@ -6007,7 +6151,7 @@
       $('end-players').innerHTML = G.order.map(p => `
     <div class="card2">
       <div class="row">
-        <span style="font-size:20px">${p.char.emoji}</span>
+        <span style="width:28px;height:28px;display:inline-flex">${charIcon(p.char, 28)}</span>
         <span class="b-md" style="font-weight:600">${p.char.name}</span>
         <span class="tag ${p.role === 'fraud' ? 'tag-fraud' : 'tag-friend'}">${p.role === 'fraud' ? '😈 Fraud' : '✅ Friend'}</span>
         ${p.eliminated ? '<span class="tag tag-elim">Eliminated</span>' : ''}
@@ -6066,6 +6210,97 @@
     document.addEventListener('DOMContentLoaded', initSplashStars);
     setTimeout(initSplashStars, 100);
 
+   // ── PATCH NOTES ───────────────────────────────────────────────────────────
+    const APP_VERSION = '0.3'; // ← GANTI INI setiap update
+
+   const PATCH_NOTES = [
+      {
+        version: '0.5.8.2026',
+        date: '8 Mei, 2026',
+        sections: [
+          {
+            title: "What's New",
+            changes: [
+              { type: 'add', text: 'Patch Notes & Version Information — Players can now view the latest updates, bug fixes, and upcoming features directly within the app.' },
+              { type: 'add', text: 'Scenario Timer — Scenario now has a 2-minute time limit, encouraging faster decision-making and keeping sessions moving at a consistent pace.' },
+              { type: 'add', text: 'Player Phase Timer (Experimental) — Each player now has a 1-minute individual timer before their turn is automatically skipped. May be adjusted based on playtesting feedback.' },
+              { type: 'add', text: 'Meeting Timer Auto-Start — The meeting timer now begins immediately upon entering the meeting phase, removing the need for manual activation.' },
+              { type: 'add', text: 'Timer Visual Cue — A red flashing indicator now appears during the last 15 seconds of any active timer, giving players a clear warning before time runs out.' },
+              { type: 'add', text: 'Archetype Icon Update — Archetype icons have been updated from emojis to custom illustrated icons for a more cohesive and polished visual identity.' },
+            ]
+          },
+          {
+            title: 'Bug Fixes',
+            changes: [
+              { type: 'fix', text: 'Social Battery Recovery — Corrected recovery per turn from 3 to 1. The previous value was unintended and caused balancing issues.' },
+              { type: 'fix', text: 'Instant Card Turn Progression — Resolved an issue where activating an Instant card would prevent the player from proceeding to the next turn.' },
+              { type: 'fix', text: 'Scenario Trigger Rework — Scenarios no longer appear at random intervals. Now exclusively triggered at end of session or via specific cards.' },
+            ]
+          },
+          {
+            title: 'Known Issues / Future Plans',
+            changes: [
+              { type: 'change', text: 'Turn order checklist button system for clearer player tracking.' },
+              { type: 'change', text: 'Pop-up notification when a task fails and the friendship meter decreases.' },
+              { type: 'change', text: 'Maximum hand size will be capped at 3 cards per player.' },
+              { type: 'change', text: 'Punishment balancing — increasing the friendship meter deduction values.' },
+              { type: 'change', text: 'Maximum item count per task will be set to 3, with a minimum of 2.' },
+            ]
+          }
+        ],
+        footer: 'Thank you for playing and supporting the development. Feedback and bug reports are always welcome.'
+      },
+    ];
+
+    // Sync version badge di button
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('app-version');
+      if (el) el.textContent = APP_VERSION;
+    });
+
+function showPatchNotes() {
+      const overlay = document.createElement('div');
+      overlay.className = 'patchnotes-overlay';
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+      const entriesHTML = PATCH_NOTES.map((entry, i) => {
+        const sectionsHTML = (entry.sections || []).map(sec => `
+          <div style="margin-bottom:14px">
+            <div class="lbl" style="color:var(--text-muted);margin-bottom:6px;margin-top:10px">${sec.title}</div>
+            <ul class="patch-changes">
+              ${sec.changes.map(c => `<li class="${c.type}">${c.text}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('');
+
+        const footerHTML = entry.footer
+          ? `<p class="b-sm c-muted" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);font-style:italic">${entry.footer}</p>`
+          : '';
+
+        return `
+          <div class="patch-entry ${i === 0 ? 'patch-latest' : ''}">
+            <div class="patch-version-tag">${i === 0 ? '★ LATEST · ' : ''}v${entry.version}</div>
+            <div class="patch-date" style="margin-bottom:12px">${entry.date}</div>
+            ${sectionsHTML}
+            ${footerHTML}
+          </div>`;
+      }).join('<hr style="border:none;border-top:1px solid var(--border-light);margin:4px 0 20px">');
+
+      overlay.innerHTML = `
+        <div class="patchnotes-sheet">
+          <div class="patchnotes-header">
+            <div>
+              <div class="d sm">PATCH NOTES</div>
+              <div class="b-sm c-muted">Friend or Fraud? · v${APP_VERSION}</div>
+            </div>
+            <button class="btn btn-o btn-sm" style="width:auto;padding:8px 14px" onclick="this.closest('.patchnotes-overlay').remove()">✕</button>
+          </div>
+          <div class="patchnotes-body">${entriesHTML}</div>
+        </div>`;
+
+      document.body.appendChild(overlay);
+    }
+   
     function restartGame() {
       G = {
         players: [],
