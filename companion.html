@@ -2141,8 +2141,8 @@
       </div>
       <div id="fm-popup-reason"
         style="display:none;margin-top:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;text-align:left">
-        <div class="lbl mb6" style="color:var(--text-muted)">KENAPA BEGITU?</div>
-        <p class="b-sm" id="fm-popup-reason-text" style="color:rgba(255,255,255,.75);line-height:1.6"></p>
+        <div class="lbl mb6" id="fm-popup-reason-title" style="color:var(--text-muted)">KENAPA BEGITU?</div>
+        <div id="fm-popup-reason-text" style="color:rgba(255,255,255,.75);line-height:1.6"></div>
       </div>
       <button class="btn btn-p mt16" onclick="closeFmPopup()">LANJUT →</button>
     </div>
@@ -2422,6 +2422,7 @@
       lockedDecks: {},
       lastUsedItem: null,
       recentScenarios: [],
+      pendingFailedTasks: [],
     };
 
     // ── UTILS ─────────────────────────────────────────────────────────────────
@@ -3094,15 +3095,21 @@
     function sessionEnd() {
       G.session++;
       initGroupTasks();
-      // Expire group tasks past deadline
+      // Expire group tasks past deadline — collect for popup later
+      let meterCur = G.meter;
+      const failedTasks = [];
       G.groupTasks = G.groupTasks.filter(gt => {
         if (gt.completed) return false;
         if ((G.session - gt.sessionStart) >= gt.deadline) {
-          G.meter = Math.max(0, G.meter - 8);
+          const before = meterCur;
+          meterCur = Math.max(0, meterCur - 8);
+          failedTasks.push({ gt, meterBefore: before, meterAfter: meterCur });
           return false;
         }
         return true;
       });
+      G.meter = meterCur;
+      G.pendingFailedTasks = failedTasks; // shown after scenario/meeting
       // SB recovery + burnout reset per session
       G.order.filter(p => !p.eliminated).forEach(p => {
         p.sb = Math.min(5, (p.sb ?? 5) + 1);
@@ -3126,8 +3133,10 @@
       G.scenario = pickScenario();
       G.scenarioChoice = null;
       G.scenarioFromMidPhase = false;
-      renderScenario();
-      goto('s-scenario');
+      showPendingTaskFailPopups(() => {
+        renderScenario();
+        goto('s-scenario');
+      });
     }
 
     function checkWinLose() {
@@ -4382,7 +4391,7 @@
     </div>`;
       }
 
-      warningMessage += `<button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">MENGERTI →</button>`;
+      warningMessage += `<button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">MENGERTI →</button>`;
 
       popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">${warningMessage}</div>`;
       document.body.appendChild(popupEl);
@@ -4489,7 +4498,7 @@
       if (card.type === 'power-up') {
         onPowerUpScanned(card);
       } else {
-        executeCardEffect(card, area, () => { goto('s-main'); });
+        executeCardEffect(card, area, () => { endPhase(); });
       }
     }
 
@@ -4503,7 +4512,7 @@
       <div class="spinner" style="margin:16px auto"></div>
       <p class="b-sm c-muted">Memproses efek...</p>`;
         G.phaseEnded = false;
-        setTimeout(() => { executeCardEffect(card, area, () => { goto('s-main'); }); }, 600);
+        setTimeout(() => { executeCardEffect(card, area, () => { endPhase(); }); }, 600);
         return;
       }
       // Kartu ACTION / SPECIAL → simpan ke inventory
@@ -4680,8 +4689,6 @@
           console.log(`[SCENARIO] → goto('s-main')`);
           goto('s-main');
         } else {
-          // Only go to meeting if the session that just ended was even.
-          // Since G.session was incremented in sessionEnd(), the session that just ended is (G.session - 1).
           if ((G.session - 1) % 2 === 0 && (G.session - 1) > 0) {
             console.log(`[SCENARIO] → goto('s-meeting')`);
             goto('s-meeting');
@@ -4790,7 +4797,7 @@
       if (card.type === 'power-up') {
         onPowerUpScanned(card);
       } else {
-        executeCardEffect(card, area, () => { goto('s-main'); });
+        executeCardEffect(card, area, () => { endPhase(); });
       }
     }
 
@@ -5594,9 +5601,16 @@
       const reasonBox = $('fm-popup-reason');
       if (reasonBox) {
         if (reason) {
-          $('fm-popup-reason-text').textContent = reason;
+          const isObj = typeof reason === 'object' && reason !== null;
+          const titleEl = $('fm-popup-reason-title');
+          if (titleEl) titleEl.textContent = isObj ? (reason.title || 'KENAPA BEGITU?') : 'KENAPA BEGITU?';
+          const textEl = $('fm-popup-reason-text');
+          if (isObj && reason.html) textEl.innerHTML = reason.html;
+          else { textEl.innerHTML = ''; textEl.textContent = typeof reason === 'string' ? reason : (reason.text || ''); }
           reasonBox.style.display = 'block';
         } else {
+          const titleEl = $('fm-popup-reason-title');
+          if (titleEl) titleEl.textContent = 'KENAPA BEGITU?';
           reasonBox.style.display = 'none';
         }
       }
@@ -5643,6 +5657,50 @@
     function closeFmPopup() {
       $('fm-popup').style.display = 'none';
       if (fmPopupCallback) { fmPopupCallback(); fmPopupCallback = null; }
+    }
+
+    // ── TASK FAIL POPUP QUEUE ─────────────────────────────────────────────────
+    function buildTaskFailHTML(gt) {
+      const allNeeded = gt.taskDef.items;
+      const allCollected = Object.values(gt.collected || {}).flat();
+      const needed = [...allNeeded];
+      const got = [];
+      allCollected.forEach(it => {
+        const idx = needed.indexOf(it.name || it);
+        if (idx >= 0) { needed.splice(idx, 1); got.push(it); }
+      });
+      const totalItems = allNeeded.length;
+      const collectedCount = got.length;
+      const progressPct = totalItems > 0 ? Math.round((collectedCount / totalItems) * 100) : 0;
+      const gradColor = progressPct >= 75 ? 'var(--gradient-meter-high)' : progressPct >= 50 ? 'var(--gradient-meter-mid)' : 'var(--gradient-meter-low)';
+      return `<div style="background:rgba(255,45,120,.06);border:1px solid rgba(255,45,120,.18);border-radius:10px;padding:10px 12px;margin-top:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:600;font-size:13px;color:var(--text-primary)">${gt.taskDef.name}</span>
+          <span style="font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.08em">GAGAL</span>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:99px;height:4px;overflow:hidden;margin-bottom:8px">
+          <div style="height:100%;width:${progressPct}%;background:${gradColor};border-radius:99px"></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${got.map(it => `<span style="font-size:10px;padding:2px 6px;background:rgba(0,200,150,.15);color:var(--success);border-radius:4px;border:1px solid rgba(0,200,150,.2)">✓ ${it.name || it}</span>`).join('')}
+          ${needed.map(it => `<span style="font-size:10px;padding:2px 6px;background:rgba(255,255,255,.05);color:var(--text-muted);border-radius:4px;border:1px solid rgba(255,255,255,.08)">⌛ ${it}</span>`).join('')}
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Progress: ${collectedCount}/${totalItems} (${progressPct}%)</div>
+      </div>`;
+    }
+
+    function showPendingTaskFailPopups(callback) {
+      if (!G.pendingFailedTasks || G.pendingFailedTasks.length === 0) {
+        G.pendingFailedTasks = [];
+        if (callback) callback();
+        return;
+      }
+      const item = G.pendingFailedTasks.shift();
+      const { gt, meterBefore, meterAfter } = item;
+      const delta = meterAfter - meterBefore; // negative, e.g. -8
+      showFmPopup(delta, meterAfter, function () {
+        showPendingTaskFailPopups(callback);
+      }, { title: 'GROUP TASK GAGAL', html: buildTaskFailHTML(gt) });
     }
 
     // ── MEETING ───────────────────────────────────────────────────────────────
@@ -6104,15 +6162,22 @@
       // G.session++ sudah dilakukan di sessionEnd() sebelumnya
       initGroupTasks();
 
-      // Expire tasks yang sudah lewat deadline
+      // Expire tasks yang sudah lewat deadline — collect for popup
+      let meterCur = G.meter;
+      const failedTasks = [];
       G.groupTasks = G.groupTasks.filter(gt => {
         if (gt.completed) return false;
         if ((G.session - gt.sessionStart) >= gt.deadline) {
-          G.meter = Math.max(0, G.meter - 8);
+          const before = meterCur;
+          meterCur = Math.max(0, meterCur - 8);
+          failedTasks.push({ gt, meterBefore: before, meterAfter: meterCur });
           return false;
         }
         return true;
       });
+      G.meter = meterCur;
+      // Merge with any pending from sessionEnd (e.g. if meeting happened)
+      G.pendingFailedTasks = (G.pendingFailedTasks || []).concat(failedTasks);
 
       // SB recovery + burnout reset
       G.order.filter(p => !p.eliminated).forEach(p => {
@@ -6136,7 +6201,7 @@
       G.phaseEnded = false;
 
       if (checkWinLose()) return;
-      goto('s-main');
+      showPendingTaskFailPopups(() => goto('s-main'));
     }
 
     // ── END GAME ──────────────────────────────────────────────────────────────
@@ -6211,12 +6276,12 @@
     setTimeout(initSplashStars, 100);
 
    // ── PATCH NOTES ───────────────────────────────────────────────────────────
-    const APP_VERSION = '0.3'; // ← GANTI INI setiap update
+    const APP_VERSION = '0.3.1'; // ← GANTI INI setiap update
 
    const PATCH_NOTES = [
       {
-        version: '0.5.8.2026',
-        date: '8 Mei, 2026',
+        version: '0.11.5.2026',
+        date: '11 Mei, 2026',
         sections: [
           {
             title: "What's New",
@@ -6227,6 +6292,7 @@
               { type: 'add', text: 'Meeting Timer Auto-Start — The meeting timer now begins immediately upon entering the meeting phase, removing the need for manual activation.' },
               { type: 'add', text: 'Timer Visual Cue — A red flashing indicator now appears during the last 15 seconds of any active timer, giving players a clear warning before time runs out.' },
               { type: 'add', text: 'Archetype Icon Update — Archetype icons have been updated from emojis to custom illustrated icons for a more cohesive and polished visual identity.' },
+              { type: 'add', text: 'Task Failed Pop-Up — A pop-up now appears when a task fails, clearly notifying players of the outcome before the game continues.' },
             ]
           },
           {
@@ -6235,13 +6301,15 @@
               { type: 'fix', text: 'Social Battery Recovery — Corrected recovery per turn from 3 to 1. The previous value was unintended and caused balancing issues.' },
               { type: 'fix', text: 'Instant Card Turn Progression — Resolved an issue where activating an Instant card would prevent the player from proceeding to the next turn.' },
               { type: 'fix', text: 'Scenario Trigger Rework — Scenarios no longer appear at random intervals. Now exclusively triggered at end of session or via specific cards.' },
+              { type: 'fix', text: 'Item Input Phase Skip — Fixed an issue where a player\'s turn would be skipped immediately after dismissing the "no item required" pop-up. The turn now correctly remains on the current player.' },
+              { type: 'fix', text: 'Use Power-Up Turn Progression — Fixed an issue where using a Power-Up would not advance to the next player\'s turn, leaving the turn stuck on the same player.' },
             ]
           },
           {
             title: 'Known Issues / Future Plans',
             changes: [
+              { type: 'change', text: 'Limited Task Balancing — Limited tasks are currently underperforming and rarely chosen by players. Suspected causes include high item requirements, low deadline count, and low draw RNG. Currently under investigation.' },
               { type: 'change', text: 'Turn order checklist button system for clearer player tracking.' },
-              { type: 'change', text: 'Pop-up notification when a task fails and the friendship meter decreases.' },
               { type: 'change', text: 'Maximum hand size will be capped at 3 cards per player.' },
               { type: 'change', text: 'Punishment balancing — increasing the friendship meter deduction values.' },
               { type: 'change', text: 'Maximum item count per task will be set to 3, with a minimum of 2.' },
@@ -6329,6 +6397,7 @@ function showPatchNotes() {
         lastUsedItem: null,
         recentScenarios: [],
         lockedDecks: {},
+        pendingFailedTasks: [],
       };
       // Reset UI state
       $('btn4').classList.remove('sel');
