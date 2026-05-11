@@ -2102,6 +2102,14 @@
 
   </div><!-- .app -->
 
+  <!-- ══ GENERIC POPUP OVERLAY ══════════════════════════════════════════ -->
+  <div id="generic-popup"
+    style="display:none;position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:9997;align-items:center;justify-content:center;padding:24px">
+    <div id="generic-popup-inner" class="card"
+      style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+    </div>
+  </div>
+
   <!-- ══ FM POPUP OVERLAY (MOVED OUTSIDE .app) ═══════════════════════ -->
   <div id="fm-popup"
     style="display:none;position:fixed;inset:0;background:rgba(4,4,12,.82);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:24px">
@@ -2428,6 +2436,52 @@
     // ── UTILS ─────────────────────────────────────────────────────────────────
     const shuffle = a => [...a].sort(() => Math.random() - .5);
     const pick = a => a[Math.floor(Math.random() * a.length)];
+
+    // ── GENERIC POPUP ─────────────────────────────────────────────────────────
+    function showPopup(html, onClose) {
+      const overlay = $('generic-popup');
+      const inner = $('generic-popup-inner');
+      inner.innerHTML = html;
+      overlay.style.display = 'flex';
+      overlay._onClose = onClose || null;
+    }
+
+    function closePopup() {
+      const overlay = $('generic-popup');
+      overlay.style.display = 'none';
+      $('generic-popup-inner').innerHTML = '';
+      if (overlay._onClose) {
+        const cb = overlay._onClose;
+        overlay._onClose = null;
+        cb();
+      }
+    }
+
+    // ── PERSISTENCE ───────────────────────────────────────────────────────────
+    function saveGame() {
+      try {
+        localStorage.setItem('fof_save', JSON.stringify(G));
+      } catch(e) {
+        console.warn('[saveGame] Gagal menyimpan:', e);
+      }
+    }
+
+    function loadGame() {
+      try {
+        const raw = localStorage.getItem('fof_save');
+        if (!raw) return false;
+        const saved = JSON.parse(raw);
+        Object.assign(G, saved);
+        return true;
+      } catch(e) {
+        console.warn('[loadGame] Gagal load save:', e);
+        return false;
+      }
+    }
+
+    function clearSave() {
+      localStorage.removeItem('fof_save');
+    }
 
     // Pick scenario dengan cooldown — scenario yang baru muncul tidak akan keluar lagi
     // sampai semua scenario lain sudah muncul duluan (atau minimal 3 scenario gap)
@@ -3082,12 +3136,14 @@
       const isLastPlayer = curActiveIdx === active.length - 1;
 
       if (isLastPlayer) {
+        saveGame();
         sessionEnd();
       } else {
         const nextActive = active[curActiveIdx + 1];
         G.currentIdx = G.order.indexOf(nextActive);
         G.phaseEnded = false;
         if (checkWinLose()) return;
+        saveGame();
         goto('s-main');
       }
     }
@@ -3407,23 +3463,19 @@
       const card = itemInv[idx].card;
       const isFraud = cur.role === 'fraud';
 
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-      popup.innerHTML = `
-    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+      showPopup(`
       <div style="font-size:52px;margin-bottom:12px">${card.emoji || '📦'}</div>
       <div class="d md mb4">${card.name}</div>
       <span class="tag tag-item" style="display:inline-block;margin-bottom:16px">ITEM</span>
       ${isFraud ? '<div class="tag" style="display:inline-block;margin-bottom:12px;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">⚠ CORRUPT</div>' : ''}
       <p class="b-sm c-muted mb20">${card.effect || ''}</p>
-      <button class="btn btn-p mb12" onclick="confirmUseItemFromInventory(${idx})">INPUT ITEM INI ✓</button>
-      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
-    </div>`;
-      document.body.appendChild(popup);
+      <button class="btn btn-p mb12" onclick="closePopup();confirmUseItemFromInventory(${idx})">INPUT ITEM INI ✓</button>
+      <button class="btn btn-o" onclick="closePopup()">BATAL</button>
+      `);
     }
 
     function confirmUseItemFromInventory(idx) {
-      document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(p => p.remove());
+      closePopup();
       const cur = G.order[G.currentIdx];
       const charId = cur.char.id;
       const itemInv = G.itemInventory[charId] || [];
@@ -3699,9 +3751,6 @@
 
     // QR Error States + Manual Fallback
     function showScanErrorPopup(errorType, rawData, mode) {
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-
       let icon = '⚠️', title = 'QR Tidak Dikenali', message = 'QR code tidak ditemukan di database. Coba scan ulang atau input manual.';
 
       if (errorType === 'corrupt') {
@@ -3710,7 +3759,7 @@
         message = 'QR code rusak atau tidak valid. Coba input manual.';
       }
 
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      showPopup(`
     <div style="font-size:52px;margin-bottom:12px">${icon}</div>
     <div class="d md mb4" style="color:var(--primary)">${title}</div>
     <p class="b-sm c-muted mb16">${message}</p>
@@ -3721,11 +3770,10 @@
       <button class="btn btn-p mt8" onclick="submitManualInput('${mode}')" style="padding:10px">SUBMIT</button>
     </div>
     <div style="display:flex;gap:8px;justify-content:center">
-      <button class="btn btn-y btn-sm" onclick="this.closest('div[style*=fixed]').remove();closeScanner();retryScan()">📷 Scan Lagi</button>
-      <button class="btn btn-o btn-sm" onclick="this.closest('div[style*=fixed]').remove();closeScanner();back()">Batal</button>
+      <button class="btn btn-y btn-sm" onclick="closePopup();closeScanner();retryScan()">📷 Scan Lagi</button>
+      <button class="btn btn-o btn-sm" onclick="closePopup();closeScanner();back()">Batal</button>
     </div>
-  </div>`;
-      document.body.appendChild(popupEl);
+      `);
 
       // Focus input after render
       setTimeout(() => { const inp = $('manual-card-input'); if (inp) inp.focus(); }, 100);
@@ -3918,18 +3966,7 @@
       const card = Object.values(G.detectedCards || {}).find(c => c.name === cardName);
       if (!card) return;
 
-      // Create popup container
-      const popupContainer = document.createElement('div');
-      popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
-      popupContainer.onclick = (e) => {
-        if (e.target === popupContainer) popupContainer.remove();
-      };
-
-      // Create popup content
-      const popupContent = document.createElement('div');
-      popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
-      popupContent.className = 'card';
-      popupContent.innerHTML = `
+      showPopup(`
     <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
     <div class="d md mb4">${card.name}</div>
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
@@ -3945,11 +3982,8 @@
       ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
     </div>
     <div class="b-sm c-muted mb16">Scanned ${card.scanCount || 1}x</div>
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">TUTUP</button>
-  `;
-
-      popupContainer.appendChild(popupContent);
-      document.body.appendChild(popupContainer);
+    <button class="btn btn-p" onclick="closePopup()">TUTUP</button>
+      `);
     }
 
     // ── CARD LIST (DATABASE) FUNCTIONS ──────────────────────────────────────
@@ -4108,18 +4142,7 @@
         return;
       }
 
-      // Create popup container
-      const popupContainer = document.createElement('div');
-      popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
-      popupContainer.onclick = (e) => {
-        if (e.target === popupContainer) popupContainer.remove();
-      };
-
-      // Create popup content (no cursor pointer so it doesn't close when clicking content)
-      const popupContent = document.createElement('div');
-      popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
-      popupContent.className = 'card';
-      popupContent.innerHTML = `
+      showPopup(`
     <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
     <div class="d md mb4">${card.name}</div>
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
@@ -4134,17 +4157,14 @@
       ${card.fm ? `<div class="row mt8" style="justify-content:space-between"><span class="b-sm c-muted">FM Change</span><span class="d sm" style="color:${card.fm > 0 ? 'var(--success)' : 'var(--primary)'}">${card.fm > 0 ? '+' : ''}${card.fm}</span></div>` : ''}
       ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
     </div>
-    <button class="btn btn-p mb12" onclick="addCardFromPopup('${card.name}')">TAMBAH KE INVENTORY ✓</button>
-    <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
-  `;
-
-      popupContainer.appendChild(popupContent);
-      document.body.appendChild(popupContainer);
+    <button class="btn btn-p mb12" onclick="closePopup();addCardFromPopup('${card.name}')">TAMBAH KE INVENTORY ✓</button>
+    <button class="btn btn-o" onclick="closePopup()">BATAL</button>
+      `);
     }
 
     function addCardFromPopup(cardName) {
       // Close all dynamic popup containers (exclude static fm-popup)
-      document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(popup => popup.remove());
+      closePopup();
 
       // Add card to inventory
       addCardToInventory(cardName);
@@ -4155,18 +4175,7 @@
       const card = Object.values(CARDS).find(c => c.name === cardName);
       if (!card) return;
 
-      // Create popup container
-      const popupContainer = document.createElement('div');
-      popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer';
-      popupContainer.onclick = (e) => {
-        if (e.target === popupContainer) popupContainer.remove();
-      };
-
-      // Create popup content (no cursor pointer so it doesn't close when clicking content)
-      const popupContent = document.createElement('div');
-      popupContent.style.cssText = 'width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1);cursor:default';
-      popupContent.className = 'card';
-      popupContent.innerHTML = `
+      showPopup(`
     <div style="font-size:72px;margin-bottom:12px">${card.emoji || '🃏'}</div>
     <div class="d md mb4">${card.name}</div>
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
@@ -4181,11 +4190,8 @@
       ${card.fm ? `<div class="row mt8" style="justify-content:space-between"><span class="b-sm c-muted">FM Change</span><span class="d sm" style="color:${card.fm > 0 ? 'var(--success)' : 'var(--primary)'}">${card.fm > 0 ? '+' : ''}${card.fm}</span></div>` : ''}
       ${card.sb ? `<div class="row mt4" style="justify-content:space-between"><span class="b-sm c-muted">SB Cost</span><span class="d sm" style="color:var(--accent)">${card.sb}</span></div>` : ''}
     </div>
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">TUTUP</button>
-  `;
-
-      popupContainer.appendChild(popupContent);
-      document.body.appendChild(popupContainer);
+    <button class="btn btn-p" onclick="closePopup()">TUTUP</button>
+      `);
     }
 
     function closeScanner() {
@@ -4324,9 +4330,6 @@
 
     // ── POPUP: CORRUPT ITEM TERDETEKSI ──────────────────────────────────────
     function showCorruptItemPopup(details, onDismiss) {
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.92);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
-
       const corruptList = details.corruptItems.map(ci =>
         `<div class="card2" style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.2)">
       <span style="font-size:16px">🔴</span>
@@ -4335,28 +4338,21 @@
     </div>`
       ).join('');
 
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:360px;text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);border:2px solid rgba(255,45,120,.3)">
+      showPopup(`
     <div style="font-size:56px;margin-bottom:12px;animation:pop .5s ease">⚠️</div>
     <div class="d md mb4" style="color:var(--primary);font-size:28px">CORRUPT ITEM TERDETEKSI!</div>
     <p class="b-sm c-muted mb16">Task <strong style="color:var(--accent)">${details.taskName}</strong> mengandung item corrupt!</p>
-
     <div class="card2 mb16" style="text-align:left;padding:14px;background:rgba(255,45,120,.05);border:1px solid rgba(255,45,120,.15)">
       <div class="lbl mb8" style="color:var(--primary)">ITEM YANG CORRUPT</div>
       ${corruptList}
     </div>
-
     <div class="card2 mb16" style="text-align:left;padding:14px">
       <div class="lbl mb6" style="color:var(--yellow)">AKIBAT</div>
       <p class="b-sm" style="color:rgba(255,255,255,.8);line-height:1.6">Item corrupt telah <strong>dihapus</strong>. Task kembali belum selesai — pemain harus submit ulang item yang hilang.</p>
     </div>
-
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();window._corruptDismiss()">MENGERTI →</button>
-  </div>`;
-
-      document.body.appendChild(popupEl);
-      window._corruptDismiss = onDismiss;
+    <button class="btn btn-p" onclick="closePopup()">MENGERTI →</button>
+      `, onDismiss);
     }
-
     // ── POPUP: ITEM TIDAK DIGUNAKAN DI TASK ──────────────────────────────────
     function showItemNotInTaskPopup(itemName, meterDelta, cur) {
       // Cari apakah ada task lain (bukan task pemain ini) yang membutuhkan item ini (only confirmed)
@@ -4373,9 +4369,6 @@
         }
       }
 
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-
       let warningMessage = `<div style="font-size:52px;margin-bottom:12px">⚠️</div>
     <div class="d md mb4">ITEM TIDAK DIGUNAKAN</div>
     <p class="b-sm c-muted mb16">Tidak ada Group Task aktif yang membutuhkan <strong style="color:var(--accent)">${itemName}</strong> untuk pemain ini.</p>
@@ -4391,10 +4384,9 @@
     </div>`;
       }
 
-      warningMessage += `<button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">MENGERTI →</button>`;
+      warningMessage += `<button class="btn btn-p" onclick="closePopup()">MENGERTI →</button>`;
 
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">${warningMessage}</div>`;
-      document.body.appendChild(popupEl);
+      showPopup(warningMessage);
     }
 
     // ── POWER-UP SCAN RESULT ──────────────────────────────────────────────────
@@ -4462,11 +4454,7 @@
       const item = inventory[idx];
       const card = item.card;
 
-      // Confirmation popup
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-      popup.innerHTML = `
-    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,45,120,.2)">
+      showPopup(`
       <div style="font-size:52px;margin-bottom:12px">${card.emoji || '⚡'}</div>
       <div class="d md mb4">${card.name}</div>
       <span class="tag" style="display:inline-block;margin-bottom:16px;background:var(--primary-light);color:var(--primary);border:1px solid rgba(255,45,120,.25)">POWER-UP</span>
@@ -4474,14 +4462,13 @@
         <div class="lbl mb6">EFEK</div>
         <p class="b-md">${card.effect}</p>
       </div>
-      <button class="btn btn-p mb12" onclick="confirmUsePowerUpFromInventory(${idx})">GUNAKAN ✓</button>
-      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
-    </div>`;
-      document.body.appendChild(popup);
+      <button class="btn btn-p mb12" onclick="closePopup();confirmUsePowerUpFromInventory(${idx})">GUNAKAN ✓</button>
+      <button class="btn btn-o" onclick="closePopup()">BATAL</button>
+      `);
     }
 
     function confirmUsePowerUpFromInventory(idx) {
-      document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(p => p.remove());
+      closePopup();
 
       const cur = G.order[G.currentIdx];
       const charId = cur.char.id;
@@ -4754,12 +4741,7 @@
       const item = inventory[idx];
       const card = item.card;
 
-      // Create confirmation popup
-      const popupContainer = document.createElement('div');
-      popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-
-      popupContainer.innerHTML = `
-    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+      showPopup(`
       <div style="font-size:52px;margin-bottom:12px">${card.emoji || '🃏'}</div>
       <div class="d md mb4">${card.name}</div>
       <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
@@ -4767,17 +4749,14 @@
         <div class="lbl mb6">EFEK</div>
         <p class="b-md">${card.effect}</p>
       </div>
-      <button class="btn btn-p mb12" onclick="confirmUseCard(${idx})">GUNAKAN KARTU ✓</button>
-      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove()">BATAL</button>
-    </div>
-  `;
-
-      document.body.appendChild(popupContainer);
+      <button class="btn btn-p mb12" onclick="closePopup();confirmUseCard(${idx})">GUNAKAN KARTU ✓</button>
+      <button class="btn btn-o" onclick="closePopup()">BATAL</button>
+      `);
     }
 
     function confirmUseCard(idx) {
       // Close popup (exclude static fm-popup)
-      document.querySelectorAll('div[style*="fixed"][style*="1000"]:not(#fm-popup)').forEach(popup => popup.remove());
+      closePopup();
 
       const cur = G.order[G.currentIdx];
       const charId = cur.char.id;
@@ -4939,36 +4918,26 @@
     }
 
     function showCardAddedPopup(card, alreadyOwned = false) {
-      // Create popup container
-      const popupContainer = document.createElement('div');
-      popupContainer.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-
       if (alreadyOwned) {
-        popupContainer.innerHTML = `
-    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,214,0,.3)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">⚠️</div>
       <div class="d md mb4">Item Sudah Dimiliki!</div>
       <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
       <div class="d sm mb4">${card.name}</div>
       <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">Kamu sudah punya item ini di inventory.</p>
-      <button class="btn btn-y" onclick="this.closest('div[style*=fixed]').remove()">OK</button>
-    </div>
-  `;
+      <button class="btn btn-y" onclick="closePopup()">OK</button>
+        `);
       } else {
-        popupContainer.innerHTML = `
-    <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.1)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">✅</div>
       <div class="d md mb4">Kartu Disimpan!</div>
       <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
       <div class="d sm mb4">${card.name}</div>
       <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
       <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">${card.effect}</p>
-      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">LANJUT →</button>
-    </div>
-  `;
+      <button class="btn btn-p" onclick="closePopup();endPhase()">LANJUT →</button>
+        `);
       }
-
-      document.body.appendChild(popupContainer);
     }
 
     // ── CARD EFFECT ENGINE ────────────────────────────────────────────────────
@@ -5274,9 +5243,7 @@
       const locLabel = card.loc ? card.loc.charAt(0).toUpperCase() + card.loc.slice(1) : 'Deck';
       const unlockAt = G.lockedDecks[card.loc];
       const sessLeft = unlockAt - G.session;
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.92);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);border:2px solid rgba(255,45,120,.3)">
+     showPopup(`
     <div style="font-size:56px;margin-bottom:12px">🔒</div>
     <div class="d md mb4" style="color:var(--primary)">DECK TERKUNCI!</div>
     <p class="b-sm c-muted mb16">Deck <strong style="color:var(--accent)">${locLabel}</strong> sedang dikunci dan tidak bisa diambil.</p>
@@ -5284,9 +5251,8 @@
       <div class="lbl mb6" style="color:var(--yellow)">INFO KUNCI</div>
       <p class="b-sm" style="color:rgba(255,255,255,.8);line-height:1.6">Deck ini terbuka kembali dalam <strong>${sessLeft} session</strong> lagi.</p>
     </div>
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove()">MENGERTI →</button>
-  </div>`;
-      document.body.appendChild(popupEl);
+    <button class="btn btn-p" onclick="closePopup()">MENGERTI →</button>
+      `);
     }
 
     function onDrawScanned(card) {
@@ -5396,10 +5362,7 @@
         const lastItem = G.lastUsedItem || null;
         G.lastUsedItem = null;
         if (lastItem) {
-          // Tampilkan popup konfirmasi item yang diambil ulang
-          const popupEl = document.createElement('div');
-          popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-          popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+          showPopup(`
         <div style="font-size:52px;margin-bottom:12px">🖌️</div>
         <div class="d md mb4">ATELIER</div>
         <p class="b-sm c-muted mb16">Kamu mengambil ulang item terakhir dari deck aktif.</p>
@@ -5407,20 +5370,15 @@
           <div class="b-md" style="font-weight:600">${lastItem}</div>
           <div class="b-sm c-muted mt4">Item diambil dari deck</div>
         </div>
-        <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();inputItem('${lastItem}',false)">AMBIL ITEM ✓</button>
-      </div>`;
-          document.body.appendChild(popupEl);
+        <button class="btn btn-p" onclick="closePopup();inputItem('${lastItem}',false)">AMBIL ITEM ✓</button>
+          `);
         } else {
-          // Belum ada item yang pernah dipakai — tampilkan pesan
-          const popupEl = document.createElement('div');
-          popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-          popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+          showPopup(`
         <div style="font-size:52px;margin-bottom:12px">🖌️</div>
         <div class="d md mb4">ATELIER</div>
         <p class="b-sm c-muted mb20">Belum ada item yang pernah digunakan di game ini.</p>
-        <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">TUTUP</button>
-      </div>`;
-          document.body.appendChild(popupEl);
+        <button class="btn btn-o" onclick="closePopup();endPhase()">TUTUP</button>
+          `);
         }
         return;
       }
@@ -5438,86 +5396,70 @@
       if (id === 'fashion') {
         const others = activePlayers().filter(p => p.char.id !== cur.char.id);
         const curInv = G.inventory[cur.char.id] || [];
-        if (curInv.length === 0 || others.length === 0) {
-          const popupEl = document.createElement('div');
-          popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-          popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+if (curInv.length === 0 || others.length === 0) {
+          showPopup(`
         <div style="font-size:52px;margin-bottom:12px">💄</div>
         <div class="d md mb4">MAIN CHARACTER ENERGY</div>
         <p class="b-sm c-muted mb20">${curInv.length === 0 ? 'Kamu tidak punya kartu di inventory untuk di-trade.' : 'Tidak ada pemain lain yang bisa diajak trade.'}</p>
-        <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">TUTUP</button>
-      </div>`;
-          document.body.appendChild(popupEl);
+        <button class="btn btn-o" onclick="closePopup();endPhase()">TUTUP</button>
+          `);
           return;
         }
-        // Tampilkan pilihan pemain untuk trade
-        const popupEl = document.createElement('div');
-        popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto';
-        popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">💄</div>
       <div class="d md mb4">TRADE KARTU</div>
       <p class="b-sm c-muted mb16">Pilih pemain untuk diajak trade 1 kartu dari inventory.</p>
       <div class="stack mb16">
-        ${others.map(p => `<button class="act-btn" onclick="doFashionistaTrade('${p.char.id}');this.closest('div[style*=fixed]').remove()">
+        ${others.map(p => `<button class="act-btn" onclick="closePopup();doFashionistaTrade('${p.char.id}')">
           <span style="width:32px;height:32px;display:inline-flex">${charIcon(p.char, 32)}</span>
           <span class="b-md" style="font-weight:600">${p.char.name}</span>
           <span class="b-sm c-muted">${(G.inventory[p.char.id] || []).length} kartu</span>
         </button>`).join('')}
       </div>
-      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">Batal</button>
-    </div>`;
-        document.body.appendChild(popupEl);
+      <button class="btn btn-o" onclick="closePopup();endPhase()">Batal</button>
+        `);
         return;
       }
 
-      // ── NERD: ambil Ensiklopedia atau Novel dari deck aktif ───────────────────
+      // ── NERD ──
       if (id === 'nerd') {
         const itemChoices = ['Ensiklopedia', 'Novel'];
-        const popupEl = document.createElement('div');
-        popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-        popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">📚</div>
       <div class="d md mb4">AHEAD OF SYLLABUS</div>
       <p class="b-sm c-muted mb16">Pilih item yang mau diambil dari deck Perpustakaan.</p>
       <div class="stack mb16">
-        ${itemChoices.map(item => `<button class="act-btn" onclick="this.closest('div[style*=fixed]').remove();inputItem('${item}',false)">
+        ${itemChoices.map(item => `<button class="act-btn" onclick="closePopup();inputItem('${item}',false)">
           <span style="font-size:24px">${item === 'Ensiklopedia' ? '📚' : '📖'}</span>
           <span class="b-md" style="font-weight:600">${item}</span>
         </button>`).join('')}
       </div>
-      <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();endPhase()">Batal</button>
-    </div>`;
-        document.body.appendChild(popupEl);
+      <button class="btn btn-o" onclick="closePopup();endPhase()">Batal</button>
+        `);
         return;
       }
 
-      // ── INFLUENCER: FM gain 2× untuk session ini ─────────────────────────────
+      // ── INFLUENCER ──
       if (id === 'influencer') {
         cur.fmDoubleActive = true;
-        const popupEl = document.createElement('div');
-        popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-        popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">📱</div>
       <div class="d md mb4">GOING VIRAL</div>
       <p class="b-sm c-muted mb20">Semua FM gain kamu di session ini akan <span style="color:var(--success)">2×</span>!</p>
-      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">AKTIFKAN ✓</button>
-    </div>`;
-        document.body.appendChild(popupEl);
+      <button class="btn btn-p" onclick="closePopup();endPhase()">AKTIFKAN ✓</button>
+        `);
         return;
       }
 
-      // ── PHANTOM: jalankan phase 2× berturut-turut ────────────────────────────
+      // ── PHANTOM ──
       if (id === 'phantom') {
         cur.phantomExtraPhase = true;
-        const popupEl = document.createElement('div');
-        popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-        popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+        showPopup(`
       <div style="font-size:52px;margin-bottom:12px">👻</div>
       <div class="d md mb4">NOW YOU SEE ME</div>
       <p class="b-sm c-muted mb20">Kamu akan main 2 phase berturut-turut di giliranmu!</p>
-      <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();endPhase()">AKTIFKAN ✓</button>
-    </div>`;
-        document.body.appendChild(popupEl);
+      <button class="btn btn-p" onclick="closePopup();endPhase()">AKTIFKAN ✓</button>
+        `);
         return;
       }
 
@@ -5793,18 +5735,12 @@
     }
 
     function showPhaseTimeoutPopup() {
-      if (G.phaseEnded) return; // already ended
-      stopPhaseTimer();
-      const cur = G.order[G.currentIdx];
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.88);backdrop-filter:blur(8px);z-index:9998;display:flex;align-items:center;justify-content:center;padding:24px';
-      popup.innerHTML = `<div class="card" style="width:100%;max-width:320px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,45,120,.35)">
+     showPopup(`
         <div style="font-size:52px;margin-bottom:12px">⏰</div>
         <div class="d md mb4" style="color:var(--primary)">Waktu Habis!</div>
         <p class="b-sm c-muted mb20">Waktu memilih aksi untuk <strong style="color:rgba(255,255,255,.85)">${cur?.char?.name || 'pemain ini'}</strong> sudah habis. Giliran dilewati otomatis.</p>
-        <button class="btn btn-p" onclick="this.closest('[style*=fixed]').remove();endPhase()">SKIP GILIRAN →</button>
-      </div>`;
-      document.body.appendChild(popup);
+        <button class="btn btn-p" onclick="closePopup();endPhase()">SKIP GILIRAN →</button>
+      `);
     }
 
     // ── SCENARIO TIMER (120s) ─────────────────────────────────────────────────
@@ -5850,15 +5786,12 @@
 
     function showScenarioTimeoutPopup() {
       stopScenarioTimer();
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.88);backdrop-filter:blur(8px);z-index:9998;display:flex;align-items:center;justify-content:center;padding:24px';
-      popup.innerHTML = `<div class="card" style="width:100%;max-width:320px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,214,0,.3)">
+      showPopup(`
         <div style="font-size:52px;margin-bottom:12px">⏰</div>
         <div class="d md mb4" style="color:var(--yellow)">Waktu Habis!</div>
         <p class="b-sm c-muted mb20">Tidak ada pilihan yang dipilih. Scenario berlanjut tanpa perubahan FM.</p>
-        <button class="btn btn-y" onclick="this.closest('[style*=fixed]').remove();skipScenario()">LANJUTKAN →</button>
-      </div>`;
-      document.body.appendChild(popup);
+        <button class="btn btn-y" onclick="closePopup();skipScenario()">LANJUTKAN →</button>
+      `);
     }
 
     function skipScenario() {
@@ -6064,9 +5997,7 @@
 
     function showVoteResultPopup(target) {
       const isEliminated = target.player.flagged;
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+      showPopup(`
     <div style="font-size:52px;margin-bottom:12px">${isEliminated ? '🔨' : '🚩'}</div>
     <div class="d md mb4">${isEliminated ? 'ELIMINATED!' : 'FLAGGED!'}</div>
     <p class="b-sm c-muted mb16"><strong style="color:var(--accent)">${target.player.char.name}</strong> ${isEliminated ? 'telah dieliminasi!' : 'sekarang ter-flag!'}</p>
@@ -6085,9 +6016,8 @@
         <p class="b-sm" style="color:rgba(255,255,255,.8)">Player ter-flag. Jika voted lagi di meeting berikutnya, akan dieliminasi!</p>
       </div>
     `}
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();executeVoteResult()">LANJUT →</button>
-  </div>`;
-      document.body.appendChild(popupEl);
+    <button class="btn btn-p" onclick="closePopup();executeVoteResult()">LANJUT →</button>
+      `);
     }
 
     function executeVoteResult() {
@@ -6119,9 +6049,7 @@
 
     function showTieBreakerPopup(tiedNames, tiedPlayers) {
       const voteCount = tiedPlayers[0]?._tempVotes || 0;
-      const popupEl = document.createElement('div');
-      popupEl.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px';
-      popupEl.innerHTML = `<div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+     showPopup(`
     <div style="font-size:52px;margin-bottom:12px">⚖️</div>
     <div class="d md mb4">TIE VOTE!</div>
     <p class="b-sm c-muted mb8"><strong style="color:var(--accent)">${tiedNames}</strong></p>
@@ -6137,9 +6065,8 @@
         <span class="tag tag-flag">${voteCount}</span>
       </div>`).join('')}
     </div>
-    <button class="btn btn-p" onclick="this.closest('div[style*=fixed]').remove();$('btn-undo-vote').style.display='none';$('btn-confirm-vote').style.gridColumn='1 / -1';nextSession()">LANJUT SESSION →</button>
-  </div>`;
-      document.body.appendChild(popupEl);
+    <button class="btn btn-p" onclick="closePopup();$('btn-undo-vote').style.display='none';$('btn-confirm-vote').style.gridColumn='1 / -1';nextSession()">LANJUT SESSION →</button>
+      `);
     }
 
     function showElimination(p) {
@@ -6206,6 +6133,7 @@
 
     // ── END GAME ──────────────────────────────────────────────────────────────
     function showEndGame(winner) {
+      clearSave();
       const banner = $('winner-banner');
       banner.className = 'winner-banner ' + (winner === 'friend' ? 'wb-friend' : 'wb-fraud');
       $('winner-icon').textContent = winner === 'friend' ? '🎉' : '😈';
@@ -6251,8 +6179,33 @@
       r.style.cssText = `width:${size}px;height:${size}px;left:${rect.width / 2 - size / 2}px;top:${rect.height / 2 - size / 2}px`;
       btn.appendChild(r);
       setTimeout(() => r.remove(), 600);
-      setTimeout(() => goto('s-setup'), 220);
+      setTimeout(() => {
+        const hasSave = localStorage.getItem('fof_save');
+        if (hasSave) {
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;inset:0;background:rgba(4,4,12,.88);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+          overlay.innerHTML = `
+            <div class="card" style="width:100%;max-width:340px;text-align:center;animation:pop .35s cubic-bezier(.34,1.56,.64,1)">
+              <div style="font-size:52px;margin-bottom:12px">💾</div>
+              <div class="d md mb4">Ada Game Tersimpan</div>
+              <p class="b-sm c-muted mb20">Lanjut game sebelumnya atau mulai dari awal?</p>
+              <button class="btn btn-p mb12" onclick="this.closest('div[style*=fixed]').remove();resumeGame()">LANJUTKAN →</button>
+              <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();clearSave();goto('s-setup')">MULAI BARU</button>
+            </div>`;
+          document.body.appendChild(overlay);
+        } else {
+          goto('s-setup');
+        }
+      }, 220);
     };
+
+    function resumeGame() {
+      if (loadGame()) {
+        goto('s-main');
+      } else {
+        goto('s-setup');
+      }
+    }
 
     function initSplashStars() {
       const container = document.getElementById('splash-stars');
@@ -6276,16 +6229,17 @@
     setTimeout(initSplashStars, 100);
 
    // ── PATCH NOTES ───────────────────────────────────────────────────────────
-    const APP_VERSION = '0.3.1'; // ← GANTI INI setiap update
+    const APP_VERSION = '0.3.2'; // ← GANTI INI setiap update
 
    const PATCH_NOTES = [
       {
-        version: '0.11.5.2026',
-        date: '11 Mei, 2026',
+        version: '0.3.2',
+        date: '12 Mei, 2026',
         sections: [
           {
             title: "What's New",
             changes: [
+              { type: 'add', text: 'Game State Persistence (Save Files) — The app now automatically saves game progress to the device. If the browser is refreshed or closed mid-game, players can resume from where they left off.' },
               { type: 'add', text: 'Patch Notes & Version Information — Players can now view the latest updates, bug fixes, and upcoming features directly within the app.' },
               { type: 'add', text: 'Scenario Timer — Scenario now has a 2-minute time limit, encouraging faster decision-making and keeping sessions moving at a consistent pace.' },
               { type: 'add', text: 'Player Phase Timer (Experimental) — Each player now has a 1-minute individual timer before their turn is automatically skipped. May be adjusted based on playtesting feedback.' },
@@ -6298,13 +6252,14 @@
           {
             title: 'Bug Fixes',
             changes: [
+              { type: 'fix', text: 'Popup Stacking — Resolved an issue where multiple popups could stack on top of each other. All popups now use a unified overlay system, preventing overlap and ensuring consistent dismissal behavior.' },
+              { type: 'fix', text: 'Popup System Refactor — All in-game popups have been migrated to a centralized showPopup() / closePopup() system, replacing 25+ individual createElement instances. This improves stability and makes future UI changes easier to maintain.' },
               { type: 'fix', text: 'Social Battery Recovery — Corrected recovery per turn from 3 to 1. The previous value was unintended and caused balancing issues.' },
               { type: 'fix', text: 'Instant Card Turn Progression — Resolved an issue where activating an Instant card would prevent the player from proceeding to the next turn.' },
               { type: 'fix', text: 'Scenario Trigger Rework — Scenarios no longer appear at random intervals. Now exclusively triggered at end of session or via specific cards.' },
               { type: 'fix', text: 'Item Input Phase Skip — Fixed an issue where a player\'s turn would be skipped immediately after dismissing the "no item required" pop-up. The turn now correctly remains on the current player.' },
               { type: 'fix', text: 'Use Power-Up Turn Progression — Fixed an issue where using a Power-Up would not advance to the next player\'s turn, leaving the turn stuck on the same player.' },
-            ]
-          },
+          ]},
           {
             title: 'Known Issues / Future Plans',
             changes: [
@@ -6316,7 +6271,7 @@
             ]
           }
         ],
-        footer: 'Thank you for playing and supporting the development. Feedback and bug reports are always welcome.'
+        footer: 'Save data is stored locally on the device and will persist across sessions until the game ends or a new game is started. Thank you for playing and supporting the development. Feedback and bug reports are always welcome.'
       },
     ];
 
@@ -6370,6 +6325,7 @@ function showPatchNotes() {
     }
    
     function restartGame() {
+      clearSave();
       G = {
         players: [],
         order: [],
