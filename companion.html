@@ -1276,10 +1276,14 @@
       z-index: 999;
       background: radial-gradient(ellipse at center, transparent 40%, rgba(200,20,40,.28) 100%);
       opacity: 0;
-      transition: opacity 1.2s ease
+      transition: opacity 0.8s ease
     }
    .timer-danger-overlay.active {
-      opacity: 1
+      animation: dangerPulse 2.4s ease-in-out infinite;
+    }
+   @keyframes dangerPulse {
+      0%, 100% { opacity: 0.08; }
+      50%       { opacity: 0.85; }
     }
   .patchnotes-overlay {
       position: fixed;
@@ -3218,9 +3222,6 @@
       G.phaseEnded = true;
       G.burnoutNotifiedIdx = -1;
 
-      // Guard against double-calls (e.g. from FM popup callback + LANJUTKAN button)
-      if (G.phaseEnded) return;
-      G.phaseEnded = true;
       stopPhaseTimer(); // stop current player's timer — next player gets fresh 60s
 
       const cur = G.order[G.currentIdx];
@@ -5938,10 +5939,22 @@ if (curInv.length === 0 || others.length === 0) {
       }
       return el;
     }
+    let dangerHapticTimer = null;
     function setDangerOverlay(active) {
       const el = getDangerOverlay();
-      if (active) el.classList.add('active');
-      else el.classList.remove('active');
+      if (active) {
+        el.classList.add('active');
+        // Start haptic pulse loop synced with visual (2.4s cycle)
+        if (!dangerHapticTimer && navigator.vibrate) {
+          navigator.vibrate(60); // immediate first buzz
+          dangerHapticTimer = setInterval(() => {
+            if (navigator.vibrate) navigator.vibrate(60);
+          }, 2400);
+        }
+      } else {
+        el.classList.remove('active');
+        if (dangerHapticTimer) { clearInterval(dangerHapticTimer); dangerHapticTimer = null; }
+      }
     }
     let phaseTimer = null, phaseTime = 60, phaseTimerTurnIdx = -1;
 
