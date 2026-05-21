@@ -257,6 +257,16 @@
       }
     }
 
+    @keyframes holoBorderSpin {
+      0%   { --border-angle: 0deg; }
+      100% { --border-angle: 360deg; }
+    }
+
+    @keyframes holoLightsweep {
+      0%   { transform: translateX(-120%) skewX(-15deg); }
+      100% { transform: translateX(400%) skewX(-15deg); }
+    }
+
     /* ── TYPOGRAPHY ── */
     .d {
       font-family: var(--font-d);
@@ -803,10 +813,49 @@
       background: var(--bg-card3)
     }
 
+    @property --border-angle {
+      syntax: '<angle>';
+      inherits: true;
+      initial-value: 0deg;
+    }
+
     .act-btn.passive-ready {
-      border-color: rgba(255, 214, 0, .35);
-      background: var(--accent-light);
-      box-shadow: 0 0 0 1px rgba(255, 214, 0, .15) inset
+      border: none;
+      background:
+        linear-gradient(var(--bg-card2), var(--bg-card2)) padding-box,
+        conic-gradient(
+          from var(--border-angle),
+          rgba(255,214,0,1)    0%,
+          rgba(255,214,0,.75) 25%,
+          rgba(255,214,0,1)   50%,
+          rgba(255,214,0,.75) 75%,
+          rgba(255,214,0,1)   100%
+        ) border-box;
+      border: 2.5px solid transparent;
+      box-shadow:
+        0 0 10px rgba(255,214,0,.15),
+        0 0 24px rgba(255,214,0,.08);
+      animation: holoBorderSpin 3s linear infinite;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .act-btn.passive-ready::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255,214,0,.06) 40%,
+        rgba(255,255,255,.13) 50%,
+        rgba(255,214,0,.06) 60%,
+        transparent 100%
+      );
+      animation: holoLightsweep 2.8s ease-in-out infinite;
+      pointer-events: none;
     }
 
     .act-btn.disabled {
@@ -2174,19 +2223,21 @@
     ];
 
     const TASKS = [
-      { id: 1, name: 'Study Marathon', items: ['Ensiklopedia', 'Ensiklopedia', 'Laptop'], reward: 20, deadline: 3 },
-      { id: 2, name: 'Coffee Run', items: ['Americano', 'Earl Grey Tea'], reward: 10, deadline: 2 },
-      { id: 3, name: 'Warteg Geng', items: ['Ayam Bakar', 'Ayam Bakar', 'Es Teh Manis', 'Es Teh Manis'], reward: 20, deadline: 3 },
-      { id: 4, name: 'Book Club', items: ['Novel', 'Ensiklopedia'], reward: 12, deadline: 2 },
-      { id: 5, name: 'Cram Session', items: ['Laptop', 'Buku Tulis', 'Americano'], reward: 18, deadline: 3 },
-      { id: 6, name: 'Perpus Bareng', items: ['Ensiklopedia', 'Novel', 'Buku Tulis'], reward: 15, deadline: 2 },
-      { id: 7, name: 'Lunch Squad', items: ['Ayam Bakar', 'Es Teh Manis', 'Americano'], reward: 15, deadline: 2 },
-      { id: 8, name: 'All-Nighter', items: ['Laptop', 'Americano', 'Americano', 'Buku Tulis'], reward: 25, deadline: 4 },
-      { id: 9, name: 'Diskusi Tugas Besar', items: ['Laptop', 'Ensiklopedia', 'Ensiklopedia', 'Novel'], reward: 28, deadline: 4 },
-      { id: 10, name: 'Nongkrong Santuy', items: ['Earl Grey Tea', 'Es Teh Manis'], reward: 8, deadline: 2 },
+      { id: 1,  name: 'Study Date Certified',   itemPool: ['Ensiklopedia', 'Boba Tea', 'Laptop', 'Stationery', 'Americano', 'Novel'] },
+      { id: 2,  name: 'Deadline Era',            itemPool: ['Laptop', 'Americano', 'Stationery', 'Ensiklopedia', 'Boba Tea', 'Americano'] },
+      { id: 3,  name: 'Piknik Mendadak',         itemPool: ['Ayam Bakar', 'Bakso', 'Novel', 'Boba Tea', 'Americano', 'Ayam Bakar'] },
+      { id: 4,  name: 'All-Nighter Protocol',    itemPool: ['Laptop', 'Americano', 'Stationery', 'Boba Tea', 'Americano', 'Laptop'] },
+      { id: 5,  name: 'Lunch Break Drama',       itemPool: ['Ayam Bakar', 'Bakso', 'Americano', 'Ayam Bakar', 'Bakso', 'Boba Tea'] },
+      { id: 6,  name: 'Research Arc',            itemPool: ['Ensiklopedia', 'Novel', 'Laptop', 'Stationery', 'Ensiklopedia', 'Novel'] },
+      { id: 7,  name: 'Movie Night Ges',         itemPool: ['Bakso', 'Boba Tea', 'Americano', 'Novel', 'Ayam Bakar', 'Bakso'] },
+      { id: 8,  name: 'WFC (Work From Cafe)',    itemPool: ['Laptop', 'Boba Tea', 'Americano', 'Stationery', 'Laptop', 'Ensiklopedia'] },
+      { id: 9,  name: 'Brain Rot di Cafe',       itemPool: ['Boba Tea', 'Americano', 'Novel', 'Stationery', 'Boba Tea', 'Bakso'] },
+      { id: 10, name: 'Rapat + Makan',           itemPool: ['Ayam Bakar', 'Bakso', 'Ensiklopedia', 'Americano', 'Bakso', 'Ayam Bakar'] },
+      { id: 11, name: 'Mabar Session',           itemPool: ['Laptop', 'Bakso', 'Americano', 'Boba Tea', 'Stationery', 'Laptop'] },
+      { id: 12, name: 'Edutrip Chaos',           itemPool: ['Novel', 'Ensiklopedia', 'Ayam Bakar', 'Bakso', 'Boba Tea', 'Americano'] },
     ];
 
-    const ALL_ITEMS = ['Ensiklopedia', 'Novel', 'Americano', 'Earl Grey Tea', 'Laptop', 'Buku Tulis', 'Ayam Bakar', 'Es Teh Manis'];
+    const ALL_ITEMS = ['Ensiklopedia', 'Novel', 'Americano', 'Boba Tea', 'Laptop', 'Stationery', 'Ayam Bakar', 'Bakso'];
 
     const SCENARIOS = [
       {
@@ -2431,6 +2482,7 @@
       lastUsedItem: null,
       recentScenarios: [],
       pendingFailedTasks: [],
+      burnoutNotifiedIdx: -1,
     };
 
     // ── UTILS ─────────────────────────────────────────────────────────────────
@@ -2472,6 +2524,21 @@
         if (!raw) return false;
         const saved = JSON.parse(raw);
         Object.assign(G, saved);
+
+        // ── MIGRATION: fix old groupTask format (pre-0.3.3) ──
+        if (G.groupTasks) {
+          G.groupTasks = G.groupTasks.map(gt => {
+            if (!gt.items && gt.taskDef) {
+              gt.items      = gt.taskDef.items      || [];
+              gt.reward     = gt.taskDef.reward     || 15;
+              gt.punishment = gt.taskDef.punishment || 15;
+            }
+            if (!gt.initialDeadline) gt.initialDeadline = gt.deadline;
+            return gt;
+          });
+        }
+        if (!G.burnoutNotifiedIdx) G.burnoutNotifiedIdx = -1;
+
         return true;
       } catch(e) {
         console.warn('[loadGame] Gagal load save:', e);
@@ -2959,6 +3026,9 @@
         if (cur.flagged) tags.innerHTML += '<span class="tag tag-flag mt4" style="display:inline-block">⚑ Flagged</span>';
         if (cur.burnout) tags.innerHTML += '<span class="tag mt4" style="display:inline-block;background:rgba(255,107,53,.15);color:#FF6B35;border:1px solid rgba(255,107,53,.3);margin-left:4px">😵 Burnout</span>';
         if (cur.fmDoubleActive) tags.innerHTML += '<span class="tag mt4" style="display:inline-block;background:rgba(0,200,150,.15);color:var(--success);border:1px solid rgba(0,200,150,.3);margin-left:4px">📱 FM 2×</span>';
+        const handSize = (G.inventory[cur.char.id] || []).length + (G.itemInventory[cur.char.id] || []).length;
+        const handColor = handSize >= 3 ? 'var(--primary)' : handSize >= 2 ? 'var(--accent)' : 'rgba(255,255,255,.5)';
+        tags.innerHTML += `<span class="tag mt4" style="display:inline-block;background:rgba(255,255,255,.06);color:${handColor};border:1px solid rgba(255,255,255,.12);margin-left:4px">🃏 ${handSize}/3</span>`;
       }
 
       // SB display
@@ -3034,6 +3104,47 @@
         if (passiveSub) passiveSub.textContent = `Tersedia dalam ${2 - cur.passiveCooldown} session lagi`;
       }
 
+      // Task deadline warning — show once per session per task
+      if (!cur.burnout) {
+        const urgentTasks = (G.groupTasks || []).filter(gt =>
+          gt.confirmed && !gt.completed &&
+          gt.participants.includes(cur.char.id) &&
+          !gt.deadlineWarned &&
+          (gt.deadline - (G.session - gt.sessionStart)) <= 1
+        );
+        if (urgentTasks.length > 0) {
+          urgentTasks.forEach(gt => { gt.deadlineWarned = true; });
+          const taskList = urgentTasks.map(gt =>
+            `<div class="card2" style="padding:10px 14px;margin-bottom:6px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.25);text-align:left">
+              <div style="font-weight:600;font-size:13px;color:rgba(255,255,255,.9)">${gt.taskDef.name}</div>
+              <div style="font-size:11px;color:#FF6B35;margin-top:3px">⏳ Sisa ${gt.deadline - (G.session - gt.sessionStart)} session — segera submit!</div>
+            </div>`
+          ).join('');
+          showPopup(`
+            <div style="font-size:52px;margin-bottom:12px">⚠️</div>
+            <div class="d md mb4" style="color:#FF6B35">Task Hampir Deadline!</div>
+            <p class="b-sm c-muted mb16">Task berikut harus diselesaikan sekarang atau gagal di session berikutnya:</p>
+            ${taskList}
+            <button class="btn btn-p mt4" onclick="closePopup()">MENGERTI →</button>
+          `);
+        }
+      }
+
+      // Burnout notification popup — show once per turn
+      if (cur.burnout && G.burnoutNotifiedIdx !== G.currentIdx) {
+        G.burnoutNotifiedIdx = G.currentIdx;
+        showPopup(`
+          <div style="font-size:52px;margin-bottom:12px">😵</div>
+          <div class="d md mb4" style="color:#FF6B35">Burnout!</div>
+          <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">
+            <strong style="color:rgba(255,255,255,.85)">${displayName}</strong> kehabisan Social Battery dan tidak bisa melakukan aksi apapun di giliran ini.<br><br>
+            SB akan pulih <strong style="color:rgba(255,255,255,.7)">+1</strong> di session berikutnya.<br><br>
+            <span style="color:rgba(255,107,53,.8)">Semua aksi termasuk Power-Up tidak dapat digunakan selama Burnout.</span>
+          </p>
+          <button class="btn btn-o" onclick="closePopup();endPhase()">SKIP GILIRAN →</button>
+        `);
+      }
+
       // Start 60s phase action timer
       startPhaseTimer();
 
@@ -3055,14 +3166,14 @@
           ${p.burnout && !p.eliminated ? '<span style="font-size:12px">😵</span>' : ''}
         </div>
         <div style="display:flex;gap:2px;align-items:center">
-          ${Array.from({ length: 10 }, (_, j) => `<div style="width:5px;height:5px;border-radius:50%;background:${j < psb ? 'var(--accent)' : 'rgba(255,255,255,.1)'}"></div>`).join('')}
+          ${Array.from({ length: 5 }, (_, j) => `<div style="width:5px;height:5px;border-radius:50%;background:${j < psb ? 'var(--accent)' : 'rgba(255,255,255,.1)'}"></div>`).join('')}
         </div>
       </div>
       ${playerTasks.length > 0 && !p.eliminated ? `
         <div class="mt8" style="border-top:1px solid rgba(255,255,255,.05);padding-top:8px">
           <div class="lbl c-muted mb4" style="font-size:9px">${playerTasks.length} TASK AKTIF</div>
           ${playerTasks.map(gt => {
-          const allNeeded = gt.taskDef.items;
+          const allNeeded = gt.items;
           const allCollected = Object.values(gt.collected).flat();
           const needed = [...allNeeded];
           const got = [];
@@ -3103,6 +3214,10 @@
     }
 
     function endPhase() {
+      if (G.phaseEnded) return;
+      G.phaseEnded = true;
+      G.burnoutNotifiedIdx = -1;
+
       // Guard against double-calls (e.g. from FM popup callback + LANJUTKAN button)
       if (G.phaseEnded) return;
       G.phaseEnded = true;
@@ -3158,7 +3273,7 @@
         if (gt.completed) return false;
         if ((G.session - gt.sessionStart) >= gt.deadline) {
           const before = meterCur;
-          meterCur = Math.max(0, meterCur - 8);
+          meterCur = Math.max(0, meterCur - (gt.punishment || 15));
           failedTasks.push({ gt, meterBefore: before, meterAfter: meterCur });
           return false;
         }
@@ -3265,31 +3380,31 @@
         return pTasks.length < 2;
       });
 
-      // Determine task type: solo or group
-      let participants;
-      const SOLO_CHANCE = 0.2; // 20% chance for solo task
+      // Participant count: fixed options 2, 4, 6 — capped to available players with slots
+      const validCounts = [2, 4, 6].filter(n => n <= othersWithSlot.length);
+      if (validCounts.length === 0) {
+        renderTaskResult(null, 'Butuh minimal 2 pemain aktif untuk Limited Task!');
+        return;
+      }
+      const participantCount = validCounts[Math.floor(Math.random() * validCounts.length)];
 
-      if (othersWithSlot.length === 1) {
-        // Only current player has slot → solo task
-        participants = [cur];
+      // Pick participants: current player + random others
+      const others = othersWithSlot.filter(p => p.char.id !== cur.char.id);
+      const randomOthers = shuffle(others).slice(0, participantCount - 1);
+      const participants = [cur, ...randomOthers];
+
+      // Derive item count, reward, punishment, deadline from participant count
+      let itemCount, reward, punishment, deadline;
+      if (participantCount <= 3) {
+        itemCount = 2; reward = 15; punishment = 15; deadline = 3;
+      } else if (participantCount <= 5) {
+        itemCount = 3; reward = 25; punishment = 25; deadline = 4;
       } else {
-        // Multiple players have slot
-        if (Math.random() < SOLO_CHANCE) {
-          // Solo task (20% chance)
-          participants = [cur];
-        } else {
-          // Group task (80% chance) - random 2 to all available players
-          const others = othersWithSlot.filter(p => p.char.id !== cur.char.id);
-          const minOthers = 1; // min total = 2 (cur + 1 other)
-          const maxOthers = others.length; // could be 2, 3, or 4 players total
-          const numOthers = minOthers + Math.floor(Math.random() * (maxOthers - minOthers + 1));
-          const randomOthers = shuffle(others).slice(0, numOthers);
-          participants = [cur, ...randomOthers];
-        }
+        itemCount = 4; reward = 35; punishment = 35; deadline = 5;
       }
 
-      // Deadline based on task weight
-      const deadline = taskDef.deadline;
+      // Pick items from itemPool (take first N)
+      const items = (taskDef.itemPool || []).slice(0, itemCount);
 
       const groupTask = {
         taskDef,
@@ -3297,6 +3412,10 @@
         collected: {},  // charId → [items submitted]
         sessionStart: G.session,
         deadline,
+        items,
+        reward,
+        punishment,
+        participantCount,
         completed: false,
         confirmed: false,  // Belum dikonfirmasi
       };
@@ -3322,11 +3441,12 @@
       el.innerHTML = `
     <div style="font-size:48px;margin-bottom:12px;animation:pop .4s ease">📋</div>
     <div class="d md mb4">${gt.taskDef.name}</div>
-    <span class="tag tag-reward mb16" style="display:inline-block">+${gt.taskDef.reward} FM</span>
+    <span class="tag tag-reward mb16" style="display:inline-block">+${gt.reward} FM</span>
+    <span class="tag mb16" style="display:inline-block;background:rgba(255,45,120,.15);color:var(--primary);border:1px solid rgba(255,45,120,.25)">-${gt.punishment} FM jika gagal</span>
     <div class="card mb16" style="text-align:left">
       <div class="lbl c-muted mb8">ITEM YANG DIBUTUHKAN</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
-        ${gt.taskDef.items.map(item => `<span class="tag tag-item">${item}</span>`).join('')}
+        ${gt.items.map(item => `<span class="tag tag-item">${item}</span>`).join('')}
       </div>
       <div class="lbl c-muted mb8">PESERTA</div>
       <div class="stack">
@@ -3408,7 +3528,7 @@
         if (myTasks.length > 0) {
           let tasksHtml = `<div class="lbl c-muted mb8 mt16">GROUP TASK KAMU</div>`;
           myTasks.forEach(gt => {
-            const allNeeded = gt.taskDef.items;
+            const allNeeded = gt.items;
             const allCollected = Object.values(gt.collected).flat();
             const needed = [...allNeeded];
             const got = [];
@@ -3578,8 +3698,8 @@
         effect: 'Mendapatkan Americano! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
       },
       'cafe_item_003': {
-        name: 'Earl Grey Tea', type: 'item', emoji: '🍵', loc: 'cafe',
-        effect: 'Mendapatkan Earl Grey Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
+        name: 'Boba Tea', type: 'item', emoji: '🧋', loc: 'cafe',
+        effect: 'Mendapatkan Boba Tea! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Cafe)'
       },
 
       // ── CAFE SPECIAL/ACTION/INSTANT ─────────────────────────────────────────
@@ -3604,7 +3724,7 @@
       },
       'cafe_instant_001': {
         name: 'Awas Tumpah!', type: 'instant', emoji: '⚠️', loc: 'cafe',
-        effect: 'Ambil 1 kartu [Americano/Earl Grey Tea] teratas dari deck kemudian buang ke discard pile.'
+        effect: 'Ambil 1 kartu [Americano/Boba Tea] teratas dari deck kemudian buang ke discard pile.'
       },
 
       // ── KELAS ITEMS ─────────────────────────────────────────────────────────
@@ -3613,8 +3733,8 @@
         effect: 'Mendapatkan Laptop! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
       },
       'kelas_item_003': {
-        name: 'Buku Tulis', type: 'item', emoji: '📓', loc: 'kelas',
-        effect: 'Mendapatkan Buku Tulis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
+        name: 'Stationery', type: 'item', emoji: '✏️', loc: 'kelas',
+        effect: 'Mendapatkan Stationery! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kelas)'
       },
 
       // ── KELAS SPECIAL/ACTION/INSTANT ────────────────────────────────────────
@@ -3648,8 +3768,8 @@
         effect: 'Mendapatkan Ayam Bakar! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
       },
       'kantin_item_003': {
-        name: 'Es Teh Manis', type: 'item', emoji: '🧋', loc: 'kantin',
-        effect: 'Mendapatkan Es Teh Manis! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
+        name: 'Bakso', type: 'item', emoji: '🍜', loc: 'kantin',
+        effect: 'Mendapatkan Bakso! Dapat digunakan untuk menyelesaikan Task (Hanya bisa didapatkan di Kantin)'
       },
 
       // ── KANTIN SPECIAL/ACTION/INSTANT ───────────────────────────────────────
@@ -3660,7 +3780,7 @@
       },
       'kantin_action_001': {
         name: 'Sharing is Caring', type: 'action', emoji: '🤝', loc: 'kantin',
-        effect: 'Ambil 1 kartu [Ayam Bakar/Es Teh Manis] teratas dari deck.',
+        effect: 'Ambil 1 kartu [Ayam Bakar/Bakso] teratas dari deck.',
         sb: 2
       },
       'kantin_action_002': {
@@ -4253,13 +4373,14 @@
       let meterDelta = 0;
       let itemUsedInTask = false;
       let corruptDetected = null; // Will hold {taskName, corruptItems: [{name, submitterName}]}
+      let submissionInfo = null; // Will hold partial submission info for popup
 
       // Track last used item for Artist passive (only clean items)
       if (!isCorrupt) G.lastUsedItem = itemName;
       initGroupTasks();
 
       G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id)).forEach(gt => {
-        const allNeeded = gt.taskDef.items;
+        const allNeeded = gt.items;
         // Check if this item is still needed
         const allCollected = Object.values(gt.collected).flat().map(i => i.name || i);
         const stillNeeded = [...allNeeded];
@@ -4270,6 +4391,21 @@
         if (!gt.collected[cur.char.id]) gt.collected[cur.char.id] = [];
         gt.collected[cur.char.id].push({ name: itemName, corrupt: isCorrupt, by: cur.char.id });
         itemUsedInTask = true;
+
+        // Rolling deadline: extend by 1 session per item submitted, capped at initialDeadline + totalNeeded
+        const maxDeadline = (gt.initialDeadline || gt.deadline) + allNeeded.length;
+        if (!gt.initialDeadline) gt.initialDeadline = gt.deadline;
+        gt.deadline = Math.min(gt.deadline + 1, maxDeadline);
+
+        // Track submission info for notification popup
+        const newTotalCollected = Object.values(gt.collected).flat().length;
+        submissionInfo = {
+          taskName: gt.taskDef.name,
+          itemName,
+          totalCollected: newTotalCollected,
+          totalNeeded: allNeeded.length,
+          sessionsLeft: gt.deadline - (G.session - gt.sessionStart),
+        };
 
         // ── CORRUPT CHECK: Only when ALL required item slots are filled ──
         const totalCollected = Object.values(gt.collected).flat().length;
@@ -4299,7 +4435,7 @@
           } else {
             // No corrupt items — task completed normally
             gt.completed = true;
-            const reward = cur.fmDoubleActive ? gt.taskDef.reward * 2 : gt.taskDef.reward;
+            const reward = cur.fmDoubleActive ? gt.reward * 2 : gt.reward;
             meterDelta += reward;
           }
         }
@@ -4323,9 +4459,41 @@
       if (meterDelta !== 0) {
         G.meter = Math.max(0, Math.min(100, G.meter + meterDelta));
         showFmPopup(meterDelta, G.meter, () => endPhase());
+      } else if (submissionInfo) {
+        showItemSubmitPopup(submissionInfo, () => endPhase());
       } else {
         endPhase();
       }
+    }
+
+    // ── POPUP: ITEM BERHASIL DISUBMIT ─────────────────────────────────────────
+    function showItemSubmitPopup(info, onDismiss) {
+      const progressPct = Math.round((info.totalCollected / info.totalNeeded) * 100);
+      const remaining = info.totalNeeded - info.totalCollected;
+      const gradColor = progressPct >= 75 ? 'var(--gradient-meter-high)' : progressPct >= 50 ? 'var(--gradient-meter-mid)' : 'var(--gradient-meter-low)';
+      showPopup(`
+        <div style="font-size:52px;margin-bottom:12px">✅</div>
+        <div class="d md mb4" style="color:var(--success)">Item Berhasil Disubmit!</div>
+        <p class="b-sm c-muted mb16"><strong style="color:rgba(255,255,255,.85)">${info.itemName}</strong> diterima untuk task <strong style="color:var(--accent)">${info.taskName}</strong></p>
+        <div class="card2 mb12" style="text-align:left;padding:14px">
+          <div class="lbl c-muted mb8">PROGRESS TASK</div>
+          <div style="background:rgba(255,255,255,.07);border-radius:99px;height:6px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${progressPct}%;background:${gradColor};border-radius:99px;transition:width .6s ease"></div>
+          </div>
+          <div class="b-sm" style="display:flex;justify-content:space-between">
+            <span style="color:var(--success)">${info.totalCollected}/${info.totalNeeded} item terkumpul</span>
+            <span style="color:var(--text-muted)">${progressPct}%</span>
+          </div>
+          ${remaining > 0 ? `<div class="b-sm c-muted mt6">Masih butuh <strong style="color:rgba(255,255,255,.7)">${remaining} item</strong> lagi</div>` : ''}
+        </div>
+        <div class="card2 mb16" style="text-align:left;padding:12px 14px;background:rgba(71,84,214,.08);border:1px solid rgba(71,84,214,.2)">
+          <div class="b-sm" style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">⏳</span>
+            <span style="color:rgba(255,255,255,.8)">Deadline diperpanjang <strong style="color:var(--accent)">+1 session</strong> — sisa <strong style="color:var(--accent)">${info.sessionsLeft} session</strong></span>
+          </div>
+        </div>
+        <button class="btn btn-p" onclick="closePopup()">LANJUT →</button>
+      `, onDismiss);
     }
 
     // ── POPUP: CORRUPT ITEM TERDETEKSI ──────────────────────────────────────
@@ -4359,7 +4527,7 @@
       const otherTasks = G.groupTasks.filter(gt => gt.confirmed && !gt.completed && !gt.participants.includes(cur.char.id));
       let otherTaskNeedingItem = null;
       for (const gt of otherTasks) {
-        const allNeeded = gt.taskDef.items;
+        const allNeeded = gt.items;
         const allCollected = Object.values(gt.collected).flat().map(i => i.name || i);
         const stillNeeded = [...allNeeded];
         allCollected.forEach(it => { const i = stillNeeded.indexOf(it); if (i >= 0) stillNeeded.splice(i, 1); });
@@ -4880,12 +5048,30 @@
   `).join('');
     }
 
+    function showHandFullPopup() {
+      showPopup(`
+      <div style="font-size:52px;margin-bottom:12px">🚫</div>
+      <div class="d md mb4">Hand Penuh!</div>
+      <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">Kamu sudah punya 3 kartu di tangan. Gunakan atau buang kartu dulu sebelum ambil kartu baru.</p>
+      <button class="btn btn-p" onclick="closePopup()">OK</button>
+      `);
+    }
+
     function addCardToInventory(cardName) {
       const card = CARDS[Object.keys(CARDS).find(key => CARDS[key].name === cardName)];
       if (!card) return;
 
       const cur = G.order[G.currentIdx];
       const charId = cur.char.id;
+
+      // Prevent exceeding max hand size of 3 (instant cards bypass this)
+      if (card.type !== 'instant') {
+        const handSize = (G.inventory[cur.char.id] || []).length + (G.itemInventory[cur.char.id] || []).length;
+        if (handSize >= 3) {
+          showHandFullPopup();
+          return;
+        }
+      }
 
       // Prevent duplicate items in inventory
       const existingItems = G.itemInventory[charId] || [];
@@ -4928,16 +5114,60 @@
       <button class="btn btn-y" onclick="closePopup()">OK</button>
         `);
       } else {
+        let undoSeconds = 5;
+        let undoTimer = null;
+        let undoUsed = false;
+
         showPopup(`
       <div style="font-size:52px;margin-bottom:12px">✅</div>
       <div class="d md mb4">Kartu Disimpan!</div>
       <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
       <div class="d sm mb4">${card.name}</div>
       <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
-      <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">${card.effect}</p>
-      <button class="btn btn-p" onclick="closePopup();endPhase()">LANJUT →</button>
+      <p class="b-sm c-muted mb16" style="max-width:260px;margin:0 auto 16px">${card.effect}</p>
+      <button class="btn btn-p mb10" onclick="closePopup();endPhase()">LANJUT →</button>
+      <br>
+      <button class="btn btn-o btn-sm" id="undo-draw-btn" onclick="undoLastDraw('${card.name}','${card.type}')">
+        ↩ Batalkan Draw <span id="undo-countdown">(${undoSeconds}s)</span>
+      </button>
         `);
+
+        undoTimer = setInterval(() => {
+          undoSeconds--;
+          const el = document.getElementById('undo-countdown');
+          if (el) el.textContent = `(${undoSeconds}s)`;
+          if (undoSeconds <= 0) {
+            clearInterval(undoTimer);
+            const btn = document.getElementById('undo-draw-btn');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.3'; btn.textContent = 'Waktu undo habis'; }
+          }
+        }, 1000);
       }
+    }
+
+    function undoLastDraw(cardName, cardType) {
+      const cur = G.order[G.currentIdx];
+      const charId = cur.char.id;
+      if (cardType === 'item') {
+        const inv = G.itemInventory[charId] || [];
+        const idx = inv.findLastIndex(i => i.card.name === cardName);
+        if (idx >= 0) G.itemInventory[charId].splice(idx, 1);
+      } else {
+        const inv = G.inventory[charId] || [];
+        const idx = inv.findLastIndex(i => i.card.name === cardName);
+        if (idx >= 0) G.inventory[charId].splice(idx, 1);
+      }
+      closePopup();
+      showPopup(`
+        <div style="font-size:52px;margin-bottom:12px">↩️</div>
+        <div class="d md mb4">Draw Dibatalkan</div>
+        <p class="b-sm c-muted mb20" style="max-width:260px;margin:0 auto 20px">
+          <strong>${cardName}</strong> telah dihapus dari inventory. Kamu bisa draw kartu lain.
+        </p>
+        <button class="btn btn-p mb10" onclick="closePopup();goto('s-draw')">🃏 DRAW LAGI</button>
+        <br>
+        <button class="btn btn-o btn-sm" onclick="closePopup();goto('s-main')">← Kembali ke Menu</button>
+      `);
     }
 
     // ── CARD EFFECT ENGINE ────────────────────────────────────────────────────
@@ -5084,14 +5314,14 @@
         cur.sb = Math.max(0, (cur.sb ?? 5) - sbCost);
         if (cur.sb <= 0) cur.burnout = true;
         plainResult(card.emoji, card.name,
-          `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Es Teh Manis dari deck Kantin secara fisik.</div><div class="b-sm mt8" style="color:var(--primary)">-${sbCost} SB dipakai</div></div>`);
+          `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Ayam Bakar atau Bakso dari deck Kantin secara fisik.</div><div class="b-sm mt8" style="color:var(--primary)">-${sbCost} SB dipakai</div></div>`);
         return;
       }
 
       // ── AWAS TUMPAH! ─────────────────────────────────────────────────────────
       if (card.name === 'Awas Tumpah!') {
         plainResult(card.emoji, card.name,
-          `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Americano atau Earl Grey Tea dari deck Cafe — buang ke discard pile.</div></div>`);
+          `<div class="card2 mb12" style="text-align:left;padding:14px"><div class="b-sm c-muted">Ambil 1 kartu Americano atau Boba Tea dari deck Cafe — buang ke discard pile.</div></div>`);
         return;
       }
 
@@ -5225,7 +5455,16 @@
     }
 
     // ── DRAW SCAN RESULT ──────────────────────────────────────────────────────
-    function drawCard() { goto('s-draw'); }
+    function drawCard() {
+      const cur = G.order[G.currentIdx];
+      const charId = cur.char.id;
+      const handSize = (G.inventory[cur.char.id] || []).length + (G.itemInventory[cur.char.id] || []).length;
+      if (handSize >= 3) {
+        showHandFullPopup();
+        return;
+      }
+      goto('s-draw');
+    }
 
     function openScannerForDraw() {
       openScanner('draw', 'SCAN KARTU', 'Arahkan ke QR code kartu yang diambil dari deck');
@@ -5603,7 +5842,7 @@ if (curInv.length === 0 || others.length === 0) {
 
     // ── TASK FAIL POPUP QUEUE ─────────────────────────────────────────────────
     function buildTaskFailHTML(gt) {
-      const allNeeded = gt.taskDef.items;
+      const allNeeded = gt.items || [];
       const allCollected = Object.values(gt.collected || {}).flat();
       const needed = [...allNeeded];
       const got = [];
@@ -5615,6 +5854,11 @@ if (curInv.length === 0 || others.length === 0) {
       const collectedCount = got.length;
       const progressPct = totalItems > 0 ? Math.round((collectedCount / totalItems) * 100) : 0;
       const gradColor = progressPct >= 75 ? 'var(--gradient-meter-high)' : progressPct >= 50 ? 'var(--gradient-meter-mid)' : 'var(--gradient-meter-low)';
+      const punishment = gt.punishment || 15;
+      const participantNames = (gt.participants || []).map(id => {
+        const p = G.order.find(o => o.char.id === id);
+        return p ? (p.nickname || p.char.name) : id;
+      }).join(', ');
       return `<div style="background:rgba(255,45,120,.06);border:1px solid rgba(255,45,120,.18);border-radius:10px;padding:10px 12px;margin-top:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-weight:600;font-size:13px;color:var(--text-primary)">${gt.taskDef.name}</span>
@@ -5623,11 +5867,13 @@ if (curInv.length === 0 || others.length === 0) {
         <div style="background:rgba(255,255,255,.07);border-radius:99px;height:4px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${progressPct}%;background:${gradColor};border-radius:99px"></div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
           ${got.map(it => `<span style="font-size:10px;padding:2px 6px;background:rgba(0,200,150,.15);color:var(--success);border-radius:4px;border:1px solid rgba(0,200,150,.2)">✓ ${it.name || it}</span>`).join('')}
           ${needed.map(it => `<span style="font-size:10px;padding:2px 6px;background:rgba(255,255,255,.05);color:var(--text-muted);border-radius:4px;border:1px solid rgba(255,255,255,.08)">⌛ ${it}</span>`).join('')}
         </div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Progress: ${collectedCount}/${totalItems} (${progressPct}%)</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Progress: ${collectedCount}/${totalItems} (${progressPct}%)</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">👥 ${participantNames}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--primary);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,45,120,.15)">-${punishment} FM dikenakan ke Friendship Meter</div>
       </div>`;
     }
 
@@ -5639,10 +5885,11 @@ if (curInv.length === 0 || others.length === 0) {
       }
       const item = G.pendingFailedTasks.shift();
       const { gt, meterBefore, meterAfter } = item;
-      const delta = meterAfter - meterBefore; // negative, e.g. -8
+      const delta = meterAfter - meterBefore; // negative
+      const punishment = gt.punishment || 15;
       showFmPopup(delta, meterAfter, function () {
         showPendingTaskFailPopups(callback);
-      }, { title: 'GROUP TASK GAGAL', html: buildTaskFailHTML(gt) });
+      }, { title: `GROUP TASK GAGAL  ·  -${punishment} FM`, html: buildTaskFailHTML(gt) });
     }
 
     // ── MEETING ───────────────────────────────────────────────────────────────
@@ -5738,7 +5985,7 @@ if (curInv.length === 0 || others.length === 0) {
      showPopup(`
         <div style="font-size:52px;margin-bottom:12px">⏰</div>
         <div class="d md mb4" style="color:var(--primary)">Waktu Habis!</div>
-        <p class="b-sm c-muted mb20">Waktu memilih aksi untuk <strong style="color:rgba(255,255,255,.85)">${cur?.char?.name || 'pemain ini'}</strong> sudah habis. Giliran dilewati otomatis.</p>
+        <p class="b-sm c-muted mb20">Waktu memilih aksi untuk <strong style="color:rgba(255,255,255,.85)">${G.order[G.currentIdx]?.char?.name || 'pemain ini'}</strong> sudah habis. Giliran dilewati otomatis.</p>
         <button class="btn btn-p" onclick="closePopup();endPhase()">SKIP GILIRAN →</button>
       `);
     }
@@ -6096,7 +6343,7 @@ if (curInv.length === 0 || others.length === 0) {
         if (gt.completed) return false;
         if ((G.session - gt.sessionStart) >= gt.deadline) {
           const before = meterCur;
-          meterCur = Math.max(0, meterCur - 8);
+          meterCur = Math.max(0, meterCur - (gt.punishment || 15));
           failedTasks.push({ gt, meterBefore: before, meterAfter: meterCur });
           return false;
         }
@@ -6229,16 +6476,29 @@ if (curInv.length === 0 || others.length === 0) {
     setTimeout(initSplashStars, 100);
 
    // ── PATCH NOTES ───────────────────────────────────────────────────────────
-    const APP_VERSION = '0.3.2'; // ← GANTI INI setiap update
+    const APP_VERSION = '0.3.4'; // ← GANTI INI setiap update
 
    const PATCH_NOTES = [
       {
-        version: '0.3.2',
-        date: '12 Mei, 2026',
+        version: '0.3.4',
+        date: '13 Mei, 2026',
         sections: [
           {
             title: "What's New",
             changes: [
+              { type: 'add', text: 'Burnout Notification — A popup now appears automatically at the start of a burned-out player\'s turn, informing them that all actions including Power-Ups are unavailable. Includes a direct Skip Turn button.' },
+              { type: 'add', text: 'Task Deadline Warning — If a player has an active task with only 1 session remaining when their turn begins, a warning popup appears urging them to submit immediately.' },
+              { type: 'add', text: 'Undo Draw Card — After drawing a card, players now have a 5-second window to cancel the draw. Cancelling removes the card from inventory and lets the player draw again or return to the main menu.' },
+              { type: 'add', text: 'Item Submit Notification — A popup now appears each time a player successfully submits an item to a Limited Task, showing task progress, items remaining, and the rolling deadline extension.' },
+              { type: 'add', text: 'Task Fail Punishment Breakdown — The task fail popup now includes a full breakdown: task name, item progress, participant names, and exact FM penalty applied.' },
+              { type: 'add', text: 'Hand Size Indicator — Current player\'s hand size is now displayed as a persistent 🃏 X/3 badge in the player status tags area on the main screen.' },
+              { type: 'add', text: 'Passive Ability Ready Animation — The passive ability button now displays a continuous gold hologram border animation with a light sweep effect when it is ready to use.' },
+              { type: 'add', text: 'Limited Task Overhaul — A comprehensive balancing pass on the Limited Task system. Participant counts are now fixed at 2, 4, or 6 players (capped to active player count). Item requirements, rewards, punishments, and deadlines now scale dynamically with participant count.' },
+              { type: 'add', text: 'Rolling Deadline Mechanic — Each time a player successfully submits an item to a Limited Task, the deadline is extended by 1 session. This rewards active participation and makes high-item tasks significantly more forgiving.' },
+              { type: 'add', text: 'Dynamic Task Scaling — Limited Tasks now follow a tiered structure: 2-player tasks require 2 items (±15 FM, 3-session deadline), 4-player tasks require 3 items (±25 FM, 4-session deadline), and 6-player tasks require 4 items (±35 FM, 5-session deadline).' },
+              { type: 'add', text: 'Maximum Hand Size — Player hand is now capped at 3 cards. Attempting to draw or add a card beyond the limit will display a notification prompting the player to use or discard a card first.' },
+              { type: 'add', text: 'Task Library Refresh — All 10 previous tasks have been replaced with 12 new ones featuring mixed item themes across locations. New tasks include: Study Date Certified, Deadline Era, Piknik Mendadak, All-Nighter Protocol, Lunch Break Drama, Research Arc, Movie Night Ges, WFC (Work From Cafe), Brain Rot di Cafe, Rapat + Makan, Mabar Session, and Edutrip Chaos.' },
+              { type: 'add', text: 'Item Rename — Three items have been renamed for better thematic fit: Earl Grey Tea → Boba Tea 🧋, Buku Tulis → Stationery ✏️, Es Teh Manis → Bakso 🍜. All gameplay references, card effects, and task pools have been updated accordingly.' },
               { type: 'add', text: 'Game State Persistence (Save Files) — The app now automatically saves game progress to the device. If the browser is refreshed or closed mid-game, players can resume from where they left off.' },
               { type: 'add', text: 'Patch Notes & Version Information — Players can now view the latest updates, bug fixes, and upcoming features directly within the app.' },
               { type: 'add', text: 'Scenario Timer — Scenario now has a 2-minute time limit, encouraging faster decision-making and keeping sessions moving at a consistent pace.' },
@@ -6252,6 +6512,12 @@ if (curInv.length === 0 || others.length === 0) {
           {
             title: 'Bug Fixes',
             changes: [
+              { type: 'fix', text: 'Burnout Notification Loop — Fixed an uninitialized burnoutNotifiedIdx in the game state that could cause the burnout popup to skip or fire incorrectly.' },
+              { type: 'fix', text: 'Rolling Deadline Infinite Extension — Limited Task deadlines could extend indefinitely if items were submitted across many sessions. Deadline extension is now capped at initialDeadline + total item count.' },
+              { type: 'fix', text: 'Save File Crash on Load — Loading a save file created in version 0.3.2 or earlier would crash due to the old groupTask format (taskDef.items, taskDef.reward). A migration layer now automatically converts old saves on load.' },
+              { type: 'fix', text: 'Phase Timeout Popup Crash — Fixed a ReferenceError where showPhaseTimeoutPopup() referenced cur, a local variable from renderMain() that was out of scope. Now correctly uses G.order[G.currentIdx].' },
+              { type: 'fix', text: 'Social Battery Pips Showing Max 10 — The player list was rendering up to 10 SB pips despite the max being 5. Fixed to correctly render 5 pips.' },
+              { type: 'fix', text: 'Undo Draw Cancel — Cancelling a draw previously showed a "Skip Turn" button. This now correctly returns the player to the main action menu instead.' },
               { type: 'fix', text: 'Popup Stacking — Resolved an issue where multiple popups could stack on top of each other. All popups now use a unified overlay system, preventing overlap and ensuring consistent dismissal behavior.' },
               { type: 'fix', text: 'Popup System Refactor — All in-game popups have been migrated to a centralized showPopup() / closePopup() system, replacing 25+ individual createElement instances. This improves stability and makes future UI changes easier to maintain.' },
               { type: 'fix', text: 'Social Battery Recovery — Corrected recovery per turn from 3 to 1. The previous value was unintended and caused balancing issues.' },
@@ -6263,11 +6529,11 @@ if (curInv.length === 0 || others.length === 0) {
           {
             title: 'Known Issues / Future Plans',
             changes: [
-              { type: 'change', text: 'Limited Task Balancing — Limited tasks are currently underperforming and rarely chosen by players. Suspected causes include high item requirements, low deadline count, and low draw RNG. Currently under investigation.' },
+              { type: 'change', text: 'Turn Order Checklist — A button-based checklist system for tracking which players have completed their phase is still planned for a future update.' },
+              { type: 'change', text: 'Task Fail Punishment UI — The FM deduction on task fail is currently applied silently during session transitions. A dedicated punishment breakdown pop-up is planned.' },
+              { type: 'change', text: 'Hand Size UI Indicator — There is currently no persistent visual indicator showing a player\'s current hand size on the main screen. Planned for a future update.' },
               { type: 'change', text: 'Turn order checklist button system for clearer player tracking.' },
-              { type: 'change', text: 'Maximum hand size will be capped at 3 cards per player.' },
               { type: 'change', text: 'Punishment balancing — increasing the friendship meter deduction values.' },
-              { type: 'change', text: 'Maximum item count per task will be set to 3, with a minimum of 2.' },
             ]
           }
         ],
