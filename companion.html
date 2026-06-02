@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Friend or Fraud? — by PALLET'S</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     rel="stylesheet" />
   <style>
     *,
@@ -127,8 +127,8 @@
       --gradient-sb-high: linear-gradient(90deg, var(--success), var(--secondary-dark));
 
       /* ── TYPOGRAPHY ──────────────────────────────────────────────────────── */
-      --font-d: 'Bebas Neue', sans-serif;
-      --font-b: 'DM Sans', sans-serif;
+      --font-d: 'Bungee', sans-serif;
+      --font-b: 'Plus Jakarta Sans', sans-serif;
 
       /* ── BORDERS & RADIUS ────────────────────────────────────────────────── */
       --radius: 18px;
@@ -140,6 +140,13 @@
       --yellow: var(--accent);
       --pink: var(--primary);
       --card3: var(--bg-card2);
+      --border-angle: 0deg;
+    }
+
+    @property --border-angle {
+      syntax: '<angle>';
+      inherits: true;
+      initial-value: 0deg;
     }
 
     html,
@@ -263,8 +270,30 @@
     }
 
     @keyframes holoLightsweep {
-      0%   { transform: translateX(-120%) skewX(-15deg); }
-      100% { transform: translateX(400%) skewX(-15deg); }
+      0%   { transform: translateX(-150%) skewX(-15deg); opacity: 0; }
+      8%   { opacity: 1; }
+      55%  { transform: translateX(420%) skewX(-15deg); opacity: 1; }
+      56%, 100%  { transform: translateX(420%) skewX(-15deg); opacity: 0; }
+    }
+
+    #main-meter-bar, #fm-bar-fill {
+      background: linear-gradient(90deg,
+        var(--secondary) 0%,
+        var(--primary) 25%,
+        var(--accent) 50%,
+        var(--primary) 75%,
+        var(--secondary) 100%
+      ) !important;
+      background-size: 300% 100% !important;
+      animation: meterFlow 3s ease-in-out infinite !important;
+      height: 100% !important;
+      border-radius: 99px !important;
+    }
+
+    @keyframes meterFlow {
+      0%   { background-position: 0% 0%; }
+      50%  { background-position: 100% 0%; }
+      100% { background-position: 0% 0%; }
     }
 
     /* ── TYPOGRAPHY ── */
@@ -660,16 +689,16 @@
 
     /* ── CHAR CARD ── */
     .char-card {
-      background: var(--bg-card);
       border-radius: 14px;
-      padding: 14px 8px;
-      border: 1.5px solid rgba(255, 255, 255, .06);
+      padding: 0;
+      border: 2.5px solid transparent;
       cursor: pointer;
       transition: all .18s;
       text-align: center;
       -webkit-tap-highlight-color: transparent;
       position: relative;
-      overflow: hidden
+      overflow: hidden;
+      aspect-ratio: 1 / 1
     }
 
     .char-card:active {
@@ -677,14 +706,43 @@
     }
 
     .char-card.sel {
-      border-color: var(--primary);
-      background: var(--primary-light);
-      box-shadow: 0 0 0 1px rgba(255, 45, 120, .3)
+      background:
+        linear-gradient(transparent, transparent) padding-box,
+        conic-gradient(
+          from var(--border-angle),
+          var(--char-color)       0%,
+          var(--char-color-light) 12%,
+          var(--char-color)       25%,
+          var(--char-color)       55%,
+          var(--char-color)       80%,
+          var(--char-color-light) 92%,
+          var(--char-color)       100%
+        ) border-box;
+      border: 3px solid transparent;
+      animation: holoBorderSpin 2s linear infinite;
+    }
+
+    .char-card.sel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 55%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 0%,
+        color-mix(in srgb, var(--char-color) 20%, transparent) 35%,
+        color-mix(in srgb, var(--char-color-light) 40%, transparent) 50%,
+        color-mix(in srgb, var(--char-color) 20%, transparent) 65%,
+        transparent 100%
+      );
+      animation: holoLightsweep 2.2s ease-in-out infinite;
+      pointer-events: none;
+      border-radius: 12px;
     }
 
     .char-card.dis {
       opacity: .28;
-      pointer-events: none
     }
 
     .char-emoji {
@@ -796,16 +854,30 @@
       background: var(--bg-card2);
       border: 1px solid rgba(255, 255, 255, .07);
       border-radius: var(--radius);
-      padding: 14px 16px;
+      padding: 18px 12px 16px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 14px;
+      justify-content: center;
+      gap: 10px;
       cursor: pointer;
       transition: all .18s;
       width: 100%;
-      text-align: left;
+      text-align: center;
       color: var(--text-primary);
-      font-family: var(--font-b)
+      font-family: var(--font-b);
+      min-height: 80px;
+    }
+
+    .act-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .act-grid .act-btn:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
     }
 
     .act-btn:active {
@@ -826,16 +898,15 @@
         conic-gradient(
           from var(--border-angle),
           rgba(255,214,0,1)    0%,
-          rgba(255,214,0,.75) 25%,
-          rgba(255,214,0,1)   50%,
-          rgba(255,214,0,.75) 75%,
+          rgba(255,255,255,.95) 12%,
+          rgba(255,214,0,1)    25%,
+          rgba(255,214,0,.35)  55%,
+          rgba(255,214,0,1)    80%,
+          rgba(255,255,255,.95) 92%,
           rgba(255,214,0,1)   100%
         ) border-box;
-      border: 2.5px solid transparent;
-      box-shadow:
-        0 0 10px rgba(255,214,0,.15),
-        0 0 24px rgba(255,214,0,.08);
-      animation: holoBorderSpin 3s linear infinite;
+      border: 3px solid transparent;
+      animation: holoBorderSpin 2s linear infinite, passiveGlowPulse 2s ease-in-out infinite;
       overflow: hidden;
       position: relative;
     }
@@ -844,17 +915,17 @@
       content: '';
       position: absolute;
       inset: 0;
-      width: 40%;
+      width: 55%;
       height: 100%;
       background: linear-gradient(
         105deg,
         transparent 0%,
-        rgba(255,214,0,.06) 40%,
-        rgba(255,255,255,.13) 50%,
-        rgba(255,214,0,.06) 60%,
+        rgba(255,214,0,.15) 35%,
+        rgba(255,255,255,.42) 50%,
+        rgba(255,214,0,.15) 65%,
         transparent 100%
       );
-      animation: holoLightsweep 2.8s ease-in-out infinite;
+      animation: holoLightsweep 2.2s ease-in-out infinite;
       pointer-events: none;
     }
 
@@ -1525,7 +1596,7 @@
         <div class="row mb10" style="justify-content:space-between;align-items:center">
           <div class="lbl" id="char-label">Pilih Karakter (0/4)</div>
           <button onclick="randomChars()"
-            style="background:var(--accent-light);border:1px solid rgba(255,214,0,.25);color:var(--accent);border-radius:var(--radius-xs);padding:6px 12px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.06em">🎲
+            style="background:var(--accent-light);border:1px solid rgba(255,214,0,.25);color:var(--accent);border-radius:var(--radius-xs);padding:6px 12px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.06em">🎲
             RANDOM</button>
         </div>
         <div class="char-grid mb24" id="char-grid"></div>
@@ -1630,7 +1701,7 @@
       <div class="player-ind mb8">
         <span id="main-cur-emoji" style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center"></span>
         <div style="flex:1;min-width:0">
-          <div class="b-md" style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+          <div class="b-md" style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
             id="main-cur-name">The Artist</div>
           <div id="main-cur-tags" style="margin-top:3px"></div>
         </div>
@@ -1648,6 +1719,9 @@
         </div>
       </div>
 
+      <!-- active tasks -->
+      <div id="main-task-cards" style="margin-bottom:14px"></div>
+
       <!-- actions -->
       <div style="display:flex;justify-content:space-between;align-items:center" class="sec-lbl mb10">
         <span class="lbl">PILIH AKSI</span>
@@ -1656,46 +1730,41 @@
           <span id="phase-timer-val" class="d sm" style="font-size:15px;color:var(--yellow);min-width:32px;text-align:right;font-variant-numeric:tabular-nums">1:00</span>
         </div>
       </div>
-      <div class="stack mb20">
+      <div class="act-grid">
         <button class="act-btn" id="act-task" onclick="gotoTakeTask()">
           <div class="act-icon" style="background:rgba(71,84,214,.18)">📋</div>
-          <div style="flex:1">
+          <div>
             <div class="b-md" style="font-weight:600">Take Limited Task</div>
             <div class="b-sm c-muted" id="act-task-sub">0/2 task aktif</div>
           </div>
-          <div style="color:var(--muted);font-size:18px">›</div>
-        </button>
-        <button class="act-btn" id="act-item" onclick="goto('s-item')">
-          <div class="act-icon" style="background:rgba(255,214,0,.12)">📦</div>
-          <div style="flex:1">
-            <div class="b-md" style="font-weight:600">Input Item</div>
-            <div class="b-sm c-muted" id="act-item-sub">Scan QR atau pakai dari inventory</div>
-          </div>
-          <div style="color:var(--muted);font-size:18px">›</div>
-        </button>
-        <button class="act-btn" id="act-powerup" onclick="goto('s-powerup')">
-          <div class="act-icon" style="background:rgba(255,45,120,.12)">⚡</div>
-          <div style="flex:1">
-            <div class="b-md" style="font-weight:600">Use Power-Up</div>
-            <div class="b-sm c-muted" id="act-powerup-sub">Scan QR atau pakai dari inventory</div>
-          </div>
-          <div style="color:var(--muted);font-size:18px">›</div>
         </button>
         <button class="act-btn" id="act-draw" onclick="drawCard()">
           <div class="act-icon" style="background:rgba(0,200,150,.12)">🃏</div>
-          <div style="flex:1">
-            <div class="b-md" style="font-weight:600">Draw a Card</div>
+          <div>
+            <div class="b-md" style="font-weight:600">Draw &amp; Scan Card</div>
             <div class="b-sm c-muted" id="act-draw-sub">Ambil 1 kartu dari deck</div>
           </div>
-          <div style="color:var(--muted);font-size:18px">›</div>
+        </button>
+        <button class="act-btn" id="act-item" onclick="goto('s-item')">
+          <div class="act-icon" style="background:rgba(255,214,0,.12)">📦</div>
+          <div>
+            <div class="b-md" style="font-weight:600">Input Item</div>
+            <div class="b-sm c-muted" id="act-item-sub">Scan QR atau pakai dari inventory</div>
+          </div>
+        </button>
+        <button class="act-btn" id="act-powerup" onclick="goto('s-powerup')">
+          <div class="act-icon" style="background:rgba(255,45,120,.12)">⚡</div>
+          <div>
+            <div class="b-md" style="font-weight:600">Use Action Card</div>
+            <div class="b-sm c-muted" id="act-powerup-sub">Scan QR atau pakai dari inventory</div>
+          </div>
         </button>
         <button class="act-btn" id="act-passive" onclick="goto('s-passive')">
           <div class="act-icon" style="background:rgba(255,214,0,.12)">✨</div>
-          <div style="flex:1">
-            <div class="b-md" style="font-weight:600" id="act-passive-title">Passive Ability</div>
+          <div>
+            <div class="b-md" style="font-weight:600" id="act-passive-title">Use Archetype's Skill</div>
             <div class="b-sm c-muted" id="act-passive-sub">Tersedia dalam 2 session</div>
           </div>
-          <div style="color:var(--muted);font-size:18px">›</div>
         </button>
       </div>
 
@@ -1716,8 +1785,15 @@
     </div>
 
     <!-- ══ TAKE TASK ═══════════════════════════════════════════════════════ -->
-    <div class="screen" id="s-task" style="justify-content:center;text-align:center">
-      <div id="task-assign-content"></div>
+    <div class="screen" id="s-task">
+      <div class="screen-header" style="flex-direction:row;align-items:center;justify-content:space-between">
+        <div>
+          <div class="screen-title">LIMITED TASK</div>
+          <div class="screen-sub">Slot task kamu</div>
+        </div>
+        <button class="btn btn-o btn-sm" onclick="back()" style="flex-shrink:0">← Kembali</button>
+      </div>
+      <div id="task-assign-content" style="flex:1;overflow-y:auto"></div>
     </div>
 
     <!-- ══ CARD VIEWER ═══════════════════════════════════════════════════════ -->
@@ -1796,7 +1872,7 @@
       <!-- stats bar -->
       <div class="card2 mb16" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
         <div class="b-sm">
-          <span class="c-primary" id="card-list-count" style="font-weight:700">0</span>
+          <span class="c-primary" id="card-list-count" style="font-weight:800">0</span>
           <span class="c-muted"> kartu ditampilkan</span>
         </div>
         <div class="b-sm c-muted">
@@ -1895,13 +1971,13 @@
         <div class="lbl mb10">CARA DRAW</div>
         <div class="b-sm" style="display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;align-items:center;gap:10px"><span
-              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</span><span>Ambil
+              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">1</span><span>Ambil
               kartu paling atas dari deck aktif</span></div>
           <div style="display:flex;align-items:center;gap:10px"><span
-              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</span><span>Scan
+              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">2</span><span>Scan
               QR code di kartu tersebut</span></div>
           <div style="display:flex;align-items:center;gap:10px"><span
-              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</span><span>Efek
+              style="width:24px;height:24px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">3</span><span>Efek
               kartu akan ditampilkan di sini</span></div>
         </div>
       </div>
@@ -2218,12 +2294,12 @@
     const ICON_PATH = 'Resources/icon/'; // ← sesuaikan relative path ke folder icon lo
 
     const CHARS = [
-      { id: 'artist',     name: 'The Artist',      emoji: '🖌️', icon: ICON_PATH + 'The artist icon.png',      passive: 'Ambil lagi item terakhir yang kamu gunakan dari deck aktif' },
-      { id: 'busybee',    name: 'The Busy Bee',     emoji: '☕',  icon: ICON_PATH + 'The busy bee icon.png',    passive: 'Inisiasi Emergency Meeting di luar jadwal' },
-      { id: 'fashion',    name: 'The Fashionista',  emoji: '💄', icon: ICON_PATH + 'The fashionista icon.png', passive: 'Trade 1 kartu dengan pemain lain pilihanmu' },
-      { id: 'nerd',       name: 'The Nerd',         emoji: '📚', icon: ICON_PATH + 'The nerd icon.png',        passive: 'Ambil Ensiklopedia atau Novel dari deck aktif' },
-      { id: 'influencer', name: 'The Influencer',   emoji: '📱', icon: ICON_PATH + 'The influencer icon.png',  passive: 'Friendship Meter gain 2× pada session ini' },
-      { id: 'phantom',    name: 'The Phantom',      emoji: '👻', icon: ICON_PATH + 'The ghost icon.png',       passive: 'Jalankan Phase 2× berturut-turut pada giliranmu' },
+      { id: 'artist',     name: 'The Artist',      emoji: '🖌️', icon: ICON_PATH + 'The artist icon.png',      btn: 'Resources/Button/artist_button.png',      color: '#E8453C', colorLight: '#FF9090', passive: 'Ambil lagi item terakhir yang kamu gunakan dari deck aktif' },
+      { id: 'busybee',    name: 'The Busy Bee',     emoji: '☕',  icon: ICON_PATH + 'The busy bee icon.png',    btn: 'Resources/Button/busybee_button.png',     color: '#4A9EDB', colorLight: '#A8D8FF', passive: 'Inisiasi Emergency Meeting di luar jadwal' },
+      { id: 'fashion',    name: 'The Fashionista',  emoji: '💄', icon: ICON_PATH + 'The fashionista icon.png', btn: 'Resources/Button/fashionista_button.png', color: '#FF69B4', colorLight: '#FFB8E0', passive: 'Trade 1 kartu dengan pemain lain pilihanmu' },
+      { id: 'nerd',       name: 'The Nerd',         emoji: '📚', icon: ICON_PATH + 'The nerd icon.png',        btn: 'Resources/Button/nerd_button.png',        color: '#F5A623', colorLight: '#FFD580', passive: 'Ambil Ensiklopedia atau Novel dari deck aktif' },
+      { id: 'influencer', name: 'The Influencer',   emoji: '📱', icon: ICON_PATH + 'The influencer icon.png',  btn: 'Resources/Button/influencer_button.png',  color: '#4CAF50', colorLight: '#A8E6AA', passive: 'Friendship Meter gain 2× pada session ini' },
+      { id: 'phantom',    name: 'The Phantom',      emoji: '👻', icon: ICON_PATH + 'The ghost icon.png',       btn: 'Resources/Button/phantom_button.png',     color: '#9E9E9E', colorLight: '#E0E0E0', passive: 'Jalankan Phase 2× berturut-turut pada giliranmu' },
     ];
 
     const TASKS = [
@@ -2734,10 +2810,9 @@
       const n = G.playerCount;
       grid.innerHTML = CHARS.map(c => {
         const sel = G.selectedChars.find(s => s.id === c.id);
-        const dis = !sel && G.selectedChars.length >= n;
-        return `<div class="char-card ${sel ? 'sel' : ''} ${dis ? 'dis' : ''}" onclick="toggleChar('${c.id}')">
-      <span class="char-emoji">${c.icon ? `<img src="${c.icon}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" draggable="false">` : c.emoji}</span> 
-      <span class="b-sm" style="font-weight:600;font-size:11px">${c.name.replace('The ', '')}</span>
+        const dis = !sel;
+        return `<div class="char-card ${sel ? 'sel' : ''} ${dis ? 'dis' : ''}" style="--char-color:${c.color};--char-color-light:${c.colorLight}" onclick="toggleChar('${c.id}')">
+      <img src="${c.btn}" draggable="false" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px">
     </div>`;
       }).join('');
       $('char-label').textContent = `Pilih Karakter (${G.selectedChars.length}/${n})`;
@@ -2901,7 +2976,7 @@
       let countEl = area.querySelector('.chwazi-count');
       if (!countEl) {
         countEl = document.createElement('div'); countEl.className = 'chwazi-count';
-        countEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-d);font-size:80px;color:#fff;text-shadow:0 0 40px rgba(255,45,120,.8);pointer-events:none';
+        countEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-b);font-size:80px;color:#fff;text-shadow:0 0 40px rgba(255,45,120,.8);pointer-events:none';
         area.appendChild(countEl);
       }
       countEl.textContent = chwaziCount;
@@ -2972,7 +3047,7 @@
       <span class="b-md" style="font-weight:600;flex:1">${p.char.name}</span>
       <div style="display:flex;align-items:center;gap:6px">
         <button onclick="assignOrder('${p.char.id}',-1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:var(--bg-card);color:var(--text-primary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
-        <div style="width:36px;text-align:center;font-family:var(--font-d);font-size:24px;color:${assigned ? 'var(--accent)' : 'var(--text-muted)'}">${assigned || '?'}</div>
+        <div style="width:36px;text-align:center;font-family:var(--font-b);font-size:24px;color:${assigned ? 'var(--accent)' : 'var(--text-muted)'}">${assigned || '?'}</div>
         <button onclick="assignOrder('${p.char.id}',1)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:var(--bg-card);color:var(--text-primary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
       </div>
     </div>`;
@@ -2996,7 +3071,6 @@
     }
 
     function orderDone() {
-      // Build ordered array by assigned number
       const sorted = [...G.players].sort((a, b) => {
         const na = G.orderAssign[a.char.id] || 99;
         const nb = G.orderAssign[b.char.id] || 99;
@@ -3004,7 +3078,107 @@
       });
       G.order = sorted;
       G.currentIdx = 0;
-      goto('s-main');
+      showTurnStartPopup();
+    }
+
+    // ── TUTORIAL SYSTEM ───────────────────────────────────────────────────────
+    const TUTORIAL_SLIDES = [
+      { path: 'New folder/Tutor/Output/Tutorial 1.gif', caption: 'Tutorial 1' },
+      { path: 'New folder/Tutor/Output/Tutorial 2.gif', caption: 'Tutorial 2' }, 
+      { path: 'New folder/Tutor/Output/Tutorial 3.gif', caption: 'Tutorial 3' },
+      { path: 'New folder/Tutor/Output/Tutorial 4.gif', caption: 'Tutorial 4' }
+    ];
+
+    function showTutorialPrompt() {
+      const overlay = document.createElement('div');
+      overlay.id = 'tutorial-prompt';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9000;padding:24px;box-sizing:border-box';
+      overlay.innerHTML = `
+        <div style="background:var(--bg-card);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:28px 24px;max-width:340px;width:100%;text-align:center">
+          <div style="font-size:28px;margin-bottom:12px">📖</div>
+          <div class="d sm" style="font-size:20px;margin-bottom:8px">TUTORIAL</div>
+          <div class="b-sm c-muted" style="margin-bottom:24px;line-height:1.5">Mau lihat tutorial cara main dulu sebelum mulai?</div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-o" style="flex:1" onclick="skipTutorial()">SKIP</button>
+            <button class="btn btn-p" style="flex:1" onclick="openTutorial(0)">LIHAT →</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function skipTutorial() {
+      const el = document.getElementById('tutorial-prompt');
+      if (el) el.remove();
+      goto('s-setup');
+    }
+
+    function openTutorial(idx) {
+      const prompt = document.getElementById('tutorial-prompt');
+      if (prompt) prompt.remove();
+      const oldModal = document.getElementById('tutorial-modal');
+      if (oldModal) oldModal.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'tutorial-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9001;padding:20px;box-sizing:border-box';
+
+      const slide = TUTORIAL_SLIDES[idx];
+      const total = TUTORIAL_SLIDES.length;
+      const isFirst = idx === 0;
+      const isLast = idx >= total - 1;
+
+      overlay.innerHTML = `
+        <div style="background:var(--bg-card);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--radius);max-width:400px;width:100%;overflow:hidden">
+          
+          <!-- header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07)">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.07em">${slide.caption.toUpperCase()}</div>
+            <div style="font-size:11px;color:var(--muted)">${idx + 1} / ${total}</div>
+          </div>
+
+          <!-- gif area -->
+          <div id="tutor-gif-wrap" style="position:relative;min-height:220px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)">
+            <!-- preloader -->
+            <div id="tutor-loader" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite"></div>
+              <div style="font-size:11px;color:var(--muted)">Loading...</div>
+            </div>
+            <!-- gif (hidden until loaded) -->
+            <img id="tutor-gif" src="" alt="tutorial" style="display:none;width:100%;object-fit:contain;max-height:320px" />
+          </div>
+
+          <!-- nav -->
+          <div style="display:flex;gap:10px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.07)">
+            <button class="btn btn-o btn-sm" style="flex:1" ${isFirst ? 'disabled style="flex:1;opacity:.35;cursor:not-allowed"' : ''} onclick="openTutorial(${idx - 1})">← PREV</button>
+            ${isLast
+              ? `<button class="btn btn-p btn-sm" style="flex:1" onclick="closeTutorial()">MULAI GAME →</button>`
+              : `<button class="btn btn-p btn-sm" style="flex:1" onclick="openTutorial(${idx + 1})">NEXT →</button>`
+            }
+          </div>
+
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      // Preload GIF
+      const img = document.getElementById('tutor-gif');
+      const loader = document.getElementById('tutor-loader');
+      const preloader = new Image();
+      preloader.onload = () => {
+        loader.style.display = 'none';
+        img.src = preloader.src;
+        img.style.display = 'block';
+      };
+      preloader.onerror = () => {
+        loader.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px">Gagal load gambar.<br><span style="font-size:10px;opacity:.5">${slide.path}</span></div>`;
+      };
+      preloader.src = slide.path; 
+    }
+
+    function closeTutorial() {
+      const el = document.getElementById('tutorial-modal');
+      if (el) el.remove();
+      goto('s-setup');
     }
 
     // ── MAIN GAME ─────────────────────────────────────────────────────────────
@@ -3150,6 +3324,7 @@
       }
 
       // Start 60s phase action timer
+      renderMainTaskCards();
       startPhaseTimer();
 
       // Players list
@@ -3260,8 +3435,44 @@
         G.phaseEnded = false;
         if (checkWinLose()) return;
         saveGame();
-        goto('s-main');
+        showTurnStartPopup();
       }
+    
+    
+    }
+
+    function showTurnStartPopup() {
+      const cur = G.order[G.currentIdx];
+      if (!cur) { goto('s-main'); return; }
+
+      const archName = cur.char.name;
+      const nickname = cur.nickname || null;
+      const displayName = nickname || archName;
+      const sb = cur.sb ?? 5;
+      const sbColor = sb <= 1 ? 'var(--primary)' : sb <= 3 ? 'var(--accent)' : 'var(--success)';
+      const sbPips = Array.from({ length: 5 }, (_, i) =>
+        `<div style="width:10px;height:10px;border-radius:50%;background:${i < sb ? sbColor : 'rgba(255,255,255,.15)'}"></div>`
+      ).join('');
+
+      showPopup(`
+        <div style="text-align:center;padding:4px 0">
+          <div style="margin-bottom:12px">${charIcon(cur.char, 72)}</div>
+          <div class="lbl" style="margin-bottom:8px;letter-spacing:.18em">SEKARANG GILIRANMU</div>
+          <div class="d lg" style="margin-bottom:${nickname ? '2px' : '14px'}">${displayName}</div>
+          ${nickname ? `<div class="b-sm c-muted" style="margin-bottom:14px">${archName}</div>` : ''}
+          <div style="margin-bottom:14px">
+            <span class="tag" style="background:rgba(255,255,255,.05);color:var(--text-muted);border-color:var(--border-light)">
+              Session ${G.session} / ${G.totalSessions}
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:22px">
+            <span class="b-sm c-muted" style="margin-right:4px">SB</span>
+            ${sbPips}
+            <span class="b-sm" style="color:${sbColor};margin-left:4px;font-weight:600">${sb}/5</span>
+          </div>
+          <button class="btn btn-p" onclick="closePopup();goto('s-main')">MULAI GILIRAN →</button>
+        </div>
+      `);
     }
 
     function sessionEnd() {
@@ -3338,8 +3549,133 @@
 
     function gotoTakeTask() {
       initGroupTasks();
-      assignRandomTask();
       goto('s-task');
+      renderTaskOverview();
+    }
+
+    function renderMainTaskCards() {
+      const el = $('main-task-cards');
+      if (!el) return;
+      const cur = G.order[G.currentIdx];
+      if (!cur || !G.groupTasks) { el.innerHTML = ''; return; }
+
+      const myTasks = G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id));
+      if (myTasks.length === 0) { el.innerHTML = ''; return; }
+
+      let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span class="lbl" style="color:var(--muted)">TASK AKTIF</span>
+        <span class="lbl" style="color:var(--muted)">${myTasks.length}/2</span>
+      </div>`;
+
+      myTasks.forEach(gt => {
+        const allCollected = Object.values(gt.collected).flat();
+        const gotNames = allCollected.map(it => it.name || it);
+        const itemsWithStatus = gt.items.map(itemName => {
+          const idx = gotNames.indexOf(itemName);
+          const collected = idx >= 0;
+          if (collected) gotNames.splice(idx, 1);
+          return { name: itemName, collected };
+        });
+        const collectedCount = itemsWithStatus.filter(i => i.collected).length;
+        const total = gt.items.length;
+        const pct = total > 0 ? Math.round((collectedCount / total) * 100) : 0;
+        const sessLeft = gt.deadline - (G.session - gt.sessionStart);
+        const isUrgent = sessLeft <= 1;
+        const sc = isUrgent ? 'var(--primary)' : 'var(--accent)';
+        const sb = isUrgent ? 'rgba(255,45,120,.18)' : 'rgba(255,214,0,.14)';
+        const sbd = isUrgent ? 'rgba(255,45,120,.4)' : 'rgba(255,214,0,.35)';
+
+        html += `
+          <div style="background:var(--bg-card2);border:1.5px solid rgba(71,84,214,.25);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+              <div style="font-size:12px;font-weight:800;font-family:var(--font-b);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.07em">${gt.taskDef.name.toUpperCase()}</div>
+              <span style="background:${sb};color:${sc};border:1px solid ${sbd};border-radius:20px;padding:3px 8px;font-size:9px;font-weight:800;font-family:var(--font-b);white-space:nowrap;flex-shrink:0;letter-spacing:0.06em">${sessLeft} SESSION LEFT</span>
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+              ${itemsWithStatus.map(item => `<span style="background:${item.collected ? 'var(--secondary)' : 'rgba(255,255,255,.06)'};color:${item.collected ? '#fff' : 'rgba(255,255,255,.3)'};border:1px solid ${item.collected ? 'transparent' : 'rgba(255,255,255,.1)'};border-radius:6px;padding:3px 9px;font-size:10px;font-weight:800;font-family:var(--font-b);letter-spacing:0.06em">${item.name.toUpperCase()}</span>`).join('')}
+            </div>
+            <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.4);margin-bottom:4px;font-family:var(--font-b)">PROGRESS: ${collectedCount}/${total} (${pct}%)</div>
+            <div style="background:rgba(255,255,255,.08);border-radius:4px;height:5px;overflow:hidden">
+              <div style="background:linear-gradient(90deg,var(--secondary),var(--primary));height:5px;border-radius:4px;width:${pct}%"></div>
+            </div>
+          </div>`;
+      });
+
+      el.innerHTML = html;
+    }
+
+    function renderTaskOverview() {
+      const cur = G.order[G.currentIdx];
+      const el = $('task-assign-content');
+      if (!el || !cur) return;
+
+      const myTasks = G.groupTasks.filter(gt => gt.confirmed && !gt.completed && gt.participants.includes(cur.char.id));
+      const canTake = myTasks.length < 2 && !cur.burnout && !cur.eliminated;
+      const activeTIds = G.groupTasks.filter(t => t.confirmed).map(t => t.taskDef.id);
+      const hasPool = TASKS.filter(t => !activeTIds.includes(t.id)).length > 0;
+
+      function taskCardHTML(gt) {
+        const allNeeded = gt.items;
+        const allCollected = Object.values(gt.collected).flat();
+        const gotNames = allCollected.map(it => it.name || it);
+        const itemsWithStatus = allNeeded.map(itemName => {
+          const idx = gotNames.indexOf(itemName);
+          const collected = idx >= 0;
+          if (collected) gotNames.splice(idx, 1);
+          return { name: itemName, collected };
+        });
+        const collectedCount = itemsWithStatus.filter(i => i.collected).length;
+        const totalItems = allNeeded.length;
+        const progressPct = totalItems > 0 ? Math.round((collectedCount / totalItems) * 100) : 0;
+        const sessLeft = gt.deadline - (G.session - gt.sessionStart);
+        const isUrgent = sessLeft <= 1;
+        const sc = isUrgent ? 'var(--primary)' : 'var(--accent)';
+        const sb = isUrgent ? 'rgba(255,45,120,.18)' : 'rgba(255,214,0,.14)';
+        const sbd = isUrgent ? 'rgba(255,45,120,.4)' : 'rgba(255,214,0,.35)';
+        return `
+          <div style="background:var(--bg-card2);border:1.5px solid rgba(71,84,214,.3);border-radius:var(--radius);padding:16px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px">
+              <div class="d sm" style="font-size:15px;line-height:1.2;flex:1">${gt.taskDef.name.toUpperCase()}</div>
+              <span style="background:${sb};color:${sc};border:1px solid ${sbd};border-radius:20px;padding:4px 10px;font-size:9px;font-weight:800;font-family:var(--font-b);white-space:nowrap;flex-shrink:0;letter-spacing:0.06em">${sessLeft} SESSION LEFT</span>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+              ${itemsWithStatus.map(item => `<span style="background:${item.collected ? 'var(--secondary)' : 'rgba(255,255,255,.06)'};color:${item.collected ? '#fff' : 'rgba(255,255,255,.35)'};border:1px solid ${item.collected ? 'transparent' : 'rgba(255,255,255,.1)'};border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;font-family:var(--font-b)">${item.name.toUpperCase()}</span>`).join('')}
+            </div>
+            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.45);margin-bottom:6px;font-family:var(--font-b)">PROGRESS: ${collectedCount}/${totalItems} (${progressPct}%)</div>
+            <div style="background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden">
+              <div style="background:linear-gradient(90deg,var(--secondary),var(--primary));height:6px;border-radius:4px;width:${progressPct}%"></div>
+            </div>
+          </div>`;
+      }
+
+      function emptySlotHTML() {
+        return `
+          <div style="background:rgba(255,255,255,.02);border:1.5px dashed rgba(255,255,255,.1);border-radius:var(--radius);padding:16px;margin-bottom:10px;opacity:.45">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px">
+              <div class="d sm" style="font-size:15px;color:rgba(255,255,255,.3)">NO TASK AVAILABLE</div>
+              <span style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 10px;font-size:9px;font-weight:800;font-family:var(--font-b);white-space:nowrap">0 SESSION LEFT</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              ${['ITEM 1','ITEM 2','ITEM 3','ITEM 4'].map(n => `<span style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.18);border:1px dashed rgba(255,255,255,.08);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;font-family:var(--font-b)">${n}</span>`).join('')}
+            </div>
+            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.2);margin-bottom:6px;font-family:var(--font-b)">PROGRESS: 0/0 (0%)</div>
+            <div style="background:rgba(255,255,255,.06);border-radius:4px;height:6px"></div>
+          </div>`;
+      }
+
+      let html = '';
+      myTasks.forEach(gt => { html += taskCardHTML(gt); });
+      for (let i = myTasks.length; i < 2; i++) { html += emptySlotHTML(); }
+
+      if (canTake && hasPool) {
+        html += `<button class="btn btn-p mt8" onclick="assignRandomTask()">+ AMBIL TASK BARU</button>`;
+      } else if (!hasPool) {
+        html += `<p class="b-sm c-muted" style="text-align:center;margin-top:12px">Semua task sedang aktif.</p>`;
+      } else {
+        html += `<p class="b-sm c-muted" style="text-align:center;margin-top:12px">Slot penuh (2/2). Selesaikan task dulu.</p>`;
+      }
+
+      el.innerHTML = html;
     }
 
     function assignRandomTask() {
@@ -3456,7 +3792,7 @@
       <hr class="divider">
       <div class="row" style="justify-content:space-between">
         <span class="lbl c-muted">DEADLINE</span>
-        <span class="b-md" style="font-weight:700;color:var(--yellow)">${gt.deadline} session</span>
+        <span class="b-md" style="font-weight:800;color:var(--yellow)">${gt.deadline} session</span>
       </div>
     </div>
     <button class="btn btn-p mb12" onclick="confirmTask()">KONFIRMASI TASK ✓</button>
@@ -3479,7 +3815,7 @@
     function cancelTask() {
       // Jangan hapus pending task — biarkan tetap ada sampai ganti pemain
       // Player bisa ambil task lagi dan akan dapat task yang sama
-      back();
+      renderTaskOverview();
     }
 
     // ── ITEM ──────────────────────────────────────────────────────────────────
@@ -5085,22 +5421,77 @@
       }
 
       if (card.type === 'item') {
-        // Item masuk ke itemInventory
         if (!G.itemInventory[charId]) G.itemInventory[charId] = [];
         G.itemInventory[charId].push({ card, sessionAdded: G.session });
         showCardAddedPopup(card);
       } else if (card.type === 'instant') {
-        // Instant card langsung dieksekusi — pastikan phaseEnded false dulu
         G.phaseEnded = false;
-        goto('s-draw');
-        executeCardEffect(card, $('draw-scan-area'), () => {
+        const tempArea = document.createElement('div');
+        window._cardDone = function() {
+          window._cardDone = () => {};
+          closePopup();
           endPhase();
-        });
+        };
+        executeCardEffect(card, tempArea, () => { closePopup(); endPhase(); });
+        // Jika FM popup sudah tampil (kartu FM seperti Bisa diem gak?, Awas Jatoh!, dll),
+        // tidak perlu showPopup lagi — FM popup sudah handle sendiri.
+        // Jika bukan FM card (deck lock, Awas Tumpah!, dll), tampilkan sebagai generic popup.
+        const fmPopupEl = document.getElementById('fm-popup');
+        if (!(fmPopupEl && fmPopupEl.style.display === 'flex') && tempArea.innerHTML) {
+          showPopup(tempArea.innerHTML);
+        }
       } else if (card.type === 'action' || card.type === 'special') {
-        // Action/Special masuk inventory (Use Power-Up)
         if (!G.inventory[charId]) G.inventory[charId] = [];
         G.inventory[charId].push({ card, sessionAdded: G.session });
         showCardAddedPopup(card);
+      }
+    }
+
+
+    function _confirmCardAdd() {
+      if (window._pendingCardConfirm) {
+        const cb = window._pendingCardConfirm;
+        window._pendingCardConfirm = null;
+        cb();
+      }
+    }
+
+    function showInstantPreviewPopup(card) {
+      showPopup(`
+        <div style="font-size:48px;margin-bottom:8px">⚡</div>
+        <div class="lbl" style="margin-bottom:8px;letter-spacing:.16em;color:#FF6B35">KARTU INSTANT</div>
+        <div style="font-size:38px;margin-bottom:6px">${card.emoji || '🃏'}</div>
+        <div class="d sm mb8">${card.name}</div>
+        <div class="card2" style="text-align:left;padding:14px;margin-bottom:18px;background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.2)">
+          <p class="b-sm" style="color:rgba(255,255,255,.85);line-height:1.55">${card.effect || 'Efek langsung diterapkan.'}</p>
+        </div>
+        <button class="btn btn-p mb10" onclick="closePopup();executeInstantFromDraw('${card.name}')">⚡ AKTIFKAN SEKARANG!</button>
+        <br>
+        <button class="btn btn-o btn-sm" onclick="closePopup()">✕ Batal</button>
+      `);
+    }
+
+    function executeInstantFromDraw(cardName) {
+      const card = CARDS[Object.keys(CARDS).find(key => CARDS[key].name === cardName)];
+      if (!card) return;
+      G.phaseEnded = false;
+      const tempArea = document.createElement('div');
+      window._cardDone = function() {
+        window._cardDone = () => {};
+        closePopup();
+        endPhase();
+      };
+      executeCardEffect(card, tempArea, () => { closePopup(); endPhase(); });
+      // Jika FM popup sudah aktif (kartu FM), tidak perlu showPopup lagi
+      // Jika non-FM (deck lock, dll), tampilkan hasil sebagai popup
+      const fmPopupEl = document.getElementById('fm-popup');
+      if (!(fmPopupEl && fmPopupEl.style.display === 'flex') && tempArea.innerHTML) {
+        const lanjutBtn = tempArea.querySelector('button');
+        if (lanjutBtn) lanjutBtn.remove();
+        showPopup(tempArea.innerHTML + `
+          <button class="btn btn-p mt12" style="width:auto;padding:10px 28px"
+            onclick="closePopup();endPhase()">OK →</button>
+        `);
       }
     }
 
@@ -5115,34 +5506,15 @@
       <button class="btn btn-y" onclick="closePopup()">OK</button>
         `);
       } else {
-        let undoSeconds = 5;
-        let undoTimer = null;
-        let undoUsed = false;
-
         showPopup(`
       <div style="font-size:52px;margin-bottom:12px">✅</div>
-      <div class="d md mb4">Kartu Disimpan!</div>
+      <div class="d md mb4">Kartu Didapatkan!</div>
       <div style="font-size:42px;margin-bottom:8px">${card.emoji || '🃏'}</div>
       <div class="d sm mb4">${card.name}</div>
       <span class="tag" style="display:inline-block;margin-bottom:12px">${card.type}</span>
       <p class="b-sm c-muted mb16" style="max-width:260px;margin:0 auto 16px">${card.effect}</p>
       <button class="btn btn-p mb10" onclick="closePopup();endPhase()">LANJUT →</button>
-      <br>
-      <button class="btn btn-o btn-sm" id="undo-draw-btn" onclick="undoLastDraw('${card.name}','${card.type}')">
-        ↩ Batalkan Draw <span id="undo-countdown">(${undoSeconds}s)</span>
-      </button>
         `);
-
-        undoTimer = setInterval(() => {
-          undoSeconds--;
-          const el = document.getElementById('undo-countdown');
-          if (el) el.textContent = `(${undoSeconds}s)`;
-          if (undoSeconds <= 0) {
-            clearInterval(undoTimer);
-            const btn = document.getElementById('undo-draw-btn');
-            if (btn) { btn.disabled = true; btn.style.opacity = '0.3'; btn.textContent = 'Waktu undo habis'; }
-          }
-        }, 1000);
       }
     }
 
@@ -5863,7 +6235,7 @@ if (curInv.length === 0 || others.length === 0) {
       return `<div style="background:rgba(255,45,120,.06);border:1px solid rgba(255,45,120,.18);border-radius:10px;padding:10px 12px;margin-top:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-weight:600;font-size:13px;color:var(--text-primary)">${gt.taskDef.name}</span>
-          <span style="font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.08em">GAGAL</span>
+          <span style="font-size:10px;font-weight:800;color:var(--primary);letter-spacing:.08em">GAGAL</span>
         </div>
         <div style="background:rgba(255,255,255,.07);border-radius:99px;height:4px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${progressPct}%;background:${gradColor};border-radius:99px"></div>
@@ -5874,7 +6246,7 @@ if (curInv.length === 0 || others.length === 0) {
         </div>
         <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Progress: ${collectedCount}/${totalItems} (${progressPct}%)</div>
         <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">👥 ${participantNames}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--primary);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,45,120,.15)">-${punishment} FM dikenakan ke Friendship Meter</div>
+        <div style="font-size:11px;font-weight:800;color:var(--primary);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,45,120,.15)">-${punishment} FM dikenakan ke Friendship Meter</div>
       </div>`;
     }
 
@@ -6219,7 +6591,10 @@ if (curInv.length === 0 || others.length === 0) {
       voteArray.sort((a, b) => b.votes - a.votes);
 
       // No votes cast — skip
-      if (voteArray.length === 0 || voteArray.every(v => v.votes === 0)) { nextSession(); return; }
+      if (voteArray.length === 0 || voteArray.every(v => v.votes === 0)) {
+        if (G.session === DEMO_END_AT_SESSION) { showDemoEndPopup(); return; }
+        nextSession(); return;
+      }
 
       const topVote = voteArray[0].votes;
       const tied = voteArray.filter(v => v.votes === topVote);
@@ -6276,7 +6651,7 @@ if (curInv.length === 0 || others.length === 0) {
         <p class="b-sm" style="color:rgba(255,255,255,.8)">Player ter-flag. Jika voted lagi di meeting berikutnya, akan dieliminasi!</p>
       </div>
     `}
-    <button class="btn btn-p" onclick="closePopup();executeVoteResult()">LANJUT →</button>
+    <button class="btn btn-p" onclick="closePopup();${G.session === DEMO_END_AT_SESSION ? 'showDemoEndPopup()' : 'executeVoteResult()'}">LANJUT →</button>
       `);
     }
 
@@ -6325,7 +6700,19 @@ if (curInv.length === 0 || others.length === 0) {
         <span class="tag tag-flag">${voteCount}</span>
       </div>`).join('')}
     </div>
-    <button class="btn btn-p" onclick="closePopup();$('btn-undo-vote').style.display='none';$('btn-confirm-vote').style.gridColumn='1 / -1';nextSession()">LANJUT SESSION →</button>
+    <button class="btn btn-p" onclick="closePopup();$('btn-undo-vote').style.display='none';$('btn-confirm-vote').style.gridColumn='1 / -1';${G.session === DEMO_END_AT_SESSION ? 'showDemoEndPopup()' : 'nextSession()'}">LANJUT SESSION →</button>
+      `);
+    }
+
+    function showDemoEndPopup() {
+      showPopup(`
+    <div style="font-size:52px;margin-bottom:16px">🎉</div>
+    <div class="d md mb8">THANK YOU FOR PLAYING!</div>
+    <p class="b-sm c-muted mb16">That's all from the <strong style="color:var(--accent)">DEMO VERSION</strong>.</p>
+    <div class="card2 mb16" style="text-align:center;padding:16px">
+      <p class="b-sm" style="color:rgba(255,255,255,.8);line-height:1.65">The full version features 8 sessions, more scenarios, power-ups, passives, and much more.<br><br>Stay tuned for more updates from <strong style="color:var(--primary)">PALLET'S</strong>! 🃏</p>
+    </div>
+    <button class="btn btn-p" onclick="closePopup();restartGame()">← BACK TO MAIN MENU</button>
       `);
     }
 
@@ -6450,11 +6837,11 @@ if (curInv.length === 0 || others.length === 0) {
               <div class="d md mb4">Ada Game Tersimpan</div>
               <p class="b-sm c-muted mb20">Lanjut game sebelumnya atau mulai dari awal?</p>
               <button class="btn btn-p mb12" onclick="this.closest('div[style*=fixed]').remove();resumeGame()">LANJUTKAN →</button>
-              <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();clearSave();goto('s-setup')">MULAI BARU</button>
+              <button class="btn btn-o" onclick="this.closest('div[style*=fixed]').remove();clearSave();showTutorialPrompt()">MULAI BARU</button>
             </div>`;
           document.body.appendChild(overlay);
         } else {
-          goto('s-setup');
+          showTutorialPrompt();
         }
       }, 220);
     };
